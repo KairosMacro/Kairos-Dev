@@ -18,6 +18,8 @@ SendMode "Event"
 #Include "Auxiliary.ahk"
 #Include "QPC.ahk"
 #Include "Import.ahk"
+#Include "FrameCache.ahk"
+#Include "WindowTracker.ahk"
 #Include "Path.ahk"
 #Include "JSON.ahk"
 #Include "nowUnix.ahk"
@@ -86,6 +88,8 @@ class State {
 	static SprinklerImages := ["saturator", "saturatorWS"]
 }
 
+WindowTracker.Start(50)
+
 Scorch := PassiveScanner()
 Warns := Warnings()
 Boost := BoostBar()
@@ -107,6 +111,7 @@ F3:: ExitApp
 
 Cleanup(*) {
 	Critical
+	WindowTracker.Stop()
 	wp := Buffer(44)
 	try DllCall("GetWindowPlacement", "UInt", Main.Gui.Hwnd, "Ptr", wp)
 	x := NumGet(wp, 28, "Int")
@@ -123,5 +128,6 @@ Cleanup(*) {
 	try Aligner.Cleanup()
 	try Main.Cleanup()
 	try Mag.Cleanup()
+	try FrameCache.Clear()
 	Gdip_Shutdown(pToken)
 }

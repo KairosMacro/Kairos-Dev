@@ -60,8 +60,10 @@ class Config {
 
     static Load() {
         for section, keys in this.Default {
+            if !this.Data.Has(section)
+                this.Data[section] := Map()
             for key, val in keys {
-                this.Data[key] := val
+                this.Data[section][key] := val
             }
         }
         if FileExist(this.path) {

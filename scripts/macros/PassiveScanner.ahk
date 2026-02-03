@@ -39,7 +39,8 @@ class PassiveScanner {
 	}
 
 	CheckLoop() {
-		if !this.IsRunning || !GetRobloxClientPos()
+		win := WindowTracker.Get()
+		if !this.IsRunning || !IsObject(win) || !win.ok
 			return
 
 		passiveNames := StrSplit(Config.Get("PassiveScanner", "Passives", "Scorch"), "|")
@@ -71,29 +72,35 @@ class PassiveScanner {
 	}
 
 	DetectPassive(name) {
-		try {
-			mode := this.modes[name]
-			pBMScreen := Gdip_BitmapFromScreen(windowX + (windowWidth // 2) - 257 "|" windowY + windowHeight - 142 "|517|36")
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
-				return -1
-			foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-			return this.DetectNumber(pBMScreen, Floor(foundX / 40))
-		} finally
-			Gdip_DisposeImage(pBMScreen)
+		mode := this.modes[name]
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
+			return -1
+		region := win.x + (win.w // 2) - 257 "|" win.y + win.h - 142 "|517|36"
+		pBMScreen := FrameCache.Get(region)
+		if !pBMScreen
+			return -1
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
+			return -1
+		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
+		return this.DetectNumber(pBMScreen, Floor(foundX / 40))
 	}
 
 	DetectBlooms(name) {
-		try {
-			mode := this.modes[name]
-			pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY + State.offsetY + 36 "|" windowWidth "|" 38)
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
-				return -1
-			foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-			slotX := Floor(foundX / 38) * 38
-			; verify that it's an actual bloom by doing the "percentage" stuff,
-			return this.MeasureBuff(pBMScreen, slotX, mode.col)
-		} finally
-			Gdip_DisposeImage(pBMScreen)
+		mode := this.modes[name]
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
+			return -1
+		region := win.x "|" win.y + State.offsetY + 36 "|" win.w "|" 38
+		pBMScreen := FrameCache.Get(region)
+		if !pBMScreen
+			return -1
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
+			return -1
+		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
+		slotX := Floor(foundX / 38) * 38
+		; verify that it's an actual bloom by doing the "percentage" stuff,
+		return this.MeasureBuff(pBMScreen, slotX, mode.col)
 	}
 
 	MeasureBuff(pBitmap, slotX, color) {

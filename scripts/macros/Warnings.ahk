@@ -64,56 +64,57 @@ class Warnings {
 			, 0xff55316A
 			, 0xff8448A6
 		]
-		if !GetRobloxClientPos()
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
 			return 0
 
-		pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY + State.offsetY + 32 "|" windowWidth "|" 42)
+		region := win.x "|" win.y + State.offsetY + 32 "|" win.w "|" 42
+		pBMScreen := FrameCache.Get(region)
+		if !pBMScreen
+			return 0
 
-		try {
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"]["Precise"], &loc, , , , , 3, , 6) != 1) {
-				buffer := []
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"]["Precise"], &loc, , , , , 3, , 6) != 1) {
+			buffer := []
+			return 0
+		}
+
+		x := SubStr(loc, 1, InStr(loc, ",") - 1)
+		y := SubStr(loc, InStr(loc, ",") + 1)
+		bottomY := y
+		high := y
+		low := 0
+
+		while (low < high) {
+			if (A_Index > 20)
 				return 0
-			}
+			mid := Floor((low + high) / 2)
+			if ((ObjHasValue(colors, Gdip_GetPixel(pBMScreen, x + 9, mid))))
+				high := mid
+			else
+				low := mid + 1
+		}
 
-			x := SubStr(loc, 1, InStr(loc, ",") - 1)
-			y := SubStr(loc, InStr(loc, ",") + 1)
-			bottomY := y
-			high := y
-			low := 0
+		raw := Round((bottomY - low) / 38 * 100, 2) + 2
 
-			while (low < high) {
-				if (A_Index > 20)
-					return 0
-				mid := Floor((low + high) / 2)
-				if ((ObjHasValue(colors, Gdip_GetPixel(pBMScreen, x + 9, mid))))
-					high := mid
-				else
-					low := mid + 1
+		buffer.Push(raw)
+		if (buffer.Length > bufferSize)
+			buffer.RemoveAt(1)
+		best := []
+		for val1 in buffer {
+			current := []
+			for val2 in buffer {
+				if (Abs(val1 - val2) <= tolerance)
+					current.Push(val2)
 			}
-
-			raw := Round((bottomY - low) / 38 * 100, 2) + 2
-
-			buffer.Push(raw)
-			if (buffer.Length > bufferSize)
-				buffer.RemoveAt(1)
-			best := []
-			for val1 in buffer {
-				current := []
-				for val2 in buffer {
-					if (Abs(val1 - val2) <= tolerance)
-						current.Push(val2)
-				}
-				if (current.Length > best.Length)
-					best := current
-			}
-			if (best.Length = 0) {
-				sum := 0
-				for val in best
-					sum += val
-				return Round(sum / best.Length, 2)
-			}
-			return raw
-		} finally
-			Gdip_DisposeImage(pBMScreen)
+			if (current.Length > best.Length)
+				best := current
+		}
+		if (best.Length = 0) {
+			sum := 0
+			for val in best
+				sum += val
+			return Round(sum / best.Length, 2)
+		}
+		return raw
 	}
 }

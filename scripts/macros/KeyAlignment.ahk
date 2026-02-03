@@ -14,9 +14,14 @@ class KeyAlignment {
 		this.CurrentKey := Config.Get("KeyAlignment", "AlignmentKey", "e")
 
 		this.Gui := Gui("-Caption +E0x80000 +E0x20 +AlwaysOnTop +ToolWindow +OwnDialogs", "Key Alignment")
-		r := WinExist("ahk_exe RobloxPlayerBeta.exe")
-		xPos := r ? windowX + windowWidth - this.Width : A_ScreenWidth - this.Width
-		yPos := r ? windowY : 32
+		win := WindowTracker.Get()
+		if IsObject(win) && win.ok {
+			xPos := win.x + win.w - this.Width
+			yPos := win.y
+		} else {
+			xPos := A_ScreenWidth - this.Width
+			yPos := 32
+		}
 		Config.Get("Main", "KeyAlignmentEnabled", 0) ? this.Gui.Show("NA x" xPos " y" yPos) : this.Gui.Hide()
 		this.hbm := CreateDIBSection(this.Width, this.Height)
 		this.hdc := CreateCompatibleDC()
@@ -24,7 +29,7 @@ class KeyAlignment {
 		this.G := Gdip_GraphicsFromHDC(this.hdc)
 		Gdip_SetSmoothingMode(this.G, 4)
 
-		SetTimer(this.FollowWindow.Bind(this), 10)
+		SetTimer(this.FollowWindow.Bind(this), 50)
 
 		Hotkey(this.RebindHotkey, (*) => this.StartRebind(), "On")
 
@@ -33,10 +38,10 @@ class KeyAlignment {
 
 	FollowWindow() {
 		try {
-			if hwnd := WinExist("Roblox ahk_exe RobloxPlayerBeta.exe") {
-				WinGetClientPos(&wx, &wy, &ww, &wh, "ahk_id " hwnd)
-				targetX := wx + ww - this.Width
-				targetY := wy
+			win := WindowTracker.Get()
+			if IsObject(win) && win.ok {
+				targetX := win.x + win.w - this.Width
+				targetY := win.y
 				Config.Get("Main", "KeyAlignmentEnabled", 0) ? this.Gui.Show("NA x" targetX " y" targetY " w" this.Width " h" this.Height) : this.Gui.Hide()
 			} else {
 				this.Gui.Hide()

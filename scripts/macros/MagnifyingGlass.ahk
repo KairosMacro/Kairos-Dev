@@ -17,7 +17,7 @@ class MagnifyingGlass {
 	__New() {
 		this.Gui := Gui("-Caption +E0x20 +AlwaysOnTop +ToolWindow +OwnDialogs ", "Magnifying Glass")
 		this.Gui.BackColor := "Black"
-		SetTimer(this.FollowWindow.Bind(this), 10)
+		SetTimer(this.FollowWindow.Bind(this), 50)
 	}
 
 	Toggle() {
@@ -61,8 +61,9 @@ class MagnifyingGlass {
 
 	FollowWindow() {
 		try {
-			if hwnd := WinExist("Roblox ahk_exe RobloxPlayerBeta.exe") {
-				WinGetClientPos(&wx, &wy, &ww, &wh, "ahk_id " hwnd)
+			win := WindowTracker.Get()
+			if IsObject(win) && win.ok {
+				wx := win.x, wy := win.y, ww := win.w, wh := win.h
 				this.src.x := wx + (ww // 2) + this.targetOffset
 				this.src.y := wy + State.offsetY
 				this.src.w := this.width

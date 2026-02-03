@@ -46,12 +46,17 @@ class Conditions {
 	}
 
 	SearchBuffs() {
-		if !GetRobloxClientPos() || !Config.Get("Main", "BoostBarEnabled", 0)
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok || !Config.Get("Main", "BoostBarEnabled", 0)
 			return
-		pBMTop := Gdip_BitmapFromScreen(windowX "|" windowY + State.offsetY + 36 "|" windowWidth "|" 38)
-		pBMBottom := Gdip_BitmapFromScreen(windowX + (windowWidth // 2) - 257 "|" windowY + windowHeight - 142 "|517|36")
-		this.Search(pBMTop, this.topBuff)
-		this.Search(pBMBottom, this.bottomBuff)
+		regionTop := win.x "|" win.y + State.offsetY + 36 "|" win.w "|" 38
+		regionBottom := win.x + (win.w // 2) - 257 "|" win.y + win.h - 142 "|517|36"
+		pBMTop := FrameCache.Get(regionTop)
+		pBMBottom := FrameCache.Get(regionBottom)
+		if pBMTop
+			this.Search(pBMTop, this.topBuff)
+		if pBMBottom
+			this.Search(pBMBottom, this.bottomBuff)
 	}
 
 	Search(pBitmap, list) {
@@ -179,7 +184,7 @@ class BoostBar {
 		OnMessage(0x201, this.OnClick.Bind(this))
 		OnMessage(0x204, this.OnRightClick.Bind(this))
 
-		SetTimer(this.FollowWindow.Bind(this), 10)
+		SetTimer(this.FollowWindow.Bind(this), 50)
 	}
 
 	Cleanup() {
@@ -381,8 +386,9 @@ class BoostBar {
 
 	FollowWindow() {
 		try {
-			if hwnd := WinExist("Roblox ahk_exe RobloxPlayerBeta.exe") {
-				WinGetClientPos(&wx, &wy, &ww, &wh, "ahk_id " hwnd)
+			win := WindowTracker.Get()
+			if IsObject(win) && win.ok {
+				wx := win.x, wy := win.y, ww := win.w, wh := win.h
 				targetX := wx + (ww // 2) - 261
 				targetY := wy + wh - 182
 				Config.Get("Main", "BoostBarEnabled", 0) ? this.Gui.Show("NA x" targetX " y" targetY " w" this.TotalW " h" this.TotalH) : this.Gui.Hide()

@@ -37,12 +37,12 @@ class MainGui {
 		this.Gui.Add("Text", "x20 y36 w103 h20 -Wrap", "Precision Settings")
 
 		this.Gui.Add("Text", "x15 y65", "Threshold:")
-		this.Gui.Add("Edit", "x76 y62 w50 Number vWarns_StartWarn", Config.Get("Warns", "StartWarn", 25)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("Edit", "x76 y62 w50 Number vWarns_StartWarn", Config.Get("Warns", "StartWarn", 25)).OnEvent("Change", this.SaveConfig)
 		this.Gui.Add("UpDown", "Range0-60", Config.Get("Warns", "StartWarn", 25))
 		this.Gui.Add("Text", "x+5 yp+3", "Seconds")
 
 		this.Gui.Add("Text", "x15 y95", "Volume:")
-		this.Gui.Add("Edit", "x61 y92 w50 Number vWarns_Volume", Config.Get("Warns", "Volume", 25)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("Edit", "x61 y92 w50 Number vWarns_Volume", Config.Get("Warns", "Volume", 25)).OnEvent("Change", this.SaveConfig)
 		this.Gui.Add("UpDown", "Range0-100", Config.Get("Warns", "Volume", 25))
 		this.Gui.Add("Text", "x+5 yp+3", "%")
 
@@ -62,8 +62,8 @@ class MainGui {
 			i := A_Index
 
 			this.Gui.Add("Text", "x10 y" yPos " w36 -Wrap", "Slot " i ":")
-			this.Gui.Add("CheckBox", "x50 y" yPos - 2 " w20 h20 vBoostBar_SlotActive" i " Checked" Config.Get("BoostBar", "SlotActive" i)).OnEvent("Click", this.SaveConfig.Bind(GuiCtrl))
-			this.Gui.Add("Edit", "x75 y" yPos - 3 " w50 h20 Number vBoostBar_SlotTimer" i, Config.Get("BoostBar", "SlotTimer" i)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+			this.Gui.Add("CheckBox", "x50 y" yPos - 2 " w20 h20 vBoostBar_SlotActive" i " Checked" Config.Get("BoostBar", "SlotActive" i)).OnEvent("Click", this.SaveConfig)
+			this.Gui.Add("Edit", "x75 y" yPos - 3 " w50 h20 Number vBoostBar_SlotTimer" i, Config.Get("BoostBar", "SlotTimer" i)).OnEvent("Change", this.SaveConfig)
 
 			currentModes := Config.Get("BoostBar", "SlotMode" i, "Timer")
 			display := currentModes = "" ? "None" : (StrSplit(currentModes, "|").Length > 1 ? "Multiple" : currentModes)
@@ -81,10 +81,10 @@ class MainGui {
 		this.Gui.SetFont("s8 w400")
 
 		this.Gui.Add("Text", "x20 y58", "MoveSpeed:")
-		this.Gui.Add("Edit", "x95 y55 w60 h20 vAlt_Movespeed", Config.Get("Alt", "Movespeed", 29)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("Edit", "x95 y55 w60 h20 vAlt_Movespeed", Config.Get("Alt", "Movespeed", 29)).OnEvent("Change", this.SaveConfig)
 
 		this.Gui.Add("Text", "x20 y88", "Hive Slot:")
-		this.Gui.Add("Edit", "x95 y85 w60 h20 vAlt_HiveSlot", Config.Get("Alt", "HiveSlot", 1)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("Edit", "x95 y85 w60 h20 vAlt_HiveSlot", Config.Get("Alt", "HiveSlot", 1)).OnEvent("Change", this.SaveConfig)
 
 		this.Gui.SetFont("w700")
 		this.Gui.Add("GroupBox", "x205 y35 w185 h150")
@@ -93,10 +93,10 @@ class MainGui {
 
 		this.Gui.Add("Text", "x215 y58", "Field:")
 		fieldArr := ["sunflower", "dandelion", "mushroom", "blueflower", "clover", "strawberry", "spider", "bamboo", "pineapple", "stump", "cactus", "pumpkin", "pinetree", "rose", "mountaintop", "pepper", "coconut"]
-		(GuiCtrl := this.Gui.Add("DropDownList", "x255 y55 w100 vAlt_DefaultField Choose" ObjIndexOf(fieldArr, Config.Get("Alt", "DefaultField", "pepper")), fieldArr)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		(GuiCtrl := this.Gui.Add("DropDownList", "x255 y55 w100 vAlt_DefaultField Choose" ObjIndexOf(fieldArr, Config.Get("Alt", "DefaultField", "pepper")), fieldArr)).OnEvent("Change", this.SaveConfig)
 
 		this.Gui.Add("Text", "x215 y88", "Pattern:")
-		this.Gui.Add("DropDownList", "x270 y85 w110 vAlt_Pattern Choose" ObjIndexOf(patternList, Config.Get("Alt", "Pattern", "GeneralBooster")), patternList).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("DropDownList", "x270 y85 w110 vAlt_Pattern Choose" ObjIndexOf(patternList, Config.Get("Alt", "Pattern", "GeneralBooster")), patternList).OnEvent("Change", this.SaveConfig)
 
 		this.Gui.Add("Text", "x215 y115", "Size:")
 		this.Gui.Add("Edit", "x240 y115 w40 h20 Number vAlt_PatternSize", Config.Get("Alt", "PatternSize"))
