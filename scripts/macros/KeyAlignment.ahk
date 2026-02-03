@@ -29,7 +29,7 @@ class KeyAlignment {
 		this.G := Gdip_GraphicsFromHDC(this.hdc)
 		Gdip_SetSmoothingMode(this.G, 4)
 
-		SetTimer(this.FollowWindow.Bind(this), 50)
+		Scheduler.Add("KeyAlignment.FollowWindow", this.FollowWindow.Bind(this), 50)
 
 		Hotkey(this.RebindHotkey, (*) => this.StartRebind(), "On")
 
@@ -134,6 +134,7 @@ class KeyAlignment {
 	}
 
 	Cleanup() {
+		Scheduler.Remove("KeyAlignment.FollowWindow")
 		SelectObject(this.hdc, this.obm)
 		DeleteObject(this.hbm)
 		DeleteDC(this.hdc)

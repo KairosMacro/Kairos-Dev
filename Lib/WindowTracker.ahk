@@ -1,18 +1,15 @@
 class WindowTracker {
 	static state := { hwnd: 0, x: 0, y: 0, w: 0, h: 0, ok: false, ts: 0 }
 	static interval := 50
-	static _timerFn := 0
 
 	static Start(intervalMs := 50) {
 		this.interval := intervalMs
-		this._timerFn := ObjBindMethod(this, "Update")
 		this.Update()
-		SetTimer(this._timerFn, intervalMs)
+		Scheduler.Add("WindowTracker.Update", ObjBindMethod(this, "Update"), intervalMs)
 	}
 
 	static Stop() {
-		if this._timerFn
-			SetTimer(this._timerFn, 0)
+		Scheduler.Remove("WindowTracker.Update")
 	}
 
 	static Get() {

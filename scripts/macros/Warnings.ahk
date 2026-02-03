@@ -3,6 +3,8 @@ class Warnings {
 	IsActive := false
 	AudioPlayer := unset
 	LastPlayed := 0
+	WarnThreshold := 25
+	WarnVolume := 25
 
 	__New() {
 		soundPath := Config.Get("Warns", "SoundFile", "C:\Windows\Media\Windows Critical Stop.wav")
@@ -11,18 +13,18 @@ class Warnings {
 		}
 		this.AudioPlayer := Audio(soundPath)
 		this.Fancy := GdipTooltip()
+		this.RefreshConfig()
+		Scheduler.Add("Warnings.CheckLoop", this.CheckLoop.Bind(this), 150, () => this.IsActive)
 	}
 
 	Cleanup(*) {
 		this.IsRunning := false
-		SetTimer(this.CheckLoop.Bind(this), 0)
 	}
 
 	Toggle() {
 		this.IsRunning ^= 1
 		this.IsActive := this.IsRunning && Config.Get("Main", "WarnsEnabled", 0)
 
-		SetTimer(this.CheckLoop.Bind(this), this.IsActive ? 150 : 0)
 		if Config.Get("Main", "WarnsEnabled", 0)
 			this.Fancy.Show("Warns: " (this.IsActive ? "ON" : "OFF"))
 		SetTimer () => this.Fancy.Hide(), -500
@@ -39,8 +41,8 @@ class Warnings {
 			return
 
 		secondsLeft := Round(0.6 * percent)
-		threshold := Config.Get("Warns", "StartWarn", 25)
-		vol := Config.Get("Warns", "Volume", 25)
+		threshold := this.WarnThreshold
+		vol := this.WarnVolume
 		if (secondsLeft <= threshold) {
 			ratio := secondsLeft / threshold
 			calcDelay := minTime + (ratio * (maxTime - minTime))
@@ -50,6 +52,11 @@ class Warnings {
 				this.AudioPlayer.Play(vol)
 			}
 		}
+	}
+
+	RefreshConfig() {
+		this.WarnThreshold := Config.Get("Warns", "StartWarn", 25)
+		this.WarnVolume := Config.Get("Warns", "Volume", 25)
 	}
 
 	DetectPrecPercent() {

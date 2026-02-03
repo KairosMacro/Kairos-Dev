@@ -19,6 +19,7 @@ SendMode "Event"
 #Include "QPC.ahk"
 #Include "Import.ahk"
 #Include "FrameCache.ahk"
+#Include "Scheduler.ahk"
 #Include "WindowTracker.ahk"
 #Include "Path.ahk"
 #Include "JSON.ahk"
@@ -89,6 +90,7 @@ class State {
 }
 
 WindowTracker.Start(50)
+Scheduler.Start()
 
 Scorch := PassiveScanner()
 Warns := Warnings()
@@ -111,6 +113,7 @@ F3:: ExitApp
 
 Cleanup(*) {
 	Critical
+	Scheduler.Stop()
 	WindowTracker.Stop()
 	wp := Buffer(44)
 	try DllCall("GetWindowPlacement", "UInt", Main.Gui.Hwnd, "Ptr", wp)

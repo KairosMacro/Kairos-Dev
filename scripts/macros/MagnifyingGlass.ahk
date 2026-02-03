@@ -17,7 +17,8 @@ class MagnifyingGlass {
 	__New() {
 		this.Gui := Gui("-Caption +E0x20 +AlwaysOnTop +ToolWindow +OwnDialogs ", "Magnifying Glass")
 		this.Gui.BackColor := "Black"
-		SetTimer(this.FollowWindow.Bind(this), 50)
+		this.UpdateFn := this.Update.Bind(this)
+		Scheduler.Add("MagnifyingGlass.FollowWindow", this.FollowWindow.Bind(this), 50)
 	}
 
 	Toggle() {
@@ -39,7 +40,7 @@ class MagnifyingGlass {
 		this.hDC_Gui := DllCall("GetDC", "Ptr", this.Gui.hwnd, "Ptr")
 
 		DllCall("SetStretchBltMode", "Ptr", this.hDC_Gui, "Int", 4)
-		SetTimer(this.UpdateBinder := ObjBindMethod(this, "Update"), 1000 // this.FPS)
+		Scheduler.Add("MagnifyingGlass.Update", this.UpdateFn, 1000 // this.FPS)
 	}
 
 	Stop() {
@@ -47,7 +48,8 @@ class MagnifyingGlass {
 			return
 
 		this.IsRunning := false
-		SetTimer(this.UpdateBinder, 0)
+
+		Scheduler.Remove("MagnifyingGlass.Update")
 
 		if this.hDC_Screen
 			DllCall("ReleaseDC", "Ptr", 0, "Ptr", this.hDC_Screen)

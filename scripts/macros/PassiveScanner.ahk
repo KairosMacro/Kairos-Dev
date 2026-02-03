@@ -2,6 +2,7 @@ class PassiveScanner {
 	IsRunning := false
 	IsActive := false
 	numOffset := Map(0, 7, 1, 2, 2, 6, 3, 6, 4, 7, 5, 6, 6, 7, 7, 7, 8, 7, 9, 7)
+	PassiveList := []
 
 	modes := Map(
 		"Scorch", { x1: 0, x2: 0, y1: 18, y2: 21, var: 16 }
@@ -24,18 +25,18 @@ class PassiveScanner {
 
 	__New() {
 		this.Fancy := GdipTooltip()
+		this.RefreshConfig()
+		Scheduler.Add("PassiveScanner.CheckLoop", this.CheckLoop.Bind(this), 100, () => this.IsActive)
 	}
 
 	Toggle() {
 		this.IsRunning ^= 1
 		this.IsActive := this.IsRunning && Config.Get("Main", "PassiveScannerEnabled", 0)
-		SetTimer(() => this.CheckLoop(), this.IsActive ? 100 : 0)
 		SetTimer(() => this.Fancy.Hide(), this.IsActive ? 0 : -100)
 	}
 
 	Cleanup(*) {
 		this.IsRunning := false
-		SetTimer(() => this.CheckLoop(), 0)
 	}
 
 	CheckLoop() {
@@ -43,7 +44,7 @@ class PassiveScanner {
 		if !this.IsRunning || !IsObject(win) || !win.ok
 			return
 
-		passiveNames := StrSplit(Config.Get("PassiveScanner", "Passives", "Scorch"), "|")
+		passiveNames := this.PassiveList
 		msg := []
 		for i in passiveNames {
 			val := 0
@@ -187,5 +188,9 @@ class PassiveScanner {
 				return found[2].num . found[1].num
 			}
 		}
+	}
+
+	RefreshConfig() {
+		this.PassiveList := StrSplit(Config.Get("PassiveScanner", "Passives", "Scorch"), "|")
 	}
 }

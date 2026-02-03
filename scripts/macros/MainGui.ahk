@@ -6,6 +6,11 @@ class MainGui {
 	__New() {
 		this.Gui := Gui((Config.Get("Main", "AlwaysOnTop", 0) ? "+AlwaysOnTop " : "") " +Border +OwnDialogs", "Kairos")
 		this.Gui.Show("x" Config.Get("Main", "GuiX", A_ScreenWidth // 2 - 200) " y" Config.Get("Main", "GuiY", A_ScreenHeight // 2 - 100) " w400 h220")
+		this.FeatureRefreshers := Map(
+			"BoostBarEnabled", () => (IsSet(Boost) && Boost) ? Boost.RefreshConfig() : 0,
+			"WarnsEnabled", () => (IsSet(Warns) && Warns) ? Warns.RefreshConfig() : 0,
+			"PassiveScannerEnabled", () => (IsSet(Scorch) && Scorch) ? Scorch.RefreshConfig() : 0
+		)
 
 		; General UI
 		this.Gui.OnEvent("Close", (*) => ExitApp())
@@ -189,6 +194,7 @@ class MainGui {
 		FeatureName := GuiCtrl.Name
 		Config.Set("Main", FeatureName, isChecked)
 		Config.WriteIni()
+		this.RefreshFeature(FeatureName)
 	}
 
 	SaveConfig(GuiCtrl, *) {
@@ -202,6 +208,15 @@ class MainGui {
 		Config.Set(Section, Key, val)
 		Config.WriteIni()
 
+		if (Section = "BoostBar")
+			this.RefreshFeature("BoostBarEnabled")
+		else if (Section = "Warns")
+			this.RefreshFeature("WarnsEnabled")
+		else if (Section = "PassiveScanner")
+			this.RefreshFeature("PassiveScannerEnabled")
+		else if (Section = "Main" && (Key = "BoostBarEnabled" || Key = "WarnsEnabled" || Key = "PassiveScannerEnabled"))
+			this.RefreshFeature(Key)
+
 		if (Key = "DarkMode") {
 			SetWindowTheme(this.Gui, GuiCtrl.Value)
 			SetWindowAttribute(this.Gui, GuiCtrl.Value)
@@ -211,6 +226,11 @@ class MainGui {
 			if IsSet(Boost) && Boost
 				Boost.Draw()
 		}
+	}
+
+	RefreshFeature(FeatureName) {
+		if (this.FeatureRefreshers.Has(FeatureName))
+			this.FeatureRefreshers[FeatureName]()
 	}
 
 	SelectSound(GuiCtrl, *) {
