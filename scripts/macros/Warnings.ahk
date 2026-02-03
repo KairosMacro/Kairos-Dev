@@ -116,12 +116,11 @@ class Warnings {
 			if (current.Length > best.Length)
 				best := current
 		}
-		if (best.Length = 0) {
+			if (best.Length = 0)
+				return raw
 			sum := 0
 			for val in best
 				sum += val
 			return Round(sum / best.Length, 2)
-		}
-		return raw
 	}
 }

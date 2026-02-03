@@ -175,6 +175,13 @@ class BoostBar {
 	Gap := 7
 	TotalW := (68 * 7) + (7 * 6) + 4
 	TotalH := 36
+	BrushBack := 0
+	BrushOff := 0
+	BrushOn := 0
+	BrushSpecial := 0
+	BrushMulti := 0
+	BrushTimer := 0
+	BrushRunning := 0
 
 	stats := Conditions()
 	ConfigCache := { enabled: 0, showWhenActive: 1, slotActive: [], slotTimer: [], slotModes: [], slotModeStr: [] }
@@ -183,6 +190,7 @@ class BoostBar {
 	__New() {
 		this.RefreshConfig()
 		this.CreateUI()
+		this.InitBrushes()
 
 		OnMessage(0x201, this.OnClick.Bind(this))
 		OnMessage(0x204, this.OnRightClick.Bind(this))
@@ -195,6 +203,7 @@ class BoostBar {
 		Scheduler.Remove("BoostBar.FollowWindow")
 		Scheduler.Remove("BoostBar.SearchBuffs")
 		Scheduler.Remove("BoostBar.SpamLoop")
+		this.DisposeBrushes()
 		SelectObject(this.hdc, this.obm)
 		DeleteObject(this.hbm)
 		DeleteDC(this.hdc)
@@ -217,14 +226,8 @@ class BoostBar {
 		this.RefreshConfig()
 		cache := this.ConfigCache
 		Gdip_GraphicsClear(this.G)
-		pBrushBack := Gdip_BrushCreateSolid(0xCC111111)
-		pBrushOff := Gdip_BrushCreateSolid(0xFF333333)
-		pBrushOn := Gdip_BrushCreateSolid(0xFF4cAF50)
-		pBrushSpecial := Gdip_BrushCreateSolid(0xFF3480EB)
-		pBrushMulti := Gdip_BrushCreateSolid(0xFF9C27B0)
-		pBrushTimer := Gdip_BrushCreateSolid(0xFF222222)
 
-		Gdip_FillRoundedRectangle(this.G, pBrushBack, 0, 0, this.TotalW, this.TotalH, 5)
+		Gdip_FillRoundedRectangle(this.G, this.BrushBack, 0, 0, this.TotalW, this.TotalH, 5)
 
 		loop 7 {
 			idx := A_Index
@@ -237,17 +240,17 @@ class BoostBar {
 			y := 2
 
 			if !(isSlotActive) {
-				btnColor := pBrushOff
+				btnColor := this.BrushOff
 				displayText := "Off"
 			} else {
 				if (activeModes.Length > 1) {
-					btnColor := pBrushMulti
+					btnColor := this.BrushMulti
 					displayText := "Multi"
 				} else if (activeModes.Length = 1 && activeModes[1] != "") {
 					displayText := activeModes[1]
-					btnColor := (activeModes[1] = "Timer") ? pBrushOn : pBrushSpecial
+					btnColor := (activeModes[1] = "Timer") ? this.BrushOn : this.BrushSpecial
 				} else {
-					btnColor := pBrushOff
+					btnColor := this.BrushOff
 					displayText := "None"
 				}
 			}
@@ -257,23 +260,14 @@ class BoostBar {
 			Options := "x" x " y" y + 1 " w" this.SlotW " h16 Center vCenter cFFFFFFFF s9 Bold"
 			Gdip_TextToGraphics(this.G, displayText, Options, "Segoe UI")
 
-			Gdip_FillRoundedRectangle(this.G, pBrushTimer, x, y + 18, this.SlotW, 14, 3)
+			Gdip_FillRoundedRectangle(this.G, this.BrushTimer, x, y + 18, this.SlotW, 14, 3)
 			Options := "x" x " y" y + 18 " w" this.SlotW " h14 Center vCenter cFFFFFFFF s10"
 			Gdip_TextToGraphics(this.G, String(timerVal), Options, "Segoe UI")
 		}
 
 		if (this.IsRunning) {
-			pBrushRed := Gdip_BrushCreateSolid(0xFFFF0000)
-			Gdip_FillRectangle(this.G, pBrushRed, 0, this.TotalH - 2, this.TotalW, 2)
-			Gdip_DeleteBrush(pBrushRed)
+			Gdip_FillRectangle(this.G, this.BrushRunning, 0, this.TotalH - 2, this.TotalW, 2)
 		}
-
-		Gdip_DeleteBrush(pBrushBack)
-		Gdip_DeleteBrush(pBrushOff)
-		Gdip_DeleteBrush(pBrushOn)
-		Gdip_DeleteBrush(pBrushSpecial)
-		Gdip_DeleteBrush(pBrushMulti)
-		Gdip_DeleteBrush(pBrushTimer)
 
 		UpdateLayeredWindow(this.Gui.Hwnd, this.hdc, , , this.TotalW, this.TotalH)
 	}
@@ -484,5 +478,25 @@ class BoostBar {
 			cache.slotModeStr[idx] := modeStr
 			cache.slotModes[idx] := (modeStr = "" ? [] : StrSplit(modeStr, "|"))
 		}
+	}
+
+	InitBrushes() {
+		if this.BrushBack
+			return
+		this.BrushBack := Gdip_BrushCreateSolid(0xCC111111)
+		this.BrushOff := Gdip_BrushCreateSolid(0xFF333333)
+		this.BrushOn := Gdip_BrushCreateSolid(0xFF4cAF50)
+		this.BrushSpecial := Gdip_BrushCreateSolid(0xFF3480EB)
+		this.BrushMulti := Gdip_BrushCreateSolid(0xFF9C27B0)
+		this.BrushTimer := Gdip_BrushCreateSolid(0xFF222222)
+		this.BrushRunning := Gdip_BrushCreateSolid(0xFFFF0000)
+	}
+
+	DisposeBrushes() {
+		for _, handle in [this.BrushBack, this.BrushOff, this.BrushOn, this.BrushSpecial, this.BrushMulti, this.BrushTimer, this.BrushRunning] {
+			if handle
+				Gdip_DeleteBrush(handle)
+		}
+		this.BrushBack := this.BrushOff := this.BrushOn := this.BrushSpecial := this.BrushMulti := this.BrushTimer := this.BrushRunning := 0
 	}
 }

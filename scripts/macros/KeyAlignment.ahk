@@ -6,6 +6,7 @@ class KeyAlignment {
 
 	Width := 140
 	Height := 30
+	BrushBack := 0
 
 	CurrentKey := "e"
 	RebindHotkey := "^+k"
@@ -28,6 +29,7 @@ class KeyAlignment {
 		this.obm := SelectObject(this.hdc, this.hbm)
 		this.G := Gdip_GraphicsFromHDC(this.hdc)
 		Gdip_SetSmoothingMode(this.G, 4)
+		this.InitBrushes()
 
 		Scheduler.Add("KeyAlignment.FollowWindow", this.FollowWindow.Bind(this), 50)
 
@@ -112,12 +114,10 @@ class KeyAlignment {
 	Draw(CustomText := "") {
 		Gdip_GraphicsClear(this.G)
 
-		cBack := Gdip_BrushCreateSolid(0xb31E1E1E)
-		cBorder := Gdip_BrushCreateSolid(0xFF333333)
 		cText := 0xFFFFFFFF
 		cAccent := this.IsRebinding ? 0xFFFFA500 : this.IsRunning ? 0xFF4CAF50 : 0xFFD32F2F
 
-		Gdip_FillRoundedRectangle(this.G, cBack, 0, 0, this.Width, this.Height, 5)
+		Gdip_FillRoundedRectangle(this.G, this.BrushBack, 0, 0, this.Width, this.Height, 5)
 
 		cInd := Gdip_BrushCreateSolid(cAccent)
 		Gdip_FillRoundedRectangle(this.G, cInd, 5, 5, 5, 20, 2)
@@ -127,18 +127,28 @@ class KeyAlignment {
 		Options := "x15 y6 w" (this.Width - 20) " h" this.Height " Left c" Format("{:08X}", cText) " s11 Bold"
 		Gdip_TextToGraphics(this.G, DisplayText, Options, "Segoe UI")
 
-		Gdip_DeleteBrush(cBack)
-		Gdip_DeleteBrush(cBorder)
-
 		UpdateLayeredWindow(this.Gui.Hwnd, this.hdc, , , this.Width, this.Height)
 	}
 
 	Cleanup() {
+		this.DisposeBrushes()
 		Scheduler.Remove("KeyAlignment.FollowWindow")
 		SelectObject(this.hdc, this.obm)
 		DeleteObject(this.hbm)
 		DeleteDC(this.hdc)
 		Gdip_DeleteGraphics(this.G)
 		this.Gui.Destroy()
+	}
+
+	InitBrushes() {
+		if this.BrushBack
+			return
+		this.BrushBack := Gdip_BrushCreateSolid(0xb31E1E1E)
+	}
+
+	DisposeBrushes() {
+		if this.BrushBack
+			Gdip_DeleteBrush(this.BrushBack)
+		this.BrushBack := 0
 	}
 }
