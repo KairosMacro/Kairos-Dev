@@ -37,7 +37,7 @@ class Conditions {
 	Fancy := GdipTooltip()
 
 	__New() {
-		SetTimer(this.SearchBuffs.Bind(this), 100)
+		Scheduler.Add("BoostBar.SearchBuffs", this.SearchBuffs.Bind(this), 100)
 		;SetTimer(this.displayState.Bind(this), 100)
 	}
 
@@ -45,13 +45,18 @@ class Conditions {
 		ToolTip(JSON.stringify(this.BuffState))
 	}
 
-	SearchBuffs() {
-		if !GetRobloxClientPos() || !Config.Get("Main", "BoostBarEnabled", 0)
+	SearchBuffs(*) {
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok || !Config.Get("Main", "BoostBarEnabled", 0)
 			return
-		pBMTop := Gdip_BitmapFromScreen(windowX "|" windowY + State.offsetY + 36 "|" windowWidth "|" 38)
-		pBMBottom := Gdip_BitmapFromScreen(windowX + (windowWidth // 2) - 257 "|" windowY + windowHeight - 142 "|517|36")
-		this.Search(pBMTop, this.topBuff)
-		this.Search(pBMBottom, this.bottomBuff)
+		regionTop := win.x "|" win.y + State.offsetY + 36 "|" win.w "|" 38
+		regionBottom := win.x + (win.w // 2) - 257 "|" win.y + win.h - 142 "|517|36"
+		pBMTop := FrameCache.Get(regionTop)
+		pBMBottom := FrameCache.Get(regionBottom)
+		if pBMTop
+			this.Search(pBMTop, this.topBuff)
+		if pBMBottom
+			this.Search(pBMBottom, this.bottomBuff)
 	}
 
 	Search(pBitmap, list) {
@@ -170,28 +175,44 @@ class BoostBar {
 	Gap := 7
 	TotalW := (68 * 7) + (7 * 6) + 4
 	TotalH := 36
+	BrushBack := 0
+	BrushOff := 0
+	BrushOn := 0
+	BrushSpecial := 0
+	BrushMulti := 0
+	BrushTimer := 0
+	BrushRunning := 0
 
 	stats := Conditions()
+	ConfigCache := { enabled: 0, showWhenActive: 1, slotActive: [], slotTimer: [], slotModes: [], slotModeStr: [] }
+	SpamFn := 0
 
 	__New() {
+		this.RefreshConfig()
+		this.InitBrushes()
 		this.CreateUI()
 
 		OnMessage(0x201, this.OnClick.Bind(this))
 		OnMessage(0x204, this.OnRightClick.Bind(this))
 
-		SetTimer(this.FollowWindow.Bind(this), 10)
+		Scheduler.Add("BoostBar.FollowWindow", this.FollowWindow.Bind(this), 50)
+		this.SpamFn := this.SpamLoop.Bind(this)
 	}
 
 	Cleanup() {
+		Scheduler.Remove("BoostBar.FollowWindow")
+		Scheduler.Remove("BoostBar.SearchBuffs")
+		Scheduler.Remove("BoostBar.SpamLoop")
+		this.DisposeBrushes()
 		SelectObject(this.hdc, this.obm)
 		DeleteObject(this.hbm)
 		DeleteDC(this.hdc)
 		Gdip_DeleteGraphics(this.G)
 	}
 
-	CreateUI() {
+	CreateUI(*) {
 		this.Gui := Gui("-Caption +E0x80000 +AlwaysOnTop +ToolWindow +OwnDialogs", "Boost Bar")
-		Config.Get("Main", "BoostBarEnabled", 0) ? this.Gui.Show("NA") : this.Gui.Hide()
+		(this.ConfigCache.enabled ? this.Gui.Show("NA") : this.Gui.Hide())
 
 		this.hbm := CreateDIBSection(this.TotalW, this.TotalH)
 		this.hdc := CreateCompatibleDC()
@@ -201,39 +222,35 @@ class BoostBar {
 		this.Draw()
 	}
 
-	Draw() {
+	Draw(*) {
+		this.RefreshConfig()
+		cache := this.ConfigCache
 		Gdip_GraphicsClear(this.G)
-		pBrushBack := Gdip_BrushCreateSolid(0xCC111111)
-		pBrushOff := Gdip_BrushCreateSolid(0xFF333333)
-		pBrushOn := Gdip_BrushCreateSolid(0xFF4cAF50)
-		pBrushSpecial := Gdip_BrushCreateSolid(0xFF3480EB)
-		pBrushMulti := Gdip_BrushCreateSolid(0xFF9C27B0)
-		pBrushTimer := Gdip_BrushCreateSolid(0xFF222222)
 
-		Gdip_FillRoundedRectangle(this.G, pBrushBack, 0, 0, this.TotalW, this.TotalH, 5)
+		Gdip_FillRoundedRectangle(this.G, this.BrushBack, 0, 0, this.TotalW, this.TotalH, 5)
 
 		loop 7 {
 			idx := A_Index
-			isSlotActive := Config.Get("BoostBar", "SlotActive" idx, 0)
-			modeStr := Config.Get("BoostBar", "SlotMode" idx, "Timer")
-			activeModes := StrSplit(modeStr, "|")
-			timerVal := Config.Get("BoostBar", "SlotTimer" idx, 100)
+			isSlotActive := cache.slotActive[idx]
+			modeStr := cache.slotModeStr[idx]
+			activeModes := cache.slotModes[idx]
+			timerVal := cache.slotTimer[idx]
 
 			x := 2 + (idx - 1) * (this.SlotW + this.Gap)
 			y := 2
 
 			if !(isSlotActive) {
-				btnColor := pBrushOff
+				btnColor := this.BrushOff
 				displayText := "Off"
 			} else {
 				if (activeModes.Length > 1) {
-					btnColor := pBrushMulti
+					btnColor := this.BrushMulti
 					displayText := "Multi"
 				} else if (activeModes.Length = 1 && activeModes[1] != "") {
 					displayText := activeModes[1]
-					btnColor := (activeModes[1] = "Timer") ? pBrushOn : pBrushSpecial
+					btnColor := (activeModes[1] = "Timer") ? this.BrushOn : this.BrushSpecial
 				} else {
-					btnColor := pBrushOff
+					btnColor := this.BrushOff
 					displayText := "None"
 				}
 			}
@@ -243,23 +260,14 @@ class BoostBar {
 			Options := "x" x " y" y + 1 " w" this.SlotW " h16 Center vCenter cFFFFFFFF s9 Bold"
 			Gdip_TextToGraphics(this.G, displayText, Options, "Segoe UI")
 
-			Gdip_FillRoundedRectangle(this.G, pBrushTimer, x, y + 18, this.SlotW, 14, 3)
+			Gdip_FillRoundedRectangle(this.G, this.BrushTimer, x, y + 18, this.SlotW, 14, 3)
 			Options := "x" x " y" y + 18 " w" this.SlotW " h14 Center vCenter cFFFFFFFF s10"
 			Gdip_TextToGraphics(this.G, String(timerVal), Options, "Segoe UI")
 		}
 
 		if (this.IsRunning) {
-			pBrushRed := Gdip_BrushCreateSolid(0xFFFF0000)
-			Gdip_FillRectangle(this.G, pBrushRed, 0, this.TotalH - 2, this.TotalW, 2)
-			Gdip_DeleteBrush(pBrushRed)
+			Gdip_FillRectangle(this.G, this.BrushRunning, 0, this.TotalH - 2, this.TotalW, 2)
 		}
-
-		Gdip_DeleteBrush(pBrushBack)
-		Gdip_DeleteBrush(pBrushOff)
-		Gdip_DeleteBrush(pBrushOn)
-		Gdip_DeleteBrush(pBrushSpecial)
-		Gdip_DeleteBrush(pBrushMulti)
-		Gdip_DeleteBrush(pBrushTimer)
 
 		UpdateLayeredWindow(this.Gui.Hwnd, this.hdc, , , this.TotalW, this.TotalH)
 	}
@@ -342,6 +350,7 @@ class BoostBar {
 
 		Config.Set("BoostBar", "SlotMode" idx, newStr)
 		Config.WriteIni()
+		this.RefreshConfig()
 		this.Draw()
 	}
 
@@ -349,6 +358,7 @@ class BoostBar {
 		curr := Config.Get("BoostBar", "SlotActive" idx, 0)
 		Config.Set("BoostBar", "SlotActive" idx, !curr)
 		Config.WriteIni()
+		this.RefreshConfig()
 		this.Draw()
 	}
 
@@ -365,6 +375,7 @@ class BoostBar {
 		SubmitEdit(*) {
 			Config.Set("BoostBar", "SlotTimer" idx, ed.Value)
 			Config.WriteIni()
+			this.RefreshConfig()
 			tempGui.Destroy()
 			this.Draw()
 		}
@@ -379,50 +390,56 @@ class BoostBar {
 		Send("^a")
 	}
 
-	FollowWindow() {
+	FollowWindow(*) {
 		try {
-			if hwnd := WinExist("Roblox ahk_exe RobloxPlayerBeta.exe") {
-				WinGetClientPos(&wx, &wy, &ww, &wh, "ahk_id " hwnd)
+			win := WindowTracker.Get()
+			if IsObject(win) && win.ok {
+				wx := win.x, wy := win.y, ww := win.w, wh := win.h
 				targetX := wx + (ww // 2) - 261
 				targetY := wy + wh - 182
-				Config.Get("Main", "BoostBarEnabled", 0) ? this.Gui.Show("NA x" targetX " y" targetY " w" this.TotalW " h" this.TotalH) : this.Gui.Hide()
+				(this.ConfigCache.enabled ? this.Gui.Show("NA x" targetX " y" targetY " w" this.TotalW " h" this.TotalH) : this.Gui.Hide())
 			} else {
 				this.Gui.Hide()
 			}
 		}
 	}
 
-	Toggle() {
+	Toggle(*) {
+		this.RefreshConfig()
 		this.IsRunning ^= 1
-		this.isEnabled := Config.Get("Main", "BoostBarEnabled", 0)
-		this.IsActive := this.IsRunning && this.isEnabled
+		this.IsEnabled := this.ConfigCache.enabled
+		this.IsActive := this.IsRunning && this.IsEnabled
 		this.Draw()
-		if (this.isEnabled) {
-			if (this.IsActive && !Config.Get("BoostBar", "ShowWhenActive", 1)) {
+		if (this.IsEnabled) {
+			if (this.IsActive && !this.ConfigCache.showWhenActive) {
 				this.Gui.Hide()
 			} else {
 				this.Gui.Show("NA")
+				this.Draw
 			}
 		} else
 			this.Gui.Hide()
-		SetTimer(this.SpamLoop.Bind(this), this.IsActive ? 5 : 0)
+		if (this.IsActive)
+			Scheduler.Add("BoostBar.SpamLoop", this.SpamFn, 5)
+		else
+			Scheduler.Remove("BoostBar.SpamLoop")
 	}
 
-	SpamLoop() {
-		if !Config.Get("Main", "BoostBarEnabled", 0) || !this.IsRunning
+	SpamLoop(*) {
+		cache := this.ConfigCache
+		if !cache.enabled || !this.IsRunning
 			return
 
 		static lastFire := Map()
 
 		loop 7 {
 			idx := A_Index
-			if Config.Get("BoostBar", "SlotActive" idx, 0) {
-				delay := Config.Get("BoostBar", "SlotTimer" idx, 0)
+			if cache.slotActive[idx] {
+				delay := cache.slotTimer[idx]
 				now := A_TickCount
 
 				if !lastFire.Has(idx) || (now - lastFire[idx] >= delay) {
-					modeString := Config.Get("BoostBar", "SlotMode" idx, "Timer")
-					activeModes := StrSplit(modeString, "|")
+					activeModes := cache.slotModes[idx]
 
 					shouldFire := (activeModes.Length > 0)
 					for name in activeModes {
@@ -443,5 +460,44 @@ class BoostBar {
 					lastFire.Delete(idx)
 			}
 		}
+	}
+
+	RefreshConfig() {
+		cache := this.ConfigCache
+		cache.enabled := Config.Get("Main", "BoostBarEnabled", 0)
+		cache.showWhenActive := Config.Get("BoostBar", "ShowWhenActive", 1)
+		cache.slotActive := []
+		cache.slotTimer := []
+		cache.slotModes := []
+		cache.slotModeStr := []
+
+		loop 7 {
+			idx := A_Index
+			cache.slotActive.Push(Config.Get("BoostBar", "SlotActive" idx, 0))
+			cache.slotTimer.Push(Config.Get("BoostBar", "SlotTimer" idx, 100))
+			modeStr := Config.Get("BoostBar", "SlotMode" idx, "Timer")
+			cache.slotModeStr.Push(modeStr)
+			cache.slotModes.Push(modeStr = "" ? [] : StrSplit(modeStr, "|"))
+		}
+	}
+
+	InitBrushes() {
+		if this.BrushBack
+			return
+		this.BrushBack := Gdip_BrushCreateSolid(0xCC111111)
+		this.BrushOff := Gdip_BrushCreateSolid(0xFF333333)
+		this.BrushOn := Gdip_BrushCreateSolid(0xFF4cAF50)
+		this.BrushSpecial := Gdip_BrushCreateSolid(0xFF3480EB)
+		this.BrushMulti := Gdip_BrushCreateSolid(0xFF9C27B0)
+		this.BrushTimer := Gdip_BrushCreateSolid(0xFF222222)
+		this.BrushRunning := Gdip_BrushCreateSolid(0xFFFF0000)
+	}
+
+	DisposeBrushes() {
+		for _, handle in [this.BrushBack, this.BrushOff, this.BrushOn, this.BrushSpecial, this.BrushMulti, this.BrushTimer, this.BrushRunning] {
+			if handle
+				Gdip_DeleteBrush(handle)
+		}
+		this.BrushBack := this.BrushOff := this.BrushOn := this.BrushSpecial := this.BrushMulti := this.BrushTimer := this.BrushRunning := 0
 	}
 }

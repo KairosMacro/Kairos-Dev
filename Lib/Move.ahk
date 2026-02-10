@@ -22,16 +22,23 @@ DetectMovespeed(getMovespeed?) {
     global HastyGuards, BaseMovespeed, GiftedHasty, offsetY
     GetRobloxClientPos()
 
-    chdc := CreateCompatibleDC()
-    hbm := CreateDIBSection(windowWidth, 30, chdc)
-    obm := SelectObject(chdc, hbm), hhdc := GetDC()
-    BitBlt(chdc, 0, 0, windowWidth, 30, hhdc, windowX, windowY + offsetY + 48)
+    static chdc := 0, hbm := 0, obm := 0, capW := 0, capH := 30
+    if (!chdc || capW != windowWidth) {
+        if (chdc) {
+            SelectObject(chdc, obm)
+            DeleteObject(hbm)
+            DeleteDC(chdc)
+        }
+        chdc := CreateCompatibleDC()
+        hbm := CreateDIBSection(windowWidth, capH, chdc)
+        obm := SelectObject(chdc, hbm)
+        capW := windowWidth
+    }
+
+    hhdc := GetDC()
+    BitBlt(chdc, 0, 0, windowWidth, capH, hhdc, windowX, windowY + offsetY + 48)
     ReleaseDC(hhdc)
     pBMScreen := Gdip_CreateBitmapFromHBITMAP(hbm)
-    SelectObject(chdc, obm)
-    DeleteObject(hbm)
-    DeleteDC(hhdc)
-    DeleteDC(chdc)
 
     Haste := 0
     x := 0

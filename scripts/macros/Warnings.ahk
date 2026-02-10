@@ -3,6 +3,8 @@ class Warnings {
 	IsActive := false
 	AudioPlayer := unset
 	LastPlayed := 0
+	WarnThreshold := 25
+	WarnVolume := 25
 
 	__New() {
 		soundPath := Config.Get("Warns", "SoundFile", "C:\Windows\Media\Windows Critical Stop.wav")
@@ -11,24 +13,24 @@ class Warnings {
 		}
 		this.AudioPlayer := Audio(soundPath)
 		this.Fancy := GdipTooltip()
+		this.RefreshConfig()
+		Scheduler.Add("Warnings.CheckLoop", this.CheckLoop.Bind(this), 150, () => this.IsActive)
 	}
 
 	Cleanup(*) {
 		this.IsRunning := false
-		SetTimer(this.CheckLoop.Bind(this), 0)
 	}
 
 	Toggle() {
 		this.IsRunning ^= 1
 		this.IsActive := this.IsRunning && Config.Get("Main", "WarnsEnabled", 0)
 
-		SetTimer(this.CheckLoop.Bind(this), this.IsActive ? 150 : 0)
 		if Config.Get("Main", "WarnsEnabled", 0)
 			this.Fancy.Show("Warns: " (this.IsActive ? "ON" : "OFF"))
 		SetTimer () => this.Fancy.Hide(), -500
 	}
 
-	CheckLoop() {
+	CheckLoop(*) {
 		static minTime := 500
 		static maxTime := 5000
 		if !this.IsRunning || !WinActive("Roblox")
@@ -39,8 +41,8 @@ class Warnings {
 			return
 
 		secondsLeft := Round(0.6 * percent)
-		threshold := Config.Get("Warns", "StartWarn", 25)
-		vol := Config.Get("Warns", "Volume", 25)
+		threshold := this.WarnThreshold
+		vol := this.WarnVolume
 		if (secondsLeft <= threshold) {
 			ratio := secondsLeft / threshold
 			calcDelay := minTime + (ratio * (maxTime - minTime))
@@ -50,6 +52,11 @@ class Warnings {
 				this.AudioPlayer.Play(vol)
 			}
 		}
+	}
+
+	RefreshConfig() {
+		this.WarnThreshold := Config.Get("Warns", "StartWarn", 25)
+		this.WarnVolume := Config.Get("Warns", "Volume", 25)
 	}
 
 	DetectPrecPercent() {
@@ -64,56 +71,56 @@ class Warnings {
 			, 0xff55316A
 			, 0xff8448A6
 		]
-		if !GetRobloxClientPos()
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
 			return 0
 
-		pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY + State.offsetY + 32 "|" windowWidth "|" 42)
+		region := win.x "|" win.y + State.offsetY + 32 "|" win.w "|" 42
+		pBMScreen := FrameCache.Get(region)
+		if !pBMScreen
+			return 0
 
-		try {
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"]["Precise"], &loc, , , , , 3, , 6) != 1) {
-				buffer := []
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"]["Precise"], &loc, , , , , 3, , 6) != 1) {
+			buffer := []
+			return 0
+		}
+
+		x := SubStr(loc, 1, InStr(loc, ",") - 1)
+		y := SubStr(loc, InStr(loc, ",") + 1)
+		bottomY := y
+		high := y
+		low := 0
+
+		while (low < high) {
+			if (A_Index > 20)
 				return 0
-			}
+			mid := Floor((low + high) / 2)
+			if ((ObjHasValue(colors, Gdip_GetPixel(pBMScreen, x + 9, mid))))
+				high := mid
+			else
+				low := mid + 1
+		}
 
-			x := SubStr(loc, 1, InStr(loc, ",") - 1)
-			y := SubStr(loc, InStr(loc, ",") + 1)
-			bottomY := y
-			high := y
-			low := 0
+		raw := Round((bottomY - low) / 38 * 100, 2) + 2
 
-			while (low < high) {
-				if (A_Index > 20)
-					return 0
-				mid := Floor((low + high) / 2)
-				if ((ObjHasValue(colors, Gdip_GetPixel(pBMScreen, x + 9, mid))))
-					high := mid
-				else
-					low := mid + 1
+		buffer.Push(raw)
+		if (buffer.Length > bufferSize)
+			buffer.RemoveAt(1)
+		best := []
+		for val1 in buffer {
+			current := []
+			for val2 in buffer {
+				if (Abs(val1 - val2) <= tolerance)
+					current.Push(val2)
 			}
-
-			raw := Round((bottomY - low) / 38 * 100, 2) + 2
-
-			buffer.Push(raw)
-			if (buffer.Length > bufferSize)
-				buffer.RemoveAt(1)
-			best := []
-			for val1 in buffer {
-				current := []
-				for val2 in buffer {
-					if (Abs(val1 - val2) <= tolerance)
-						current.Push(val2)
-				}
-				if (current.Length > best.Length)
-					best := current
-			}
-			if (best.Length = 0) {
-				sum := 0
-				for val in best
-					sum += val
-				return Round(sum / best.Length, 2)
-			}
-			return raw
-		} finally
-			Gdip_DisposeImage(pBMScreen)
+			if (current.Length > best.Length)
+				best := current
+		}
+			if (best.Length = 0)
+				return raw
+			sum := 0
+			for val in best
+				sum += val
+			return Round(sum / best.Length, 2)
 	}
 }

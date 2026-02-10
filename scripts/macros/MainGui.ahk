@@ -6,14 +6,19 @@ class MainGui {
 	__New() {
 		this.Gui := Gui((Config.Get("Main", "AlwaysOnTop", 0) ? "+AlwaysOnTop " : "") " +Border +OwnDialogs", "Kairos")
 		this.Gui.Show("x" Config.Get("Main", "GuiX", A_ScreenWidth // 2 - 200) " y" Config.Get("Main", "GuiY", A_ScreenHeight // 2 - 100) " w400 h220")
+		this.FeatureRefreshers := Map(
+			"BoostBarEnabled", () => (IsSet(Boost) && Boost) ? Boost.RefreshConfig() : 0,
+			"WarnsEnabled", () => (IsSet(Warns) && Warns) ? Warns.RefreshConfig() : 0,
+			"PassiveScannerEnabled", () => (IsSet(Scorch) && Scorch) ? Scorch.RefreshConfig() : 0
+		)
 
 		; General UI
 		this.Gui.OnEvent("Close", (*) => ExitApp())
 		this.Gui.SetFont("s8 cDefault Norm")
 		(GuiCtrl := this.Gui.Add("Text", "x400 y205 w90 -Wrap +BackgroundTrans", "v" version)), GuiCtrl.Move(396 - (TextWidth := this.TextExtend("v" version, GuiCtrl)))
-		this.Gui.Add("Button", "x5 y198 w65 h20 -Wrap Disabled vStartButton", "Start (" Config.Get("Main", "StartHotkey", "F1") ")").OnEvent("Click", this.start)
-		this.Gui.Add("Button", "x75 y198 w65 h20 -Wrap Disabled vPauseButton", "Pause (" Config.Get("Main", "PauseHotkey", "F2") ")").OnEvent("Click", this.pause)
-		this.Gui.Add("Button", "x145 y198 w65 h20 -Wrap Disabled vStopButton", "Stop (" Config.Get("Main", "StopHotkey", "F3") ")").OnEvent("Click", this.stop)
+		this.Gui.Add("Button", "x5 y198 w65 h20 -Wrap Disabled vStartButton", "Start (" Config.Get("Main", "StartHotkey", "F1") ")").OnEvent("Click", this.start.Bind(this))
+		this.Gui.Add("Button", "x75 y198 w65 h20 -Wrap Disabled vPauseButton", "Pause (" Config.Get("Main", "PauseHotkey", "F2") ")").OnEvent("Click", this.pause.Bind(this))
+		this.Gui.Add("Button", "x145 y198 w65 h20 -Wrap Disabled vStopButton", "Stop (" Config.Get("Main", "StopHotkey", "F3") ")").OnEvent("Click", this.stop.Bind(this))
 
 		TabArr := ["Main", "Warnings", "Boost Bar", "Alt", "Key Alignment", "Communicator", "Misc"]
 		(TabCtrl := this.Gui.Add("Tab", "x0 y-1 w440 h240 -Wrap " (Config.Get("Main", "DarkMode", 1) ? "cFFFFFF" : "C000000"), TabArr)).OnEvent("Change", (*) => TabCtrl.Focus())
@@ -27,7 +32,7 @@ class MainGui {
 		for i in this.FeatureList {
 			name := StrReplace(i, " ", "") "Enabled"
 			isEnabled := Config.Get("Main", name, 0)
-			(GuiCtrl := this.Gui.Add("CheckBox", "x15 y" 40 + (20 * (A_Index - 1)) " w20 h20 -Wrap v" name " Checked" isEnabled, "")).Section := "Main", GuiCtrl.OnEvent("Click", this.ToggleFeature.Bind(A_Index - 1))
+			(GuiCtrl := this.Gui.Add("CheckBox", "x15 y" 40 + (20 * (A_Index - 1)) " w20 h20 -Wrap v" name " Checked" isEnabled, "")).Section := "Main", GuiCtrl.OnEvent("Click", this.ToggleFeature.Bind(this))
 			this.Gui.Add("Text", "x35 y" 43 + (20 * (A_Index - 1)) " w80 h20 -Wrap", i)
 		}
 		; --- Warnings Tab ---
@@ -37,18 +42,18 @@ class MainGui {
 		this.Gui.Add("Text", "x20 y36 w103 h20 -Wrap", "Precision Settings")
 
 		this.Gui.Add("Text", "x15 y65", "Threshold:")
-		this.Gui.Add("Edit", "x76 y62 w50 Number vWarns_StartWarn", Config.Get("Warns", "StartWarn", 25)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("Edit", "x76 y62 w50 Number vWarns_StartWarn", Config.Get("Warns", "StartWarn", 25)).OnEvent("Change", this.SaveConfig.Bind(this))
 		this.Gui.Add("UpDown", "Range0-60", Config.Get("Warns", "StartWarn", 25))
 		this.Gui.Add("Text", "x+5 yp+3", "Seconds")
 
 		this.Gui.Add("Text", "x15 y95", "Volume:")
-		this.Gui.Add("Edit", "x61 y92 w50 Number vWarns_Volume", Config.Get("Warns", "Volume", 25)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("Edit", "x61 y92 w50 Number vWarns_Volume", Config.Get("Warns", "Volume", 25)).OnEvent("Change", this.SaveConfig.Bind(this))
 		this.Gui.Add("UpDown", "Range0-100", Config.Get("Warns", "Volume", 25))
 		this.Gui.Add("Text", "x+5 yp+3", "%")
 
 		this.Gui.Add("Text", "x15 y123", "Sound:")
-		this.Gui.Add("Button", "x+5 y119 w60 h20", "Browse").OnEvent("Click", this.SelectSound)
-		this.Gui.Add("Button", "xp+60 yp w60 h20 vWarns_ResetSoundFile", "Test").OnEvent("Click", this.TestAudio)
+		this.Gui.Add("Button", "x+5 y119 w60 h20", "Browse").OnEvent("Click", this.SelectSound.Bind(this))
+		this.Gui.Add("Button", "xp+60 yp w60 h20 vWarns_ResetSoundFile", "Test").OnEvent("Click", this.TestAudio.Bind(this))
 		this.Gui.Add("Edit", "x15 y140 w170 h20 ReadOnly vWarns_SoundFile", Config.Get("Warns", "SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"))
 
 		; --- Boost Bar Tab ---
@@ -62,8 +67,8 @@ class MainGui {
 			i := A_Index
 
 			this.Gui.Add("Text", "x10 y" yPos " w36 -Wrap", "Slot " i ":")
-			this.Gui.Add("CheckBox", "x50 y" yPos - 2 " w20 h20 vBoostBar_SlotActive" i " Checked" Config.Get("BoostBar", "SlotActive" i)).OnEvent("Click", this.SaveConfig.Bind(GuiCtrl))
-			this.Gui.Add("Edit", "x75 y" yPos - 3 " w50 h20 Number vBoostBar_SlotTimer" i, Config.Get("BoostBar", "SlotTimer" i)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+			this.Gui.Add("CheckBox", "x50 y" yPos - 2 " w20 h20 vBoostBar_SlotActive" i " Checked" Config.Get("BoostBar", "SlotActive" i)).OnEvent("Click", this.SaveConfig.Bind(this))
+			this.Gui.Add("Edit", "x75 y" yPos - 3 " w50 h20 Number vBoostBar_SlotTimer" i, Config.Get("BoostBar", "SlotTimer" i)).OnEvent("Change", this.SaveConfig.Bind(this))
 
 			currentModes := Config.Get("BoostBar", "SlotMode" i, "Timer")
 			display := currentModes = "" ? "None" : (StrSplit(currentModes, "|").Length > 1 ? "Multiple" : currentModes)
@@ -81,10 +86,10 @@ class MainGui {
 		this.Gui.SetFont("s8 w400")
 
 		this.Gui.Add("Text", "x20 y58", "MoveSpeed:")
-		this.Gui.Add("Edit", "x95 y55 w60 h20 vAlt_Movespeed", Config.Get("Alt", "Movespeed", 29)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("Edit", "x95 y55 w60 h20 vAlt_Movespeed", Config.Get("Alt", "Movespeed", 29)).OnEvent("Change", this.SaveConfig.Bind(this))
 
 		this.Gui.Add("Text", "x20 y88", "Hive Slot:")
-		this.Gui.Add("Edit", "x95 y85 w60 h20 vAlt_HiveSlot", Config.Get("Alt", "HiveSlot", 1)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("Edit", "x95 y85 w60 h20 vAlt_HiveSlot", Config.Get("Alt", "HiveSlot", 1)).OnEvent("Change", this.SaveConfig.Bind(this))
 
 		this.Gui.SetFont("w700")
 		this.Gui.Add("GroupBox", "x205 y35 w185 h150")
@@ -93,10 +98,10 @@ class MainGui {
 
 		this.Gui.Add("Text", "x215 y58", "Field:")
 		fieldArr := ["sunflower", "dandelion", "mushroom", "blueflower", "clover", "strawberry", "spider", "bamboo", "pineapple", "stump", "cactus", "pumpkin", "pinetree", "rose", "mountaintop", "pepper", "coconut"]
-		(GuiCtrl := this.Gui.Add("DropDownList", "x255 y55 w100 vAlt_DefaultField Choose" ObjIndexOf(fieldArr, Config.Get("Alt", "DefaultField", "pepper")), fieldArr)).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		(GuiCtrl := this.Gui.Add("DropDownList", "x255 y55 w100 vAlt_DefaultField Choose" ObjIndexOf(fieldArr, Config.Get("Alt", "DefaultField", "pepper")), fieldArr)).OnEvent("Change", this.SaveConfig.Bind(this))
 
 		this.Gui.Add("Text", "x215 y88", "Pattern:")
-		this.Gui.Add("DropDownList", "x270 y85 w110 vAlt_Pattern Choose" ObjIndexOf(patternList, Config.Get("Alt", "Pattern", "GeneralBooster")), patternList).OnEvent("Change", this.SaveConfig.Bind(GuiCtrl))
+		this.Gui.Add("DropDownList", "x270 y85 w110 vAlt_Pattern Choose" ObjIndexOf(patternList, Config.Get("Alt", "Pattern", "GeneralBooster")), patternList).OnEvent("Change", this.SaveConfig.Bind(this))
 
 		this.Gui.Add("Text", "x215 y115", "Size:")
 		this.Gui.Add("Edit", "x240 y115 w40 h20 Number vAlt_PatternSize", Config.Get("Alt", "PatternSize"))
@@ -189,6 +194,7 @@ class MainGui {
 		FeatureName := GuiCtrl.Name
 		Config.Set("Main", FeatureName, isChecked)
 		Config.WriteIni()
+		this.RefreshFeature(FeatureName)
 	}
 
 	SaveConfig(GuiCtrl, *) {
@@ -202,6 +208,15 @@ class MainGui {
 		Config.Set(Section, Key, val)
 		Config.WriteIni()
 
+		if (Section = "BoostBar")
+			this.RefreshFeature("BoostBarEnabled")
+		else if (Section = "Warns")
+			this.RefreshFeature("WarnsEnabled")
+		else if (Section = "PassiveScanner")
+			this.RefreshFeature("PassiveScannerEnabled")
+		else if (Section = "Main" && (Key = "BoostBarEnabled" || Key = "WarnsEnabled" || Key = "PassiveScannerEnabled"))
+			this.RefreshFeature(Key)
+
 		if (Key = "DarkMode") {
 			SetWindowTheme(this.Gui, GuiCtrl.Value)
 			SetWindowAttribute(this.Gui, GuiCtrl.Value)
@@ -211,6 +226,11 @@ class MainGui {
 			if IsSet(Boost) && Boost
 				Boost.Draw()
 		}
+	}
+
+	RefreshFeature(FeatureName) {
+		if (this.FeatureRefreshers.Has(FeatureName))
+			this.FeatureRefreshers[FeatureName]()
 	}
 
 	SelectSound(GuiCtrl, *) {

@@ -3891,3 +3891,24 @@ WinGetRect(hwnd, &x := "", &y := "", &w := "", &h := "") {
 	w := NumGet(winRect, 8, "UInt") - x
 	h := NumGet(winRect, 12, "UInt") - y
 }
+
+TintBitmap(pBitmap, color) {
+	w := Gdip_GetImageWidth(pBitmap)
+	h := Gdip_GetImageHeight(pBitmap)
+
+	pBMOut := Gdip_CreateBitmap(w, h)
+	G := Gdip_GraphicsFromImage(pBMOut)
+
+	vR := ((color >> 16) & 0xFF) / 255
+	vG := ((color >> 8) & 0xFF) / 255
+	vB := (color & 0xFF) / 255
+	matrix := vR "|0|0|0|0|"
+            . "0|" vG "|0|0|0|"
+            . "0|0|" vB "|0|0|"
+            . "0|0|0|1|0|"
+            . "0|0|0|0|1"
+
+	Gdip_DrawImage(G, pBitmap, 0, 0, w, h, 0, 0, w, h, matrix)
+	Gdip_DeleteGraphics(G)
+	return pBMOut
+}

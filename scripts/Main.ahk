@@ -18,10 +18,14 @@ SendMode "Event"
 #Include "Auxiliary.ahk"
 #Include "QPC.ahk"
 #Include "Import.ahk"
+#Include "FrameCache.ahk"
+#Include "Scheduler.ahk"
+#Include "WindowTracker.ahk"
 #Include "Path.ahk"
 #Include "JSON.ahk"
 #Include "nowUnix.ahk"
 #Include "DarkMode.ahk"
+#Include "Dweet.ahk"
 
 if !(pToken := Gdip_Startup())
 	throw Error("GDI+ failed to start, exiting script.")
@@ -56,10 +60,7 @@ GetRobloxClientPos()
 #Include "AltMacro.ahk"
 #Include "KeyAlignment.ahk"
 #Include "MagnifyingGlass.ahk"
-
-class Communication {
-
-}
+#Include "Communicator.ahk"
 
 class State {
 	static CurrentWalk := { pid: "", name: "" }
@@ -86,6 +87,9 @@ class State {
 	static SprinklerImages := ["saturator", "saturatorWS"]
 }
 
+WindowTracker.Start(50)
+Scheduler.Start()
+
 Scorch := PassiveScanner()
 Warns := Warnings()
 Boost := BoostBar()
@@ -107,6 +111,8 @@ F3:: ExitApp
 
 Cleanup(*) {
 	Critical
+	Scheduler.Stop()
+	WindowTracker.Stop()
 	wp := Buffer(44)
 	try DllCall("GetWindowPlacement", "UInt", Main.Gui.Hwnd, "Ptr", wp)
 	x := NumGet(wp, 28, "Int")
@@ -123,5 +129,6 @@ Cleanup(*) {
 	try Aligner.Cleanup()
 	try Main.Cleanup()
 	try Mag.Cleanup()
+	try FrameCache.Clear()
 	Gdip_Shutdown(pToken)
 }

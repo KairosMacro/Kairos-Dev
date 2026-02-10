@@ -49,16 +49,16 @@ class AltMacro {
 			return
 
 		local inactiveHoney := 0
-		this.Settings()
-		this.Reset()
+		;this.Settings()
+		;this.Reset()
 		fieldName := this.DefaultField
-		this.GotoField(fieldName)
-		send "{" SC_1 "}"
+		;this.GotoField(fieldName)
+		;send "{" SC_1 "}"
 		sleep 500
 
 		loop {
-			MouseMove windowX + (windowWidth // 2), windowY + (windowHeight // 2)
-			click "down"
+			;MouseMove windowX + (windowWidth // 2), windowY + (windowHeight // 2)
+			;click "down"
 			if !this.IsRunning {
 				click "up"
 				break

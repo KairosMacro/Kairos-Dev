@@ -56,6 +56,9 @@ class Config {
             "AlignmentKey", "e"
             , "RebindHotkey", "^+k"
         )
+        , "Communicator", Map(
+            "DweetName", Random(111111111111, 999999999999)
+        )
     )
 
     static Load() {

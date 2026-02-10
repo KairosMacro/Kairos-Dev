@@ -1,48 +1,50 @@
 class PassiveScanner {
 	IsRunning := false
 	IsActive := false
+	bloomStates := Map()
 	numOffset := Map(0, 7, 1, 2, 2, 6, 3, 6, 4, 7, 5, 6, 6, 7, 7, 7, 8, 7, 9, 7)
 
 	modes := Map(
-		"Scorch", { x1: 0, x2: 0, y1: 18, y2: 21, var: 16 }
+		"Scorch", { x1: 0, x2: 0, y1: 18, y2: 21, var: 17}
 		, "x-flame1", { x1: 0, x2: 0, y1: 12, y2: 19, var: 13 }
 		, "x-flame2", { x1: 0, x2: 0, y1: 12, y2: 19, var: 13 }
-		, "bloom_red",        { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFFF92222}
-		, "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFF2142F9}
-		, "bloom_white",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFFF9F9F9}
-		, "bloom_scarlet",    { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFFAB1313}
-		, "bloom_cyan",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFF1DC4DE}
-		, "bloom_grey",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFF7F7F7F}
-		, "bloom_black",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFF0B0B0B}
-		, "bloom_yellow",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFFEECC4F}
-		, "bloom_green",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFF23E805}
-		, "bloom_pink",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFFFF82C9}
-		, "bloom_violet",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFF5E26B1}
-		, "bloom_merigold",   { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFFDAA81C}
-		, "bloom_periwinkle", { x1: 0, x2: 0, y1: 10, y2: 14, var: 19, col: 0xFF969CEC}
+		, "bloom_red",        { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFC9191}
+      , "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
+      , "bloom_white",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFCFCFC}
+      , "bloom_scarlet",    { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFD58989}
+      , "bloom_cyan",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF8EE2EF}
+      , "bloom_grey",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFBFBFBF}
+      , "bloom_black",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF858585}
+      , "bloom_yellow",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFF7E6A7}
+      , "bloom_green",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF91F482}
+      , "bloom_pink",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFFC1E4}
+      , "bloom_violet",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFAF93D8}
+      , "bloom_merigold",   { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFECD48E}
+      , "bloom_periwinkle", { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFCBCEF6}
 	)
 
 	__New() {
 		this.Fancy := GdipTooltip()
+		this.RefreshConfig()
+		Scheduler.Add("PassiveScanner.CheckLoop", this.CheckLoop.Bind(this), 100, () => this.IsActive)
 	}
 
-	Toggle() {
+	Toggle(*) {
 		this.IsRunning ^= 1
 		this.IsActive := this.IsRunning && Config.Get("Main", "PassiveScannerEnabled", 0)
-		SetTimer(() => this.CheckLoop(), this.IsActive ? 100 : 0)
 		SetTimer(() => this.Fancy.Hide(), this.IsActive ? 0 : -100)
 	}
 
 	Cleanup(*) {
 		this.IsRunning := false
-		SetTimer(() => this.CheckLoop(), 0)
 	}
 
-	CheckLoop() {
-		if !this.IsRunning || !GetRobloxClientPos()
+	CheckLoop(*) {
+		win := WindowTracker.Get()
+		if !this.IsRunning || !IsObject(win) || !win.ok
 			return
 
-		passiveNames := StrSplit(Config.Get("PassiveScanner", "Passives", "Scorch"), "|")
+		passiveNames := this.PassiveList
 		msg := []
 		for i in passiveNames {
 			val := 0
@@ -62,75 +64,81 @@ class PassiveScanner {
 
 		for i in ["red", "blue", "white", "scarlet", "cyan", "grey", "black", "yellow", "green", "pink", "violet", "merigold", "periwinkle"] {
 			bloomVal := this.DetectBlooms("bloom_" i)
-			msg.Push([bitmaps["buff"]["bloom_" i], (bloomVal = -1 ? ": CD" : ": " bloomVal)])
+			msg.Push([bitmaps["icon"]["bloom_" i], (bloomVal = -1 ? ": CD" : ": " bloomVal)])
 		}
 
 
-		this.Fancy.Show(msg)
+		this.Fancy.Show(msg, win.x + win.w // 2, win.y + win.h // 2)
 		return
 	}
 
 	DetectPassive(name) {
-		try {
-			mode := this.modes[name]
-			pBMScreen := Gdip_BitmapFromScreen(windowX + (windowWidth // 2) - 257 "|" windowY + windowHeight - 142 "|517|36")
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
-				return -1
-			foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-			return this.DetectNumber(pBMScreen, Floor(foundX / 40))
-		} finally
-			Gdip_DisposeImage(pBMScreen)
+		mode := this.modes[name]
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
+			return -1
+		region := win.x + (win.w // 2) - 257 "|" win.y + win.h - 142 "|517|36"
+		pBMScreen := FrameCache.Get(region)
+		if !pBMScreen
+			return -1
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
+			return -1
+		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
+		mouseMove foundX + win.x + (win.w // 2) - 257, win.y + win.h - 100
+		return this.DetectNumber(pBMScreen, Floor(foundX / 40))
 	}
 
 	DetectBlooms(name) {
-		try {
-			mode := this.modes[name]
-			pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY + State.offsetY + 36 "|" windowWidth "|" 38)
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
-				return -1
-			foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-			slotX := Floor(foundX / 38) * 38
-			; verify that it's an actual bloom by doing the "percentage" stuff,
-			return this.MeasureBuff(pBMScreen, slotX, mode.col)
-		} finally
-			Gdip_DisposeImage(pBMScreen)
+		mode := this.modes[name]
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
+			return -1
+		region := win.x "|" win.y + State.offsetY + 36 "|" win.w "|" 38
+		pBMScreen := FrameCache.Get(region)
+		if !pBMScreen
+			return -1
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
+			return -1
+		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
+		slotX := Floor(foundX / 38) * 38
+		; verify that it's an actual bloom by doing the "percentage" stuff,
+		return this.MeasureBuff(pBMScreen, slotX, mode.col, name)
 	}
 
-	MeasureBuff(pBitmap, slotX, color) {
-		static fail := 0
-		static last := 0
-
-		inRange(pixel, color) {
-			r := (pixel >> 16) & 0xFF
-			g := (pixel >> 8) & 0xFF
-			b := pixel & 0xFF
-
-			cr := (color >> 16) & 0xFF
-			cg := (color >> 8) & 0xFF
-			cb := color & 0xFF
-
-			tolerance := 100
-
-			return (Abs(r - cr) <= tolerance) && (Abs(g - cg) <= tolerance) && (Abs(b - cb) <= tolerance)
-		}
-
+	MeasureBuff(pBitmap, slotX, color, name) {
+		if !this.bloomStates.Has(name)
+			this.bloomStates[name] := {val: 0, fail: 0}
+		state := this.bloomStates[name]
 		scanX := slotX + 6
-		if !inRange(Gdip_GetPixel(pBitmap, scanX, 37), color) {
-			if (++fail < 10)
-				return last
+
+		if !this.inRange(Gdip_GetPixel(pBitmap, scanX, 37), color) {
+			if (++state.fail < 15)
+				return state.val
 			return 0
 		}
 
-		fail := 0
+		state.fail := 0
 		low := 0, high := 35
 		while (low < high) {
 			mid := Floor((low + high) / 2)
-			if inRange(Gdip_GetPixel(pBitmap, scanX, mid), color)
+			if this.inRange(Gdip_GetPixel(pBitmap, scanX, mid), color)
 				high := mid
 			else
 				low := mid + 1
 		}
 		return Round((36 - low) / 36, 2)
+	}
+
+	inRange(pixel, color, tolerance := 100) {
+		r := (pixel >> 16) & 0xFF
+		g := (pixel >> 8) & 0xFF
+		b := pixel & 0xFF
+
+		cr := (color >> 16) & 0xFF
+		cg := (color >> 8) & 0xFF
+		cb := color & 0xFF
+
+		return (Abs(r - cr) <= tolerance) && (Abs(g - cg) <= tolerance) && (Abs(b - cb) <= tolerance)
 	}
 
 	DetectNumber(pBitmap, slot) {
@@ -180,5 +188,9 @@ class PassiveScanner {
 				return found[2].num . found[1].num
 			}
 		}
+	}
+
+	RefreshConfig() {
+		this.PassiveList := StrSplit(Config.Get("PassiveScanner", "Passives", "Scorch"), "|")
 	}
 }
