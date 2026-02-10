@@ -41,7 +41,7 @@ GetRobloxHWND()
 ; Image is specific to BSS but can be altered for use in other games
 ; Optionally takes a known window handle to skip GetRobloxHWND call
 ; Returns: offset (integer), defaults to 0 on fail (ByRef param fail is then set to 1, else 0)
-GetYOffset(hwnd?, &fail?)
+GetYOffset(hwnd?, &fail?, noFocus?)
 {
 	global bitmaps
 	static hRoblox := 0, offset := 0
@@ -55,7 +55,8 @@ GetYOffset(hwnd?, &fail?)
 	}
 	else if WinExist("ahk_id " hwnd)
 	{
-		try WinActivate "ahk_exe RobloxPlayerBeta.exe"
+		if !IsSet(noFocus)
+			try WinActivate "ahk_exe RobloxPlayerBeta.exe"
 		GetRobloxClientPos(hwnd)
 		pBMScreen := Gdip_BitmapFromScreen(windowX + windowWidth // 2 "|" windowY "|60|100")
 

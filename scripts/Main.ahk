@@ -64,7 +64,7 @@ GetRobloxClientPos()
 
 class State {
 	static CurrentWalk := { pid: "", name: "" }
-	static offsetY := 0
+	static offsetY := GetYOffset(,,1)
 	static FieldSize := Map(
 		"sunflower", { width: 33, height: 20 }
 		, "dandelion", { width: 36, height: 18 }
@@ -97,10 +97,11 @@ Alt := AltMacro()
 Aligner := KeyAlignment()
 Mag := MagnifyingGlass()
 Main := MainGui()
+Comms := Communicator()
 Fancy := GdipTooltip()
 
 ;SetTimer(grjknnkjrg, 1)
-grjknnkjrg() {
+grjknnkjrg() { ; anime girl companion
 	GetRobloxClientPos()
 	index := Mod(A_TickCount // 60, 60)
 	offset := 30 - Abs(index - 30)

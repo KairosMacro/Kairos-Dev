@@ -18,9 +18,8 @@ class dweet {
          return "Error: " e.Message
    }
 
-   RecieveMessage(ignoreOld := 20) {
+   ReceiveMessage(ignoreOld := 20) {
       url := this.baseUrl "/get/latest/dweet/for/" this.name
-
       try {
          wr := ComObject("WinHttp.WinHttpRequest.5.1")
          wr.Open("GET", url, false)
@@ -28,26 +27,30 @@ class dweet {
          msg := wr.ResponseText
       } catch as e
          return ""
+      
+      try {
+         data := JSON.parse(msg)
+      } catch
+         return ""
 
-      if (RegExMatch(msg, '"json"\s*:\s*"((\\.|[^"\\])*)"', &match)) {
-         clean := match[1]
-         clean := StrReplace(clean, '\"', '"')
-         clean := StrReplace(clean, '\\', '\')
-         clean := StrReplace(clean, "\/", "/")
-         
-         if (RegExMatch(clean, '"unix"\s*:\s*(\d+)', &unix)) {
-            unixTime := unix[1]
-            if (unixTime <= this.lastMessage)
-               return ""
-            ; since computers might have a time offset, SYNC YOUR TIME WITH NIST.GOV TIME SERVERS
-            now := nowUnix()
-            if (now - unixTime > ignoreOld) {
-               this.lastMessage := unixTime
-               return ""
-            }
-            this.lastMessage := unixTime
-         }
-         return clean
+      if (!data.Has("with") || data["with"].Length < 1)
+         return ""
+
+      msg := data["with"][1]["content"]
+      if (!msg.Has("json"))
+         return ""
+      msg := msg["json"]
+      try {
+         msg := JSON.parse(msg)
+      } catch
+         return ""
+      
+      if (IsObject(msg) && msg.Has("timestamp")) { ; just to check that it's not the same message
+         time := msg["timestamp"]
+         if (time <= this.lastMessage)
+            return ""
+         this.lastMessage := time
+         return msg
       }
       return ""
    }

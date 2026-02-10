@@ -9,18 +9,18 @@ class PassiveScanner {
 		, "x-flame1", { x1: 0, x2: 0, y1: 12, y2: 19, var: 13 }
 		, "x-flame2", { x1: 0, x2: 0, y1: 12, y2: 19, var: 13 }
 		, "bloom_red",        { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFC9191}
-      , "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
-      , "bloom_white",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFCFCFC}
-      , "bloom_scarlet",    { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFD58989}
-      , "bloom_cyan",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF8EE2EF}
-      , "bloom_grey",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFBFBFBF}
-      , "bloom_black",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF858585}
-      , "bloom_yellow",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFF7E6A7}
-      , "bloom_green",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF91F482}
-      , "bloom_pink",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFFC1E4}
-      , "bloom_violet",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFAF93D8}
-      , "bloom_merigold",   { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFECD48E}
-      , "bloom_periwinkle", { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFCBCEF6}
+        , "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
+        , "bloom_white",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFCFCFC}
+        , "bloom_scarlet",    { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFD58989}
+        , "bloom_cyan",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF8EE2EF}
+        , "bloom_grey",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFBFBFBF}
+        , "bloom_black",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF858585}
+        , "bloom_yellow",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFF7E6A7}
+        , "bloom_green",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF91F482}
+        , "bloom_pink",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFFC1E4}
+        , "bloom_violet",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFAF93D8}
+        , "bloom_merigold",   { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFECD48E}
+        , "bloom_periwinkle", { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFCBCEF6}
 	)
 
 	__New() {

@@ -57,7 +57,7 @@ class Config {
             , "RebindHotkey", "^+k"
         )
         , "Communicator", Map(
-            "DweetName", Random(111111111111, 999999999999)
+            "DweetName", "K" Random(10000000, 99999999) "X" Random(10000000, 99999999)
         )
     )
 

@@ -46,6 +46,9 @@ class Conditions {
 	}
 
 	SearchBuffs(*) {
+		if (Config.Get("Main", "AltMacroEnabled", 0))
+			return
+
 		win := WindowTracker.Get()
 		if !IsObject(win) || !win.ok || !Config.Get("Main", "BoostBarEnabled", 0)
 			return
@@ -57,6 +60,15 @@ class Conditions {
 			this.Search(pBMTop, this.topBuff)
 		if pBMBottom
 			this.Search(pBMBottom, this.bottomBuff)
+
+		static last := ""
+		current := JSON.stringify(this.BuffState)
+		if (current != last) {
+			if IsSet(Comms) {
+				Comms.BroadcastBuffs(this.BuffState)
+				last := current
+			}
+		}
 	}
 
 	Search(pBitmap, list) {

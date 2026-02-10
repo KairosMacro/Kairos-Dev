@@ -16,11 +16,11 @@ class MainGui {
 		this.Gui.OnEvent("Close", (*) => ExitApp())
 		this.Gui.SetFont("s8 cDefault Norm")
 		(GuiCtrl := this.Gui.Add("Text", "x400 y205 w90 -Wrap +BackgroundTrans", "v" version)), GuiCtrl.Move(396 - (TextWidth := this.TextExtend("v" version, GuiCtrl)))
-		this.Gui.Add("Button", "x5 y198 w65 h20 -Wrap Disabled vStartButton", "Start (" Config.Get("Main", "StartHotkey", "F1") ")").OnEvent("Click", this.start.Bind(this))
-		this.Gui.Add("Button", "x75 y198 w65 h20 -Wrap Disabled vPauseButton", "Pause (" Config.Get("Main", "PauseHotkey", "F2") ")").OnEvent("Click", this.pause.Bind(this))
-		this.Gui.Add("Button", "x145 y198 w65 h20 -Wrap Disabled vStopButton", "Stop (" Config.Get("Main", "StopHotkey", "F3") ")").OnEvent("Click", this.stop.Bind(this))
+		this.Gui.Add("Button", "x5 y198 w65 h20 -Wrap vStartButton", "Start (" Config.Get("Main", "StartHotkey", "F1") ")").OnEvent("Click", this.start.Bind(this))
+		this.Gui.Add("Button", "x75 y198 w65 h20 -Wrap vPauseButton", "Pause (" Config.Get("Main", "PauseHotkey", "F2") ")").OnEvent("Click", this.pause.Bind(this))
+		this.Gui.Add("Button", "x145 y198 w65 h20 -Wrap vStopButton", "Stop (" Config.Get("Main", "StopHotkey", "F3") ")").OnEvent("Click", this.stop.Bind(this))
 
-		TabArr := ["Main", "Warnings", "Boost Bar", "Alt", "Key Alignment", "Communicator", "Misc"]
+		TabArr := ["Main", "Alt", "Warnings", "Boost Bar", "Alt", "Key Alignment", "Communicator", "Misc"]
 		(TabCtrl := this.Gui.Add("Tab", "x0 y-1 w440 h240 -Wrap " (Config.Get("Main", "DarkMode", 1) ? "cFFFFFF" : "C000000"), TabArr)).OnEvent("Change", (*) => TabCtrl.Focus())
 		SendMessage 0x1331, 0, 20, , TabCtrl
 		; --- Main Tab ---
@@ -108,6 +108,19 @@ class MainGui {
 		this.Gui.Add("UpDown", "Range1-10", Config.Get("Alt", "PatternSize"))
 
 		; --- Communicator Tab ---
+		TabCtrl.UseTab("Communicator")
+		this.Gui.SetFont("w700")
+		this.Gui.Add("GroupBox", "x10 y35 w380 h150")
+		this.Gui.Add("Text", "x20 y36", "Connection Settings")
+		this.Gui.SetFont("s8 cDefault Norm")
+
+		this.Gui.Add("Text", "x25 y60 w350 h30", "Both the Main and Alt must have the EXACT same 'Channel' name for this to work.")
+		this.Gui.Add("Text", "x25 y93", "Channel Name:")
+		(GuiCtrl := this.Gui.Add("Edit", "x110 y90 w180 h20 vCommunicator_DweetName", Config.Get("Communicator", "DweetName", "you might wanna change this..."))).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Button", "x300 y90 w80 h20", "Generate").OnEvent("Click", this.GenerateUser.Bind(this))
+		this.Gui.Add("Text", "x25 y130 w80", "Status:")
+		role := Config.Get("Main", "AltMacroEnabled", 0) ? "Client" : "Server"
+		this.Gui.Add("Text", "x110 y130 w200 vCommsStatus", role)
 
 		; --- Key Alignment Tab ---
 
@@ -115,6 +128,15 @@ class MainGui {
 		SetWindowTheme(this.Gui, Config.Get("Main", "DarkMode", 1))
 		SetWindowAttribute(this.Gui, Config.Get("Main", "DarkMode", 1))
 		this.RegisterHotkeys()
+	}
+
+	GenerateUser(GuiCtrl, *) {
+		name := "K" Random(10000000, 99999999) "X" Random(10000000, 99999999)
+		this.Gui["Communicator_DweetName"].Value := name
+		Config.Set("Communicator", "DweetName", name)
+		Config.WriteIni()
+		if IsSet(Comms)
+			Comms.UpdateSettings()
 	}
 
 	OpenModeSelector(index, GuiCtrl*) {
@@ -216,6 +238,15 @@ class MainGui {
 			this.RefreshFeature("PassiveScannerEnabled")
 		else if (Section = "Main" && (Key = "BoostBarEnabled" || Key = "WarnsEnabled" || Key = "PassiveScannerEnabled"))
 			this.RefreshFeature(Key)
+		else if (Section = "Communicator")
+			if IsSet(Comms)
+				Comms.UpdateSettings()
+		else if (Key = "AltMacroEnabled") {
+			role := val ? "Client" : "Server"
+			try this.Gui["CommsStatus"].Text := role
+				if IsSet(Comms)
+					Comms.UpdateSettings()
+		}
 
 		if (Key = "DarkMode") {
 			SetWindowTheme(this.Gui, GuiCtrl.Value)
