@@ -33,6 +33,7 @@ class Config {
             , "ShiftLock", 0
             , "SprinklerLocation", "Center"
             , "SprinklerDistance", 1
+            , "PrivServer", ""
         )
         , "BoostBar", Map(
             "SlotActive1", 0, "SlotTimer1", 100, "SlotMode1", "Timer"

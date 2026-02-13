@@ -20,7 +20,7 @@ class MainGui {
 		this.Gui.Add("Button", "x75 y198 w65 h20 -Wrap vPauseButton", "Pause (" Config.Get("Main", "PauseHotkey", "F2") ")").OnEvent("Click", this.pause.Bind(this))
 		this.Gui.Add("Button", "x145 y198 w65 h20 -Wrap vStopButton", "Stop (" Config.Get("Main", "StopHotkey", "F3") ")").OnEvent("Click", this.stop.Bind(this))
 
-		TabArr := ["Main", "Alt", "Warnings", "Boost Bar", "Alt", "Key Alignment", "Communicator", "Misc"]
+		TabArr := ["Main", "Alt", "Scanner", "Warnings", "Boost Bar", "Communicator", "Key Alignment"]
 		(TabCtrl := this.Gui.Add("Tab", "x0 y-1 w440 h240 -Wrap " (Config.Get("Main", "DarkMode", 1) ? "cFFFFFF" : "C000000"), TabArr)).OnEvent("Change", (*) => TabCtrl.Focus())
 		SendMessage 0x1331, 0, 20, , TabCtrl
 		; --- Main Tab ---
@@ -120,7 +120,7 @@ class MainGui {
 		this.Gui.Add("Button", "x300 y90 w80 h20", "Generate").OnEvent("Click", this.GenerateUser.Bind(this))
 		this.Gui.Add("Text", "x25 y130 w80", "Status:")
 		role := Config.Get("Main", "AltMacroEnabled", 0) ? "Client" : "Server"
-		this.Gui.Add("Text", "x110 y130 w200 vCommsStatus", role)
+		this.Gui.Add("Text", "x60 y130 w200 vCommsStatus", role)
 
 		; --- Key Alignment Tab ---
 
@@ -289,8 +289,10 @@ class MainGui {
 			return
 		ran++
 		State.offsetY := GetYOffset(, &fail)
+		try {
 		if fail
 			msgbox "Failed to get y-Offset, this either means`n1. Your font is NOT the default size (e.g. font scale or broken roblox updates)`n2. Your font is wrong (e.g. custom font w/bloxstrap)`n3. the 'Pollen' text at the top is being covered`n4. Graphical issues`n5. I made a mistake...`n6. You don't have roblox open.", "Kairos", 16
+		}
 		Scorch.Toggle()
 		Warns.Toggle()
 		Boost.Toggle()
@@ -301,17 +303,47 @@ class MainGui {
 	}
 
 	pause(*) {
-		static keyMap := Map("left", 0, "right", 0, "fwd", 0, "back", 0)
-		DetectHiddenWindows true
-		isPausing := !A_IsPaused
+		State.IsPaused ^= 1
 
-		this.Gui.Show(isPausing ? "" : "Hide")
-		if WinExist("ahk_class AutoHotkey ahk_pid " State.currentWalk.pid) {
-			Send "{F16}"
+		if (State.IsPaused) {
+			this.Gui.Show("NoActivate")
+			this.Gui.Title := "Kairos (Paused)"
+			this.Gui["PauseButton"].Text := "Resume (" Config.Get("Main", "PauseHotkey", "F2") ")"
+
+			if IsSet(Scorch) && Scorch.Fancy
+				Scorch.Fancy.Hide()
+			if IsSet(Warns) && Warns.Fancy
+				Warns.Fancy.Hide()
+			if IsSet(Boost) && Boost
+				Boost.Draw()
+			if IsSet(Aligner) && Aligner
+				Aligner.Draw()
+			if IsSet(Mag) && Mag.Gui
+				Mag.Gui.Hide()
+
+			if (State.CurrentWalk.pid) {
+				DetectHiddenWindows true
+				if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
+					PostMessage(0x111, 65306)
+				DetectHiddenWindows false
+			}
+		} else {
+			this.Gui.Hide()
+			this.Gui.Title := "Kairos"
+			this.Gui["PauseButton"].Text := "Pause (" Config.Get("Main", "PauseHotkey", "F2") ")"
+
+			if IsSet(Boost) && Boost
+				Boost.Draw()
+			if IsSet(Aligner) && Aligner
+				Aligner.Draw()
+
+			if (State.CurrentWalk.pid) {
+				DetectHiddenWindows true
+				if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
+					PostMessage(0x111, 65306)
+				DetectHiddenWindows false
+			}
 		}
-
-		DetectHiddenWindows false
-		Pause -1
 	}
 
 	stop(*) {

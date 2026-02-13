@@ -75,7 +75,7 @@ class MagnifyingGlass {
 				guiH := Floor(this.height * this.ZoomFactor)
 				targetX := (wx + (ww // 2) - (guiW // 2))
 				targetY := wy + wh + this.offsetY + (Config.Get("Main", "BoostBarEnabled", 0) && Config.Get("BoostBar", "ShowWhenActive", 0) ? 0 : 40)
-				if (this.IsRunning && Config.Get("Main", "MagnifierEnabled", 0))
+				if (this.IsRunning && !State.IsPaused && Config.Get("Main", "MagnifierEnabled", 0))
 					this.Gui.Show("NA x" targetX " y" targetY " w" guiW " h" guiH)
 				else
 					this.Gui.Hide()

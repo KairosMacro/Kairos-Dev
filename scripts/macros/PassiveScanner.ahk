@@ -5,22 +5,23 @@ class PassiveScanner {
 	numOffset := Map(0, 7, 1, 2, 2, 6, 3, 6, 4, 7, 5, 6, 6, 7, 7, 7, 8, 7, 9, 7)
 
 	modes := Map(
-		"Scorch", { x1: 0, x2: 0, y1: 18, y2: 21, var: 17}
+		"scorch", { x1: 0, x2: 0, y1: 11, y2: 16, var: 30 }
 		, "x-flame1", { x1: 0, x2: 0, y1: 12, y2: 19, var: 13 }
 		, "x-flame2", { x1: 0, x2: 0, y1: 12, y2: 19, var: 13 }
+		, "popstar", { x1: 0, x2: 0, y1: 7, y2:19, var: 30 }
 		, "bloom_red",        { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFC9191}
-        , "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
-        , "bloom_white",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFCFCFC}
-        , "bloom_scarlet",    { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFD58989}
-        , "bloom_cyan",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF8EE2EF}
-        , "bloom_grey",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFBFBFBF}
-        , "bloom_black",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF858585}
-        , "bloom_yellow",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFF7E6A7}
-        , "bloom_green",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF91F482}
-        , "bloom_pink",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFFC1E4}
-        , "bloom_violet",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFAF93D8}
-        , "bloom_merigold",   { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFECD48E}
-        , "bloom_periwinkle", { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFCBCEF6}
+      , "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
+      , "bloom_white",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFCFCFC}
+      , "bloom_scarlet",    { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFD58989}
+      , "bloom_cyan",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF8EE2EF}
+      , "bloom_grey",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFBFBFBF}
+      , "bloom_black",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF858585}
+      , "bloom_yellow",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFF7E6A7}
+      , "bloom_green",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF91F482}
+      , "bloom_pink",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFFC1E4}
+      , "bloom_violet",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFAF93D8}
+      , "bloom_merigold",   { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFECD48E}
+      , "bloom_periwinkle", { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFCBCEF6}
 	)
 
 	__New() {
@@ -40,6 +41,8 @@ class PassiveScanner {
 	}
 
 	CheckLoop(*) {
+		if (State.IsPaused)
+			return
 		win := WindowTracker.Get()
 		if !this.IsRunning || !IsObject(win) || !win.ok
 			return
@@ -61,11 +64,11 @@ class PassiveScanner {
 			}
 			msg.Push([bitmaps["icon"][i], (val = -1 ? ": CD" : ": " val)])
 		}
-
-		for i in ["red", "blue", "white", "scarlet", "cyan", "grey", "black", "yellow", "green", "pink", "violet", "merigold", "periwinkle"] {
-			bloomVal := this.DetectBlooms("bloom_" i)
-			msg.Push([bitmaps["icon"]["bloom_" i], (bloomVal = -1 ? ": CD" : ": " bloomVal)])
-		}
+		; "red", "blue", "white", "scarlet", "cyan", "grey", "black", "yellow", "green", "pink", "violet", "merigold", "periwinkle"
+		;for i in ["red", "pink"] {
+		;	bloomVal := this.DetectBlooms("bloom_" i)
+		;	msg.Push([bitmaps["icon"]["bloom_" i], (bloomVal = -1 ? ": N/A" : ": " (8*bloomVal))])
+		;}
 
 
 		this.Fancy.Show(msg, win.x + win.w // 2, win.y + win.h // 2)
@@ -84,7 +87,6 @@ class PassiveScanner {
 		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
 			return -1
 		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-		mouseMove foundX + win.x + (win.w // 2) - 257, win.y + win.h - 100
 		return this.DetectNumber(pBMScreen, Floor(foundX / 40))
 	}
 
@@ -191,6 +193,6 @@ class PassiveScanner {
 	}
 
 	RefreshConfig() {
-		this.PassiveList := StrSplit(Config.Get("PassiveScanner", "Passives", "Scorch"), "|")
+		this.PassiveList := StrSplit(Config.Get("PassiveScanner", "Passives", "scorch"), "|")
 	}
 }

@@ -63,6 +63,7 @@ GetRobloxClientPos()
 #Include "Communicator.ahk"
 
 class State {
+	static IsPaused := false
 	static CurrentWalk := { pid: "", name: "" }
 	static offsetY := GetYOffset(,,1)
 	static FieldSize := Map(
@@ -101,7 +102,7 @@ Comms := Communicator()
 Fancy := GdipTooltip()
 
 ;SetTimer(grjknnkjrg, 1)
-grjknnkjrg() { ; anime girl companion
+grjknnkjrg() {
 	GetRobloxClientPos()
 	index := Mod(A_TickCount // 60, 60)
 	offset := 30 - Abs(index - 30)

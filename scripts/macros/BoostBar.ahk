@@ -1,6 +1,6 @@
 class Conditions {
 	BuffState := Map(
-		"Timer", 1
+		"Timer", 0
 		, "scorch", 0
 		, "gummy", 0
 		, "glitter", 0.00
@@ -12,15 +12,17 @@ class Conditions {
 
 	topBuff := Map(
 		"glitter", { key: "glitter", var: 0, time: 1, type: "boost" }
-		, "scorch", { key: "scorch", var: 10, time: 0, type: "buff" }
+		, "scorch", { key: "scorch_buff", var: 21, time: 0, type: "buff", inv: "scorch" }
 		, "smoothie", { key: "smoothie", var: 4, time: 1, type: "buff" }
-		, "popstar", { key: "popstar", var: 0, time: 0, type: "buff" }
+		, "popstar", { key: "popstar_buff", var: 21, time: 0, type: "buff", inv: "popstar" }
 		, "baller", { key: "baller", var: 0, time: 0, type: "buff" }
 	)
 
 	bottomBuff := Map(
 		"gummy", { key: "gummy", var: 0, time: 0, type: "buff" }
 		, "shower", { key: "shower", var: 0, time: 0, type: "buff" }
+		, "scorch", { key: "scorch", var: 30, time: 0, type: "check" }
+		, "popstar", { key: "popstar", var: 30, time: 0, type: "check" }
 	)
 
 	Modes := Map(
@@ -52,14 +54,44 @@ class Conditions {
 		win := WindowTracker.Get()
 		if !IsObject(win) || !win.ok || !Config.Get("Main", "BoostBarEnabled", 0)
 			return
+
 		regionTop := win.x "|" win.y + State.offsetY + 36 "|" win.w "|" 38
 		regionBottom := win.x + (win.w // 2) - 257 "|" win.y + win.h - 142 "|517|36"
+
 		pBMTop := FrameCache.Get(regionTop)
 		pBMBottom := FrameCache.Get(regionBottom)
-		if pBMTop
-			this.Search(pBMTop, this.topBuff)
-		if pBMBottom
-			this.Search(pBMBottom, this.bottomBuff)
+
+		top := this.Scan(pBMTop, this.topBuff)
+		bottom := this.Scan(pBMBottom, this.bottomBuff)
+
+		for name, data in this.topBuff {
+			isActive := false
+			if (top.Has(name) && top[name].found) {
+				isActive := true
+				if (data.HasOwnProp("inv") && data.inv != "") {
+					inv := data.inv
+					if (bottom.Has(inv) && bottom[inv].found) {
+						isActive := false
+					}
+				}
+			}
+			if (name = "glitter" || name = "smoothie") {
+				this.UpdateStreak(name, isActive, (isActive ? top[name].val : 0))
+			} else {
+				this.BuffState[name] := isActive ? 1 : 0
+			}
+		}
+
+		for name, data in this.bottomBuff {
+			if (data.type = "check")
+				continue
+			
+			if (bottom.Has(name) && bottom[name].found) {
+				this.BuffState[name] := 1
+			} else {
+				this.BuffState[name] := 0
+			}
+		}
 
 		static last := ""
 		current := JSON.stringify(this.BuffState)
@@ -71,20 +103,14 @@ class Conditions {
 		}
 	}
 
-	Search(pBitmap, list) {
-		static Streak := Map(
-			"glitter", 0
-			, "smoothie", 0
-		)
-
-		static Thresholds := Map(
-			"glitter", 0.01
-			, "smoothie", 0.01
-		)
+	Scan(pBitmap, list) {
+		results := Map()
+		if !pBitmap
+			return results
 
 		for name, data in list {
 			found := false
-			currentVal := 0
+			val := 0
 
 			if (name = "glitter") {
 				field := Config.Get("Alt", "DefaultField", "pepper")
@@ -93,37 +119,35 @@ class Conditions {
 						if (Gdip_ImageSearch(pBitmap, bitmaps["boost"][field . variant], &loc, , , , , variant = 3 ? 50 : 35) = 1) {
 							x := SubStr(loc, 1, InStr(loc, ",") - 1)
 							gridX := Floor(x / 38) * 38
-							currentVal := this.MeasureBoost(pBitmap, gridX)
+							val := this.MeasureBoost(pBitmap, gridX)
 							found := true
 							break
 						}
 					}
 				}
-			} else if (Gdip_ImageSearch(pBitmap, bitmaps["buff"][name], &loc, , , , , data.var, , 6) = 1) {
+			} else if (Gdip_ImageSearch(pBitmap, bitmaps["buff"][data.key], &loc, , , , , data.var, , 6) = 1) {
 				found := true
 				if (data.time != 0) {
 					x := SubStr(loc, 1, InStr(loc, ",") - 1)
 					gridX := Floor(x / 38) * 38
-					currentVal := this.MeasureBuff(pBitmap, gridX)
-				} else {
-					currentVal := (name ~= "placeholder") ? 0 : 1
+					val := this.MeasureBuff(pBitmap, gridX)
 				}
 			}
-
-			if (name = "glitter" || name = "smoothie") {
-				if (found && currentVal > 0 && currentVal <= Thresholds[name]) {
-					Streak[name] += 1
-				} else {
-					Streak[name] := 0
-				}
-				this.BuffState[name] := (Streak[name] >= 10) ? 1 : 0
-			} else {
-				if (found)
-					this.BuffState[name] := (name ~= "placeholder") ? 0 : 1
-				else
-					this.BuffState[name] := (name ~= "placeholder") ? 1 : 0
-			}
+			results[name] := {found: found, val: val}
 		}
+		return results
+	}
+
+	UpdateStreak(name, found, val) {
+		static Streak := Map("glitter", 0, "smoothie", 0)
+		static Thresholds := Map("glitter", 0.01, "smoothie", 0.01)
+
+		if (found && val > 0 && val <= Thresholds[name]) {
+			Streak[name] += 1
+		} else {
+			Streak[name] := 0
+		}
+		this.BuffState[name] := (Streak[name] >= 10) ? 1 : 0
 	}
 
 	MeasureBuff(pBitmap, slotX) {
@@ -277,7 +301,7 @@ class BoostBar {
 			Gdip_TextToGraphics(this.G, String(timerVal), Options, "Segoe UI")
 		}
 
-		if (this.IsRunning) {
+		if (this.IsRunning && !State.IsPaused) {
 			Gdip_FillRectangle(this.G, this.BrushRunning, 0, this.TotalH - 2, this.TotalW, 2)
 		}
 
@@ -421,6 +445,7 @@ class BoostBar {
 		this.IsRunning ^= 1
 		this.IsEnabled := this.ConfigCache.enabled
 		this.IsActive := this.IsRunning && this.IsEnabled
+		this.stats.BuffState["Timer"] := this.isActive ? 1 : 0
 		this.Draw()
 		if (this.IsEnabled) {
 			if (this.IsActive && !this.ConfigCache.showWhenActive) {
@@ -438,6 +463,8 @@ class BoostBar {
 	}
 
 	SpamLoop(*) {
+		if (State.IsPaused)
+			return
 		cache := this.ConfigCache
 		if !cache.enabled || !this.IsRunning
 			return

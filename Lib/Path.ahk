@@ -80,6 +80,15 @@ RunPath(movement, name := "", vars := "") {
 	}
 }
 
+walk(dist, dir1, dir2?) {
+	return
+	(
+		'Send "{' dir1 ' down}' (IsSet(dir2) ? '{' dir2 ' down}"' : '"') '
+		move(' dist ')
+		Send "{' dir1 ' up}' (IsSet(dir2) ? '{' dir2 ' up}"' : '"')
+	)
+}
+
 KeyVars() {
 	return
 	(

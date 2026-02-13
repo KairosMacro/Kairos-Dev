@@ -1,6 +1,14 @@
 class AltMacro {
 	IsRunning := false
 	IsActive := false
+	slotMove := [
+		[{dir:"Right", dist:4}, {dir:["Right", "Fwd"], dist:20}],
+		[{dir:["Fwd", "Right"], dist:13}, {dir:"Fwd", dist:6}],
+		[{dir:"Fwd", dist:20}, {dir:"Back", dist:4}],
+		[{dir:["Left", "Fwd"], dist:13}, {dir:"Fwd", dist:6}],
+		[{dir:"Left", dist:4}, {dir:["Left", "Fwd"], dist:20}],
+		[{dir:["Left", "Fwd"], dist:12}, {dir:"Left", dist:13}, {dir:["Left", "Fwd"], dist:10}]
+	]
 
 	__New() {
 		importPaths()
@@ -50,7 +58,8 @@ class AltMacro {
 
 		local inactiveHoney := 0
 		this.Settings()
-		this.Reset()
+		if !(this.Reconnect())
+			this.Reset()
 		fieldName := this.DefaultField
 		this.GotoField(fieldName)
 		send "{" SC_1 "}"
@@ -67,7 +76,7 @@ class AltMacro {
 			this.Gather(this.Pattern, fieldName, A_Index)
 
 			while ((GetKeyState("F14") && (A_Index <= 3600)) || (A_Index = 1)) {
-				if !this.IsRunning || this.IsDead() = true {
+				if !this.IsRunning || this.IsDead() = true || this.Reconnect() {
 					click "up"
 					break 2
 				}
@@ -90,6 +99,110 @@ class AltMacro {
 		}
 		this.Cleanup()
 		sleep 500
+	}
+
+	Reconnect() {
+		reconnect := 0
+
+		; check if roblox is open
+		if !(GetRobloxClientPos())
+			reconnect := 1
+		pBMScreen := Gdip_BitmapFromScreen(windowX + (windowWidth // 2) "|" windowY + windowHeight // 2 "|200|80")
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["disconnected"],,,,,,2) = 1)
+			reconnect := 1
+		Gdip_DisposeImage(pBMScreen)
+
+		if !reconnect
+			return 0
+		
+		click "up"
+		EndPath()
+		; possibly add join user for public server ?
+		link := Config.Get("Alt", "PrivServer", "")
+
+		loop {
+			idx := A_Index
+			success := 0
+			CloseRoblox()
+			if RegExMatch(link, "i)(?<=privateServerLinkCode=)(.{32})", &code) {
+				try Run '"roblox://placeID=1537690962&linkcode=' code[0] '"'
+			} else if RegExMatch(link, "i)(?<=share\?code=)(.{32})(?=&type=Server)", &code) {
+				try Run '"roblox://navigation/share_links?code=' code[0] '&type=Server"'
+			} else {
+				try Run '"roblox://placeID=1537690962"'
+			}
+
+			loop 240 {
+				if GetRobloxHWND() {
+					ActivateRoblox()
+					break
+				}
+				if (A_Index = 240) {
+					break 2
+				}
+				sleep 1000
+			}
+
+			loop 180 {
+				ActivateRoblox()
+				if !GetRobloxClientPos() {
+					sleep 1000
+					continue
+				}
+				pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY + 30 "|" windowWidth "|" windowHeight - 30)
+				if (Gdip_ImageSearch(pBMScreen, bitmaps["loading"], , , , , 150, 4) = 1) {
+					Gdip_DisposeImage(pBMScreen)
+					break
+				}
+				if (Gdip_ImageSearch(pBMScreen, bitmaps["science"], , , , , 150, 2) = 1) {
+					Gdip_DisposeImage(pBMScreen)
+					success := 1
+					break 2
+				}
+				if (Gdip_ImageSearch(pBMScreen, bitmaps["disconnected"], , , , , , 2) = 1) {
+					Gdip_DisposeImage(pBMScreen)
+					continue 2
+				}
+				Gdip_DisposeImage(pBMScreen)
+				if (A_Index = 180) {
+					break 2
+				}
+				sleep 1000
+			}
+
+			loop 180 {
+				ActivateRoblox()
+				if !GetRobloxClientPos() {
+					continue 2
+				}
+				pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY + 30 "|" windowWidth "|" windowHeight - 30)
+				if ((Gdip_ImageSearch(pBMScreen, bitmaps["loading"], , , , , 150, 4) = 0) || (Gdip_ImageSearch(pBMScreen, bitmaps["science"], , , , , 150, 2) = 1)) {
+					Gdip_DisposeImage(pBMScreen)
+					success := 1
+					break 2
+				}
+				if (Gdip_ImageSearch(pBMScreen, bitmaps["disconnected"], , , , , , 2) = 1) {
+					Gdip_DisposeImage(pBMScreen)
+					continue 2
+				}
+				Gdip_DisposeImage(pBMScreen)
+				if (A_Index = 180) {
+					break 2
+				}
+				sleep 1000
+			}
+		}
+
+		if !success
+			return 0
+		
+		ActivateRoblox()
+		GetRobloxClientPos()
+		MouseMove windowX + (windowWidth // 2), windowY + (windowHeight // 2)
+		sleep 500
+
+		if this.ClaimHive()
+			return 1
 	}
 
 	Gather(patternName, field, index) {
@@ -138,7 +251,157 @@ class AltMacro {
 	}
 
 	ClaimHive() {
+		State.offsetY := GetYOffset()
+		GetImg() {
+			pBMScreen := Gdip_BitmapFromScreen(windowX + (windowWidth // 2) "|" windowY + State.offsetY "|400|125")
+			while ((A_Index <= 20) && (Gdip_ImageSearch(pBMScreen, bitmaps["FriendJoin"][1], , , , , , 6) = 1 || Gdip_ImageSearch(pBMScreen, bitmaps["FriendJoin"][2], , , , , , 6) = 1)) {
+				Gdip_DisposeImage(pBMScreen)
+				MouseMove windowX + (windowWidth // 2) - 3, windowY + 24
+				click
+				MouseMove windowX + 350, windowY + State.offsetY + 100
+				sleep 500
+				pBMScreen := Gdip_BitmapFromScreen(windowX + (windowWidth // 2) - 200 "|" windowY + State.offsetY "|400|125")
+			}
+			return pBMScreen
+		}
+		system := 1
+		loop 5 {
+			ActivateRoblox()
+			GetRobloxClientPos()
+			MouseMove windowX + 350, windowY + State.offsetY + 100
 
+			if (A_Index > 1) {
+				PrevKeyDelay := A_KeyDelay
+				SetKeyDelay(300)
+				send "{" SC_Esc "}{" SC_R "}{" SC_Enter "}"
+				n := 0
+				while ((n < 2) && (A_Index <= 70)) {
+					sleep 100
+					pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY "|" windowWidth "|50")
+					n += ((Gdip_ImageSearch(pBMScreen, bitmaps["emptyhealth"], , , , , , 10) || this.HealthBar()) = (n = 0))
+					Gdip_DisposeImage(pBMScreen)
+				}
+				sleep 500
+			}
+
+			this.DetectSpawn() ; just to fix camera rotation
+
+			if system = 1 {
+				movement := this.spawnMoveTo(this.slotMove[this.HiveSlot])
+				RunPath(movement)
+				KeyWait "F14", "D T5 L"
+				KeyWait "F14", "T120 L"
+				EndPath()
+				sleep 500
+
+				pBMScreen := GetImg()
+				if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {
+					Gdip_DisposeImage(pBMScreen)
+					Send "{" SC_E " down}"
+					sleep 500
+					Send "{" SC_E " up}"
+					HiveConfirmed := 1
+					MouseMove windowX + 350, windowY + State.offsetY + 100
+					return 1
+				}
+				Gdip_DisposeImage(pBMScreen)
+			}
+			system := 0
+			continue
+		}
+
+		Sleep 500
+		GetRobloxClientPos()
+		MouseMove windowX + 350, windowY + State.offsetY + 100
+		send "{" ZoomOut " 8}"
+
+		movement :=
+		(
+			'Send "{' RightKey ' down}"
+			Walk(4)
+			Send "{' FwdKey ' down}"
+			Walk(20)
+			Send "{' RightKey ' up}{' FwdKey ' up}"'
+		)
+		RunPath(movement)
+		KeyWait "F14", "D T5 L"
+		KeyWait "F14", "T120 L"
+		EndPath()
+
+		slots := Map()
+		move := walk(9.2, LeftKey)
+		Loop this.HiveSlot {
+			if (A_Index > 1) {
+				RunPath(move)
+				KeyWait "F14", "D T5 L"
+				KeyWait "F14", "T120 L"
+				EndPath()
+			}
+
+			sleep 500
+			pBMScreen := GetImg()
+			if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {
+				slots[A_Index] := 1
+			}
+			Gdip_DisposeImage(pBMScreen)
+
+			if (slots.Has(this.HiveSlot) && (slots[this.HiveSlot] = 1)) {
+				break
+			} else {
+				if ((slot := ObjMinIndex(slots)) > 0) {
+					movement := walk((this.HiveSlot - slot) * 9.2, RightKey)
+					RunPath(movement)
+					KeyWait "F14", "D T5 L"
+					KeyWait "F14", "T120 L"
+					EndPath()
+
+					sleep 500
+					pBMScreen := GetImg()
+					if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {
+						this.HiveSlot := slot
+						break
+					}
+					Gdip_DisposeImage(pBMScreen)
+				} else {
+					Loop (6 - this.HiveSlot) {
+						RunPath(move)
+						KeyWait "F14", "D T5 L"
+						KeyWait "F14", "T120 L"
+						EndPath()
+
+						sleep 500
+						pBMScreen := GetImg()
+						if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {
+							this.HiveSlot := A_Index
+							break 2
+						}
+						Gdip_DisposeImage(pBMScreen)
+					}
+				}
+			}
+			if (A_Index = 5)
+				return 0
+		}
+
+		Send "{" SC_E " down}"
+		sleep 100
+		Send "{" SC_E " up}"
+		HiveConfirmed := 1
+		MouseMove windowX + 350, windowY + State.offsetY + 100
+		return 1
+	}
+
+	spawnMoveTo(moves) {
+		script := ""
+		for k in moves {
+			dirs := (Type(k.dir) = "Array") ? k.dir : [k.dir]
+			for dir in dirs
+				script .= 'Send "{' %dir "Key"% ' down}"`n'
+			script .= "move(" k.dist ")" "`n"
+			for dir in dirs
+				script .= 'Send "{' %dir "Key"% ' up}"`n'
+		}
+		return script
 	}
 
 	Reset() {
@@ -223,7 +486,7 @@ class AltMacro {
 		return out
 	}
 
-	DetectSpawn() {
+	DetectSpawn() { ; some of the code was from hive check, repurposing it here since it seems to reliably detect hive slots even when the stuff is really bad
 		ActivateRoblox()
 		GetRobloxClientPos()
 		loop 5

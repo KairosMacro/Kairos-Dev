@@ -73,7 +73,7 @@ class KeyAlignment {
 	}
 
 	PerformAction() {
-		if (this.IsRebinding || this.IsActionRunning || !this.IsRunning)
+		if (this.IsRebinding || this.IsActionRunning || !this.IsRunning || State.IsPaused)
 			return
 
 		this.IsActionRunning := true
@@ -115,7 +115,7 @@ class KeyAlignment {
 		Gdip_GraphicsClear(this.G)
 
 		cText := 0xFFFFFFFF
-		cAccent := this.IsRebinding ? 0xFFFFA500 : this.IsRunning ? 0xFF4CAF50 : 0xFFD32F2F
+		cAccent := this.IsRebinding ? 0xFFFFA500 : this.IsRunning && !State.IsPaused ? 0xFF4CAF50 : 0xFFD32F2F
 
 		Gdip_FillRoundedRectangle(this.G, this.BrushBack, 0, 0, this.Width, this.Height, 5)
 

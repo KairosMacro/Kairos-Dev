@@ -31,6 +31,9 @@ class Warnings {
 	}
 
 	CheckLoop(*) {
+		if (State.IsPaused)
+			return
+
 		static minTime := 500
 		static maxTime := 5000
 		if !this.IsRunning || !WinActive("Roblox")

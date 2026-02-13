@@ -99,19 +99,19 @@ Pattern(location) {
 	}
 
 	EnableShift(true)
-	loop 2 {
+	loop 1 {
 		walk(5, FwdKey)
 		walk(1, RightKey)
 		walk(5, BackKey)
 		walk(1, RightKey)
 	}
-	loop 4 {
+	loop 2 {
 		walk(5, FwdKey)
 		walk(1, LeftKey)
 		walk(5, BackKey)
 		walk(1, LeftKey)
 	}
-	loop 2 {
+	loop 1 {
 		walk(5, FwdKey)
 		walk(1, RightKey)
 		walk(5, BackKey)

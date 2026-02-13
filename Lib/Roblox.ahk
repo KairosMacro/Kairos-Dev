@@ -47,7 +47,8 @@ GetYOffset(hwnd?, &fail?, noFocus?)
 	static hRoblox := 0, offset := 0
 	if !IsSet(hwnd)
 		hwnd := GetRobloxHWND()
-
+	if IsSet(fail)
+		fail := 0
 	if (hwnd = hRoblox)
 	{
 		fail := 0
@@ -97,4 +98,20 @@ ActivateRoblox()
 		return 0
 	else
 		return 1
+}
+
+CloseRoblox() {
+	if (GetRobloxClientPos()) {
+		ActivateRoblox()
+		PrevKeyDelay := A_KeyDelay
+		SetKeyDelay 250 + PrevKeyDelay
+		send "{" SC_Esc "}{" SC_L "}{" SC_Enter "}"
+		SetKeyDelay PrevKeyDelay
+	}
+	try WinClose "Roblox"
+	sleep 500
+	try WinClose "Roblox"
+	sleep 4500
+	for p in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_Process WHERE Name LIKE '%Roblox%' OR CommandLine LIKE '%ROBLOXCORPORATION%' OR Name LIKE '%Bloxstrap%' OR Name LIKE '%Voidstrap%' Or Name LIKE '%Fishstrap%'")
+		ProcessClose p.ProcessID
 }
