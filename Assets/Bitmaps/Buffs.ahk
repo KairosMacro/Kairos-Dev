@@ -35,47 +35,20 @@ bitmaps["buff"][7] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAcAAAALCAY
 bitmaps["buff"][8] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAcAAAAKCAYAAAB4zEQNAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuMTGKCBbOAAAAuGVYSWZJSSoACAAAAAUAGgEFAAEAAABKAAAAGwEFAAEAAABSAAAAKAEDAAEAAAACAAAAMQECABEAAABaAAAAaYcEAAEAAABsAAAAAAAAAGAAAAABAAAAYAAAAAEAAABQYWludC5ORVQgNS4xLjExAAADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlgAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAAAGNdRzso9yOwAAADlJREFUKFNjZICCnz9//ocywYCdnR0ihy4BA0xQGgPANeDSiddOsLG4dOKUAInjdBBeANKJx0HsjAD3ISdwMogkEgAAAABJRU5ErkJggg==")
 bitmaps["buff"][9] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAcAAAAKCAYAAAB4zEQNAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuMTGKCBbOAAAAuGVYSWZJSSoACAAAAAUAGgEFAAEAAABKAAAAGwEFAAEAAABSAAAAKAEDAAEAAAACAAAAMQECABEAAABaAAAAaYcEAAEAAABsAAAAAAAAAGAAAAABAAAAYAAAAAEAAABQYWludC5ORVQgNS4xLjExAAADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlgAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAAAGNdRzso9yOwAAADVJREFUKFNjZACCnz9//gfRyICdnR0shxWANDBh00UQgDThtBMvwKkBJsEE5hELCBoHAQwMAN5QI1cXn5QbAAAAAElFTkSuQmCC")
 
-bitmaps["buff"]["bloom_red"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_red"]), Gdip_GraphicsClear(pGraphics, 0xFFF92222), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_blue"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_blue"]), Gdip_GraphicsClear(pGraphics, 0xFF2142F9), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_white"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_white"]), Gdip_GraphicsClear(pGraphics, 0xFFF9F9F9), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_scarlet"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_scarlet"]), Gdip_GraphicsClear(pGraphics, 0xFFAB1313), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_cyan"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_cyan"]), Gdip_GraphicsClear(pGraphics, 0xFF1DC4DE), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_grey"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_grey"]), Gdip_GraphicsClear(pGraphics, 0xFF7F7F7F), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_black"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_black"]), Gdip_GraphicsClear(pGraphics, 0xFF0B0B0B), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_yellow"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_yellow"]), Gdip_GraphicsClear(pGraphics, 0xFFEECC4F), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_green"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_green"]), Gdip_GraphicsClear(pGraphics, 0xFF23E805), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_pink"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_pink"]), Gdip_GraphicsClear(pGraphics, 0xFFFF82C9), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_violet"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_violet"]), Gdip_GraphicsClear(pGraphics, 0xFF5E26B1), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_merigold"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_merigold"]), Gdip_GraphicsClear(pGraphics, 0xFFDAA81C), Gdip_DeleteGraphics(pGraphics)
-bitmaps["buff"]["bloom_periwinkle"] := Gdip_CreateBitmap(4, 4)
-pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"]["bloom_periwinkle"]), Gdip_GraphicsClear(pGraphics, 0xFF969CEC), Gdip_DeleteGraphics(pGraphics)
-
 blooms := Map(
-   "bloom_red", 0xFFF92222,
-   "bloom_blue", 0xFF2142F9,
-   "bloom_white", 0xFFF9F9F9,
-   "bloom_scarlet", 0xFFAB1313,
-   "bloom_cyan", 0xFF1DC4DE,
-   "bloom_grey", 0xFF7F7F7F,
-   "bloom_black", 0xFF0B0B0B,
-   "bloom_yellow", 0xFFEECC4F,
-   "bloom_green", 0xFF23E805,
-   "bloom_pink", 0xFFFF82C9,
-   "bloom_violet", 0xFF5E26B1,
-   "bloom_merigold", 0xFFDAA81C,
-   "bloom_periwinkle", 0xFF969CEC
+   "red", 0xFFF92222,
+   "blue", 0xFF2142F9,
+   "white", 0xFFF9F9F9,
+   "scarlet", 0xFFAB1313,
+   "cyan", 0xFF1DC4DE,
+   "grey", 0xFF7F7F7F,
+   "black", 0xFF0B0B0B,
+   "yellow", 0xFFEECC4F,
+   "green", 0xFF23E805,
+   "pink", 0xFFFF82C9,
+   "violet", 0xFF5E26B1,
+   "merigold", 0xFFDAA81C,
+   "periwinkle", 0xFF969CEC
 )
 for name, color in blooms
-   bitmaps["buff"][name] := Gdip_CreateBitmap(4, 4), pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"][name]), Gdip_GraphicsClear(pGraphics, color), Gdip_DeleteGraphics(pGraphics)
+   bitmaps["buff"]["bloom_" name] := Gdip_CreateBitmap(4, 4), pGraphics := Gdip_GraphicsFromImage(bitmaps["buff"][name]), Gdip_GraphicsClear(pGraphics, color), Gdip_DeleteGraphics(pGraphics)
