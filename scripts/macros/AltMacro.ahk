@@ -59,13 +59,13 @@ class AltMacro {
 
 		local inactiveHoney := 0
 		this.Settings()
-		;if !(this.Reconnect())
-		;	this.Reset()
+		if !(this.Reconnect())
+			this.Reset()
 		fieldName := this.DefaultField
-		;this.GotoField(fieldName)
-		;this.PlaceSprinkler()
-		;this.Rotation()
-		;this.EnableShift()
+		this.GotoField(fieldName)
+		this.PlaceSprinkler()
+		this.Rotation()
+		this.EnableShift(1)
 		sleep 500
 
 		loop {
@@ -153,12 +153,15 @@ class AltMacro {
 		}
 	}
 
-	EnableShift() {
-		if (!this.ShiftLock)
+	EnableShift(state := 0) {
+		if (!this.ShiftLock || !GetRobloxClientPos())
 			return
 		ActivateRoblox()
-		send "{" SC_LShift "}"
-		sleep 100
+		pBMScreen := Gdip_BitmapFromScreen(windowX + 5 "|" windowY + windowHeight - 54 "|50|50")
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["shiftlock"], , , , , , 2) != state)
+			send "{" SC_LShift "}"
+		Gdip_DisposeImage(pBMScreen)
+		sleep 50
 	}
 
 	Reconnect() {
@@ -471,6 +474,7 @@ class AltMacro {
 	Reset() {
 		static HiveDown := false
 
+		this.EnableShift(0)
 		Loop 5 {
 			ActivateRoblox()
 			GetRobloxClientPos()
@@ -496,7 +500,7 @@ class AltMacro {
 					sleep 500
 					MouseMove windowX + 350, windowY + State.offsetY + 100
 					send "{" ZoomOut " 8}"
-					movement := spawnMoveTo(this.slotMove[this.HiveSlot])
+					movement := this.spawnMoveTo(this.slotMove[this.HiveSlot])
 					RunPath(movement)
 					KeyWait "F14", "D T5 L"
 					KeyWait "F14", "T120 L"

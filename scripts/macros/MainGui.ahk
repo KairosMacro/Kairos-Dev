@@ -69,7 +69,7 @@ class MainGui {
 			yPos := 55 + ((A_Index - 1) * 20)
 			i := A_Index
 
-			this.Gui.Add("Text", "x10 y" yPos " w36 -Wrap", "Slot " i ":")
+			this.Gui.Add("Text", "x10 y" yPos " w36 h20 -Wrap", "Slot " i ":")
 			this.Gui.Add("CheckBox", "x50 y" yPos - 2 " w20 h20 vBoostBar_SlotActive" i " Checked" Config.Get("BoostBar", "SlotActive" i)).OnEvent("Click", this.SaveConfig.Bind(this))
 			this.Gui.Add("Edit", "x75 y" yPos - 3 " w50 h20 Number vBoostBar_SlotTimer" i, Config.Get("BoostBar", "SlotTimer" i)).OnEvent("Change", this.SaveConfig.Bind(this))
 
@@ -79,6 +79,9 @@ class MainGui {
 			btn := this.Gui.Add("Button", "x130 y" yPos - 3 " w70 h21 vBoostBar_Config" i, display)
 			btn.OnEvent("Click", this.OpenModeSelector.Bind(this, i, btn))
 		}
+
+		this.Gui.Add("Text", "x280 y35", "Show when active")
+		this.Gui.Add("CheckBox", "x260 y32 w20 h20 vBoostBar_ShowWhenActive Checked" Config.Get("BoostBar", "ShowWhenActive", 1)).OnEvent("Click", this.SaveConfig.Bind(this))
 
 		; --- Alt Tab ---
 		TabCtrl.UseTab("Alt")
@@ -452,8 +455,10 @@ class MainGui {
 				Scorch.Fancy.Hide()
 			if IsSet(Warns) && Warns.Fancy
 				Warns.Fancy.Hide()
-			if IsSet(Boost) && Boost
+			if IsSet(Boost) && Boost {
 				Boost.Draw()
+				Boost.FollowWindow()
+			}
 			if IsSet(Aligner) && Aligner
 				Aligner.Draw()
 			if IsSet(Mag) && Mag.Gui

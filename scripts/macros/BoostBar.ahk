@@ -433,7 +433,8 @@ class BoostBar {
 				wx := win.x, wy := win.y, ww := win.w, wh := win.h
 				targetX := wx + (ww // 2) - 261
 				targetY := wy + wh - 182
-				(this.ConfigCache.enabled ? this.Gui.Show("NA x" targetX " y" targetY " w" this.TotalW " h" this.TotalH) : this.Gui.Hide())
+				show := this.ConfigCache.enabled && ((!this.IsRunning || State.IsPaused) || this.ConfigCache.showWhenActive)
+				(show ? this.Gui.Show("NA x" targetX " y" targetY " w" this.TotalW " h" this.TotalH) : this.Gui.Hide())
 			} else {
 				this.Gui.Hide()
 			}
@@ -445,14 +446,14 @@ class BoostBar {
 		this.IsRunning ^= 1
 		this.IsEnabled := this.ConfigCache.enabled
 		this.IsActive := this.IsRunning && this.IsEnabled
-		this.stats.BuffState["Timer"] := this.isActive ? 1 : 0
+		this.stats.BuffState["Timer"] := this.IsActive ? 1 : 0
 		this.Draw()
 		if (this.IsEnabled) {
 			if (this.IsActive && !this.ConfigCache.showWhenActive) {
 				this.Gui.Hide()
 			} else {
 				this.Gui.Show("NA")
-				this.Draw
+				this.Draw()
 			}
 		} else
 			this.Gui.Hide()
