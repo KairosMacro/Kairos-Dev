@@ -29,7 +29,7 @@ class Config {
             , "PatternSize", 1
             , "PatternWidth", 1
             , "RotationAmount", 0
-            , "RotationDirection", "right"
+            , "RotationDirection", "Right"
             , "ShiftLock", 0
             , "SprinklerLocation", "Center"
             , "SprinklerDistance", 1
@@ -66,8 +66,10 @@ class Config {
 
     static Load() {
         for section, keys in this.Default {
+            if !this.Data.Has(section)
+                this.Data[section] := Map()
             for key, val in keys {
-                this.Data[key] := val
+                this.Data[section][key] := val
             }
         }
         if FileExist(this.path) {

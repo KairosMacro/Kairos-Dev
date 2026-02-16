@@ -70,8 +70,8 @@ class MainGui {
 			i := A_Index
 
 			this.Gui.Add("Text", "x10 y" yPos " w36 h20 -Wrap", "Slot " i ":")
-			this.Gui.Add("CheckBox", "x50 y" yPos - 2 " w20 h20 vBoostBar_SlotActive" i " Checked" Config.Get("BoostBar", "SlotActive" i)).OnEvent("Click", this.SaveConfig.Bind(this))
-			this.Gui.Add("Edit", "x75 y" yPos - 3 " w50 h20 Number vBoostBar_SlotTimer" i, Config.Get("BoostBar", "SlotTimer" i)).OnEvent("Change", this.SaveConfig.Bind(this))
+			this.Gui.Add("CheckBox", "x50 y" yPos - 2 " w20 h20 vBoostBar_SlotActive" i " Checked" Config.Get("BoostBar", "SlotActive" i, 0)).OnEvent("Click", this.SaveConfig.Bind(this))
+			this.Gui.Add("Edit", "x75 y" yPos - 3 " w50 h20 Number vBoostBar_SlotTimer" i, Config.Get("BoostBar", "SlotTimer" i, 100)).OnEvent("Change", this.SaveConfig.Bind(this))
 
 			currentModes := Config.Get("BoostBar", "SlotMode" i, "Timer")
 			display := currentModes = "" ? "None" : (StrSplit(currentModes, "|").Length > 1 ? "Multiple" : currentModes)
@@ -107,7 +107,7 @@ class MainGui {
 		this.Gui.Add("CheckBox", "x100 y117 w20 h20 vAlt_FieldDriftComp Checked" Config.Get("Alt", "FieldDriftComp", 1)).OnEvent("Click", this.SaveConfig.Bind(this))
 
 		this.Gui.Add("Text", "x40 y143", "Claim Hive")
-		this.Gui.Add("CheckBox", "x20 y140 w20 h20 vAlt_ClaimHive Checked" Config.Get("Alt", "ClaimHive", 0)).OnEvent("Click", this.SaveConfig.Bind(this))
+		this.Gui.Add("CheckBox", "x20 y140 w20 h20 vAlt_ClaimHive Checked" Config.Get("Alt", "ClaimHive", 1)).OnEvent("Click", this.SaveConfig.Bind(this))
 
 		this.Gui.Add("Text", "x20 y165", "Priv Server:")
 		this.Gui.Add("Edit", "x80 y163 w110 h20 vAlt_PrivServer", Config.Get("Alt", "PrivServer", "")).OnEvent("Change", this.SaveConfig.Bind(this))
