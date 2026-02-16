@@ -89,7 +89,7 @@ class KeyAlignment {
 	}
 
 	StartRebind() {
-		if this.IsRunning && this.IsRebinding
+		if this.IsRunning || this.IsRebinding
 			return
 
 		this.IsRebinding := true
