@@ -124,12 +124,18 @@ PathVars() {
 	(
 		'
 	HiveSlot := ' Alt.HiveSlot '
+	IsClaimed := ' Alt.ClaimHiveEnabled '
 	CoordMode "Mouse", "Screen"
 	CoordMode "Pixel", "Screen"
 
 	gotoRamp() {
-		walk(5, FwdKey)
-		walk(9.2*HiveSlot-4, RightKey)
+		if (IsClaimed) {
+			walk(5, FwdKey)
+			walk(9.2*HiveSlot-4, RightKey)
+		} else {
+			walk(30, FwdKey, RightKey)
+			walk(5, RightKey)
+		}
 	}
 
 	gotoCannon() {

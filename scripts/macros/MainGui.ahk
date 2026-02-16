@@ -2,7 +2,10 @@ class MainGui {
 	Selectors := Map()
 	Gui := unset
 	FeatureList := ["Warns", "Boost Bar", "Alt Macro", "Key Alignment", "Passive Scanner", "Magnifier"]
-
+	FwdDown := false
+	BackDown := false
+	LeftDown := false
+	RightDown := false
 	__New() {
 		this.Gui := Gui((Config.Get("Main", "AlwaysOnTop", 0) ? "+AlwaysOnTop " : "") " +Border +OwnDialogs", "Kairos")
 		this.Gui.Show("x" Config.Get("Main", "GuiX", A_ScreenWidth // 2 - 200) " y" Config.Get("Main", "GuiY", A_ScreenHeight // 2 - 100) " w400 h220")
@@ -38,23 +41,23 @@ class MainGui {
 		; --- Warnings Tab ---
 		TabCtrl.UseTab("Warnings")
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y35 w180 h140 -Wrap", "")
-		this.Gui.Add("Text", "x20 y36 w103 h20 -Wrap", "Precision Settings")
+		this.Gui.Add("GroupBox", "x10 y20 w180 h140 -Wrap", "")
+		this.Gui.Add("Text", "x20 y22 w103 h20 -Wrap", "Precision Settings")
 
-		this.Gui.Add("Text", "x15 y65", "Threshold:")
-		this.Gui.Add("Edit", "x76 y62 w50 Number vWarns_StartWarn", Config.Get("Warns", "StartWarn", 25)).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Text", "x15 y45", "Threshold:")
+		this.Gui.Add("Edit", "x76 y42 w50 Number vWarns_StartWarn", Config.Get("Warns", "StartWarn", 25)).OnEvent("Change", this.SaveConfig.Bind(this))
 		this.Gui.Add("UpDown", "Range0-60", Config.Get("Warns", "StartWarn", 25))
 		this.Gui.Add("Text", "x+5 yp+3", "Seconds")
 
-		this.Gui.Add("Text", "x15 y95", "Volume:")
-		this.Gui.Add("Edit", "x61 y92 w50 Number vWarns_Volume", Config.Get("Warns", "Volume", 25)).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Text", "x15 y70", "Volume:")
+		this.Gui.Add("Edit", "x61 y68 w50 Number vWarns_Volume", Config.Get("Warns", "Volume", 25)).OnEvent("Change", this.SaveConfig.Bind(this))
 		this.Gui.Add("UpDown", "Range0-100", Config.Get("Warns", "Volume", 25))
 		this.Gui.Add("Text", "x+5 yp+3", "%")
 
-		this.Gui.Add("Text", "x15 y123", "Sound:")
-		this.Gui.Add("Button", "x+5 y119 w60 h20", "Browse").OnEvent("Click", this.SelectSound.Bind(this))
+		this.Gui.Add("Text", "x15 y95", "Sound:")
+		this.Gui.Add("Button", "x+5 y92 w60 h20", "Browse").OnEvent("Click", this.SelectSound.Bind(this))
 		this.Gui.Add("Button", "xp+60 yp w60 h20 vWarns_ResetSoundFile", "Test").OnEvent("Click", this.TestAudio.Bind(this))
-		this.Gui.Add("Edit", "x15 y140 w170 h20 ReadOnly vWarns_SoundFile", Config.Get("Warns", "SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"))
+		this.Gui.Add("Edit", "x15 y120 w170 h20 ReadOnly vWarns_SoundFile", Config.Get("Warns", "SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"))
 
 		; --- Boost Bar Tab ---
 		TabCtrl.UseTab("Boost Bar")
@@ -80,32 +83,69 @@ class MainGui {
 		; --- Alt Tab ---
 		TabCtrl.UseTab("Alt")
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y35 w185 h150")
-		this.Gui.Add("Text", "x20 y36", "Alt Settings")
+		this.Gui.Add("GroupBox", "x10 y20 w185 h170")
+		this.Gui.Add("Text", "x20 y22", "Alt Settings")
 		this.Gui.SetFont("s8 cDefault Norm")
 		this.Gui.SetFont("s8 w400")
 
-		this.Gui.Add("Text", "x20 y58", "MoveSpeed:")
-		this.Gui.Add("Edit", "x95 y55 w60 h20 vAlt_Movespeed", Config.Get("Alt", "Movespeed", 29)).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Text", "x20 y45", "MoveSpeed:")
+		this.Gui.Add("Edit", "x95 y42 w60 h20 vAlt_Movespeed", Config.Get("Alt", "Movespeed", 29)).OnEvent("Change", this.SaveConfig.Bind(this))
 
-		this.Gui.Add("Text", "x20 y88", "Hive Slot:")
-		this.Gui.Add("Edit", "x95 y85 w60 h20 vAlt_HiveSlot", Config.Get("Alt", "HiveSlot", 1)).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Text", "x20 y70", "Hive Slot:")
+		this.Gui.Add("Edit", "x95 y68 w60 h20 vAlt_HiveSlot", Config.Get("Alt", "HiveSlot", 1)).OnEvent("Change", this.SaveConfig.Bind(this))
+
+		this.Gui.Add("Text", "x20 y95", "Alt Number:")
+		this.Gui.Add("Edit", "x95 y92 w40 h20 Number vAlt_AltNumber", Config.Get("Alt", "AltNumber", 1)).OnEvent("Change", this.SaveConfig.Bind(this))
+
+		this.Gui.Add("Text", "x40 y120", "Shift Lock")
+		this.Gui.Add("CheckBox", "x20 y117 w20 h20 vAlt_ShiftLock Checked" Config.Get("Alt", "ShiftLock", 0)).OnEvent("Click", this.SaveConfig.Bind(this))
+
+		this.Gui.Add("Text", "x120 y120", "Drift Comp")
+		this.Gui.Add("CheckBox", "x100 y117 w20 h20 vAlt_FieldDriftComp Checked" Config.Get("Alt", "FieldDriftComp", 1)).OnEvent("Click", this.SaveConfig.Bind(this))
+
+		this.Gui.Add("Text", "x40 y143", "Claim Hive")
+		this.Gui.Add("CheckBox", "x20 y140 w20 h20 vAlt_ClaimHive Checked" Config.Get("Alt", "ClaimHive", 0)).OnEvent("Click", this.SaveConfig.Bind(this))
+
+		this.Gui.Add("Text", "x20 y165", "Priv Server:")
+		this.Gui.Add("Edit", "x80 y163 w110 h20 vAlt_PrivServer", Config.Get("Alt", "PrivServer", "")).OnEvent("Change", this.SaveConfig.Bind(this))
+
+
 
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x205 y35 w185 h150")
-		this.Gui.Add("Text", "x215 y36", "Field Settings")
+		this.Gui.Add("GroupBox", "x205 y20 w185 h170")
+		this.Gui.Add("Text", "x215 y22", "Field Settings")
+
+		this.Gui.SetFont("s8 w400")
+		this.Gui.Add("Button", "x300 y22 w40 h16", "Copy").OnEvent("Click", this.CopyFieldSettings.Bind(this))
+		this.Gui.Add("Button", "x345 y22 w40 h16", "Paste").OnEvent("Click", this.PasteFieldSettings.Bind(this))
+
 		this.Gui.SetFont("s8 cDefault Norm")
 
-		this.Gui.Add("Text", "x215 y58", "Field:")
+		this.Gui.Add("Text", "x215 y45", "Field:")
 		fieldArr := ["sunflower", "dandelion", "mushroom", "blueflower", "clover", "strawberry", "spider", "bamboo", "pineapple", "stump", "cactus", "pumpkin", "pinetree", "rose", "mountaintop", "pepper", "coconut"]
-		(GuiCtrl := this.Gui.Add("DropDownList", "x255 y55 w100 vAlt_DefaultField Choose" ObjIndexOf(fieldArr, Config.Get("Alt", "DefaultField", "pepper")), fieldArr)).OnEvent("Change", this.SaveConfig.Bind(this))
+		(GuiCtrl := this.Gui.Add("DropDownList", "x255 y42 w100 vAlt_DefaultField Choose" ObjIndexOf(fieldArr, Config.Get("Alt", "DefaultField", "pepper")), fieldArr)).OnEvent("Change", this.SaveConfig.Bind(this))
 
-		this.Gui.Add("Text", "x215 y88", "Pattern:")
-		this.Gui.Add("DropDownList", "x270 y85 w110 vAlt_Pattern Choose" ObjIndexOf(patternList, Config.Get("Alt", "Pattern", "GeneralBooster")), patternList).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Text", "x215 y70", "Pattern:")
+		this.Gui.Add("DropDownList", "x270 y68 w110 vAlt_Pattern Choose" ObjIndexOf(patternList, Config.Get("Alt", "Pattern", "GeneralBooster")), patternList).OnEvent("Change", this.SaveConfig.Bind(this))
 
-		this.Gui.Add("Text", "x215 y115", "Size:")
-		this.Gui.Add("Edit", "x240 y115 w40 h20 Number vAlt_PatternSize", Config.Get("Alt", "PatternSize"))
+		this.Gui.Add("Text", "x215 y95", "Size:")
+		this.Gui.Add("Edit", "x240 y92 w40 h20 Number vAlt_PatternSize", Config.Get("Alt", "PatternSize"))
 		this.Gui.Add("UpDown", "Range1-10", Config.Get("Alt", "PatternSize"))
+
+		this.Gui.Add("Text", "x285 y95", "Width:")
+		this.Gui.Add("Edit", "x320 y92 w40 h20 Number vAlt_PatternWidth", Config.Get("Alt", "PatternWidth"))
+		this.Gui.Add("UpDown", "Range1-10", Config.Get("Alt", "PatternWidth"))
+
+		this.Gui.Add("Text", "x215 y123", "Sprinkler:")
+		sprinklerArr := ["Center", "Upper Left", "Left", "Lower Left", "Lower", "Lower Right", "Right", "Upper Right", "Upper"]
+		this.Gui.Add("DropDownList", "x265 y120 w80 vAlt_SprinklerLocation Choose" ObjIndexOf(sprinklerArr, Config.Get("Alt", "SprinklerLocation", "Center")), sprinklerArr).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Edit", "x350 y120 w30 h20 Number vAlt_SprinklerDistance", Config.Get("Alt", "SprinklerDistance", 1)).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("UpDown", "Range0-10", Config.Get("Alt", "SprinklerDistance", 1))
+
+		this.Gui.Add("Text", "x215 y150", "Rotation:")
+		this.Gui.Add("Edit", "x260 y148 w40 h20 Number vAlt_RotationAmount", Config.Get("Alt", "RotationAmount", 0)).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("UpDown", "Range0-8", Config.Get("Alt", "RotationAmount", 0))
+		this.Gui.Add("DropDownList", "x320 y148 w60 vAlt_RotationDirection Choose" ObjIndexOf(["Right", "Left"], Config.Get("Alt", "RotationDirection", "Right")), ["Right", "Left"]).OnEvent("Change", this.SaveConfig.Bind(this))
 
 		; --- Communicator Tab ---
 		TabCtrl.UseTab("Communicator")
@@ -122,7 +162,36 @@ class MainGui {
 		role := Config.Get("Main", "AltMacroEnabled", 0) ? "Client" : "Server"
 		this.Gui.Add("Text", "x60 y130 w200 vCommsStatus", role)
 
+		; --- Scanner Tab ---
+		TabCtrl.UseTab("Scanner")
+		this.GUi.SetFont("w700")
+		this.Gui.Add("GroupBox", "x10 y20 w130 h120")
+		this.Gui.Add("Text", "x20 y22", "Scanner Settings")
+		this.Gui.SetFont("s8 cDefault Norm")
+
+		passives := Config.Get("PassiveScanner", "Passives", "Scorch")
+		has := (str) => InStr("|" passives "|", "|" str "|")
+
+
+		this.Gui.Add("CheckBox", "x25 y42 w20 h20 vPassiveScanner_Scorch Checked" has("scorch")).OnEvent("Click", this.UpdatePassives.Bind(this))
+		this.Gui.Add("Text", "x45 y45", "Scorch")
+
+		this.Gui.Add("CheckBox", "x25 y62 w20 h20 vPassiveScanner_PopStar Checked" has("popstar")).OnEvent("Click", this.UpdatePassives.Bind(this))
+		this.Gui.Add("Text", "x45 y65", "Pop Star")
+
+		this.Gui.Add("CheckBox", "x25 y82 w20 h20 vPassiveScanner_XFlame Checked" has("x-flame")).OnEvent("Click", this.UpdatePassives.Bind(this))
+		this.Gui.Add("Text", "x45 y85", "X-Flame")
 		; --- Key Alignment Tab ---
+		TabCtrl.UseTab("Key Alignment")
+		this.Gui.SetFont("w700")
+		this.Gui.Add("GroupBox", "x10 y35 w380 h150")
+		this.Gui.Add("Text", "x20 y36", "Key Alignment Settings")
+		this.Gui.SetFont("s8 cDefault Norm")
+
+		this.Gui.Add("Text", "x25 y60", "Alignment Key:")
+		this.Gui.Add("Edit", "x100 y60 w100 vKeyAlignment_AlignmentKey", Config.Get("KeyAlignment", "AlignmentKey", "e")).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Text", "x25 y90", "Rebind Hotkey:")
+		this.Gui.Add("Edit", "x100 y90 w100 vKeyAlignment_RebindHotkey", Config.Get("KeyAlignment", "RebindHotkey", "^+k")).OnEvent("Change", this.SaveConfig.Bind(this))
 
 		; --- Dark Mode ---
 		SetWindowTheme(this.Gui, Config.Get("Main", "DarkMode", 1))
@@ -198,6 +267,75 @@ class MainGui {
 		ModeGui.Show("w" MinWidth " h" MinHeight)
 		SetWindowTheme(ModeGui, Config.Get("Main", "DarkMode", 1))
 		SetWindowAttribute(ModeGui, Config.Get("Main", "DarkMode", 1))
+	}
+
+	UpdatePassives(GuiCtrl, *) {
+		current := Config.Get("PassiveScanner", "Passives", "Scorch")
+		list := StrSplit(current, "|")
+
+		name := StrLower(StrReplace(GuiCtrl.Name, "PassiveScanner_", ""))
+		if (name = "xflame")
+			name := "x-flame"
+		
+		newList := []
+		found := false
+		for item in list {
+			if (item = name)
+				found := true
+			else if (item != "")
+				newList.Push(item)
+		}
+
+		if (GuiCtrl.Value)
+			newList.Push(name)
+		saveStr := ""
+		for item in newList
+			saveStr .= (A_Index > 1 ? "|" : "") item
+		Config.Set("PassiveScanner", "Passives", saveStr)
+		Config.WriteIni()
+		this.RefreshFeature("PassiveScannerEnabled")
+	}
+
+	CopyFieldSettings(*) {
+		settings := Config.Get("Alt", "DefaultField") "|" Config.Get("Alt", "Pattern") "|" Config.Get("Alt", "PatternSize") "|" Config.Get("Alt", "PatternWidth") "|" Config.Get("Alt", "SprinklerLocation") "|" Config.Get("Alt", "SprinklerDistance") "|" Config.Get("Alt", "RotationAmount") "|" Config.Get("Alt", "RotationDirection")
+		A_Clipboard := settings
+		ToolTip("Settings copied to clipboard")
+		SetTimer(ToolTip, -500)
+	}
+
+	PasteFieldSettings(*) {
+		try {
+			data := StrSplit(A_Clipboard, "|")
+			if (data.Length != 8) {
+				ToolTip("Invalid settings.")
+				SetTimer(ToolTip, -500)
+				return
+			}
+
+			Config.Set("Alt", "DefaultField", data[1])
+			Config.Set("Alt", "Pattern", data[2])
+			Config.Set("Alt", "PatternSize", data[3])
+			Config.Set("Alt", "PatternWidth", data[4])
+			Config.Set("Alt", "SprinklerLocation", data[5])
+			Config.Set("Alt", "SprinklerDistance", data[6])
+			Config.Set("Alt", "RotationAmount", data[7])
+			Config.Set("Alt", "RotationDirection", data[8])
+			Config.WriteIni()
+
+			this.Gui["Alt_DefaultField"].Text := data[1]
+			this.Gui["Alt_Pattern"].Text := data[2]
+			this.Gui["Alt_PatternSize"].Value := data[3]
+			this.Gui["Alt_PatternWidth"].Value := data[4]
+			this.Gui["Alt_SprinklerLocation"].Text := data[5]
+			this.Gui["Alt_SprinklerDistance"].Value := data[6]
+			this.Gui["Alt_RotationAmount"].Value := data[7]
+			this.Gui["Alt_RotationDirection"].Text := data[8]
+			ToolTip("Settings pasted from clipboard")
+			SetTimer(ToolTip, -500)
+		} catch {
+			ToolTip("Error pasting settings.")
+			SetTimer(ToolTip, -500)
+		}
 	}
 
 	TestAudio(GuiCtrl, *) {
@@ -306,7 +444,7 @@ class MainGui {
 		State.IsPaused ^= 1
 
 		if (State.IsPaused) {
-			this.Gui.Show("NoActivate")
+			this.Gui.Show("")
 			this.Gui.Title := "Kairos (Paused)"
 			this.Gui["PauseButton"].Text := "Resume (" Config.Get("Main", "PauseHotkey", "F2") ")"
 
@@ -321,12 +459,10 @@ class MainGui {
 			if IsSet(Mag) && Mag.Gui
 				Mag.Gui.Hide()
 
-			if (State.CurrentWalk.pid) {
-				DetectHiddenWindows true
-				if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
-					PostMessage(0x111, 65306)
-				DetectHiddenWindows false
-			}
+			DetectHiddenWindows true
+			if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
+				send "{F16}"
+			DetectHiddenWindows false
 		} else {
 			this.Gui.Hide()
 			this.Gui.Title := "Kairos"
@@ -337,13 +473,13 @@ class MainGui {
 			if IsSet(Aligner) && Aligner
 				Aligner.Draw()
 
-			if (State.CurrentWalk.pid) {
-				DetectHiddenWindows true
-				if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
-					PostMessage(0x111, 65306)
-				DetectHiddenWindows false
-			}
+			DetectHiddenWindows true
+			if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
+				send "{F14}"
+			DetectHiddenWindows false
+
 		}
+		Pause -1
 	}
 
 	stop(*) {

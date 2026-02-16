@@ -101,17 +101,17 @@ ActivateRoblox()
 }
 
 CloseRoblox() {
-	if (GetRobloxClientPos()) {
+	if (GetRobloxHWND()) {
 		ActivateRoblox()
 		PrevKeyDelay := A_KeyDelay
 		SetKeyDelay 250 + PrevKeyDelay
 		send "{" SC_Esc "}{" SC_L "}{" SC_Enter "}"
 		SetKeyDelay PrevKeyDelay
+		try WinClose "Roblox"
+		sleep 500
+		try WinClose "Roblox"
+		sleep 4500
 	}
-	try WinClose "Roblox"
-	sleep 500
-	try WinClose "Roblox"
-	sleep 4500
 	for p in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_Process WHERE Name LIKE '%Roblox%' OR CommandLine LIKE '%ROBLOXCORPORATION%' OR Name LIKE '%Bloxstrap%' OR Name LIKE '%Voidstrap%' Or Name LIKE '%Fishstrap%'")
 		ProcessClose p.ProcessID
 }

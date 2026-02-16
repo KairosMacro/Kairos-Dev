@@ -6,8 +6,7 @@ class PassiveScanner {
 
 	modes := Map(
 		"scorch", { x1: 0, x2: 0, y1: 11, y2: 16, var: 30 }
-		, "x-flame1", { x1: 0, x2: 0, y1: 12, y2: 19, var: 13 }
-		, "x-flame2", { x1: 0, x2: 0, y1: 12, y2: 19, var: 13 }
+		, "x-flame", { x1: 0, x2: 0, y1: 9, y2: 18, var: 30 }
 		, "popstar", { x1: 0, x2: 0, y1: 7, y2:19, var: 30 }
 		, "bloom_red",        { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFC9191}
       , "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
@@ -50,18 +49,7 @@ class PassiveScanner {
 		passiveNames := this.PassiveList
 		msg := []
 		for i in passiveNames {
-			val := 0
-			if i = "x-flame" {
-				a := this.DetectPassive("x-flame1")
-				b := this.DetectPassive("x-flame2")
-				if (a = -1 && b = -1)
-					val := -1
-				else {
-					val := (a = -1 ? 0 : a) + (b = -1 ? 0 : b)
-				}
-			} else {
-				val := this.DetectPassive(i)
-			}
+			val := this.DetectPassive(i)
 			msg.Push([bitmaps["icon"][i], (val = -1 ? ": CD" : ": " val)])
 		}
 		; "red", "blue", "white", "scarlet", "cyan", "grey", "black", "yellow", "green", "pink", "violet", "merigold", "periwinkle"

@@ -33,6 +33,7 @@ class AltMacro {
 		this.ShiftLock := Config.Get("Alt", "ShiftLock", 0)
 		this.SprinklerLocation := Config.Get("Alt", "SprinklerLocation", "Center")
 		this.SprinklerDistance := Config.Get("Alt", "SprinklerDistance", 1)
+		this.ClaimHiveEnabled := Config.Get("Alt", "ClaimHive", 1)
 	}
 
 	Toggle() {
@@ -58,11 +59,13 @@ class AltMacro {
 
 		local inactiveHoney := 0
 		this.Settings()
-		if !(this.Reconnect())
-			this.Reset()
+		;if !(this.Reconnect())
+		;	this.Reset()
 		fieldName := this.DefaultField
-		this.GotoField(fieldName)
-		send "{" SC_1 "}"
+		;this.GotoField(fieldName)
+		;this.PlaceSprinkler()
+		;this.Rotation()
+		;this.EnableShift()
 		sleep 500
 
 		loop {
@@ -99,6 +102,63 @@ class AltMacro {
 		}
 		this.Cleanup()
 		sleep 500
+	}
+
+	PlaceSprinkler() {
+		if (this.SprinklerLocation = "Center") {
+			send "{" SC_1 "}"
+			sleep 500
+			return
+		}
+		fieldDims := State.FieldSize.Has(this.DefaultField) ? State.FieldSize[this.DefaultField] : {width: 30, height: 20}
+		scale := this.SprinklerDistance / 10
+		loc := this.SprinklerLocation
+		moveX := 0
+		moveY := 0
+		if InStr(loc, "Upper")
+			moveY := (fieldDims.height / 2) * scale
+		else if InStr(loc, "Lower")
+			moveY := -(fieldDims.height / 2) * scale
+		if InStr(loc, "Left")
+			moveX := -(fieldDims.width / 2) * scale
+		else if InStr(loc, "Right")
+			moveX := (fieldDims.width / 2) * scale
+		
+		if (moveY != 0) {
+			key := (moveY > 0) ? FwdKey : BackKey
+			RunPath(walk(Abs(moveY), key))
+			KeyWait "F14", "D T5 L"
+			KeyWait "F14", "T15 L"
+			EndPath()
+		}
+		if (moveX != 0) {
+			key := (moveX > 0) ? RightKey : LeftKey
+			RunPath(walk(Abs(moveX), key))
+			KeyWait "F14", "D T5 L"
+			KeyWait "F14", "T15 L"
+			EndPath()
+		}
+		sleep 100
+		send "{" SC_1 "}"
+		sleep 500
+		
+	}
+
+	Rotation() {
+		amt := this.RotationAmount
+		if (amt > 0 && amt <= 4) {
+			key := (this.RotationDirection = "Left") ? RotLeft : RotRight
+			send "{" key " " amt "}"
+			sleep 300
+		}
+	}
+
+	EnableShift() {
+		if (!this.ShiftLock)
+			return
+		ActivateRoblox()
+		send "{" SC_LShift "}"
+		sleep 100
 	}
 
 	Reconnect() {
@@ -201,8 +261,12 @@ class AltMacro {
 		MouseMove windowX + (windowWidth // 2), windowY + (windowHeight // 2)
 		sleep 500
 
-		if this.ClaimHive()
-			return 1
+		if (this.ClaimHiveEnabled)
+				if this.ClaimHive()
+					return 1
+		else
+			this.DetectSpawn()
+				return 1
 	}
 
 	Gather(patternName, field, index) {
@@ -406,42 +470,57 @@ class AltMacro {
 
 	Reset() {
 		static HiveDown := false
-		local HiveConfirmed := false
-		while (!HiveConfirmed) {
+
+		Loop 5 {
 			ActivateRoblox()
 			GetRobloxClientPos()
 			PrevKeyDelay := A_KeyDelay
-			SetKeyDelay(300)
+			SetKeyDelay 300
 			send "{" SC_Esc "}{" SC_R "}{" SC_Enter "}"
+
 			n := 0
-			while ((n < 2) && (A_Index <= 70)) {
-				sleep 100
+			while ((n < 2) && (A_Index <= 50)) {
+				sleep 200
 				pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY "|" windowWidth "|50")
 				n += ((Gdip_ImageSearch(pBMScreen, bitmaps["emptyhealth"], , , , , , 10) || this.HealthBar()) = (n = 0))
 				Gdip_DisposeImage(pBMScreen)
 			}
 			sleep 500
+			SetKeyDelay PrevKeyDelay
 
-			if not this.atHive() {
-				continue
-			}
-
-			if (HiveConfirmed = 0) {
+			if (!this.ClaimHiveEnabled) {
+				if this.DetectSpawn()
+					return
+			} else {
+				if (!this.atHive() && this.DetectSpawn()) {
+					sleep 500
+					MouseMove windowX + 350, windowY + State.offsetY + 100
+					send "{" ZoomOut " 8}"
+					movement := spawnMoveTo(this.slotMove[this.HiveSlot])
+					RunPath(movement)
+					KeyWait "F14", "D T5 L"
+					KeyWait "F14", "T120 L"
+					EndPath()
+					sleep 500
+					if this.atHive()
+						return
+				}
 				if (HiveDown)
 					sendinput "{" RotDown "}"
 				region := windowX "|" windowY + 3 * windowHeight // 4 "|" windowWidth "|" windowHeight // 4
 				sconf := windowWidth ** 2 // 3200
+
 				loop 4 {
 					sleep 250
 					pBMScreen := Gdip_BitmapFromScreen(region), s := 0
 					for i, k in bitmaps["hive"] {
-						s := Max(s, Gdip_ImageSearch(pBMScreen, k, , , , , , 4, , , sconf))
+						s := Max(s, Gdip_ImageSearch(pBMScreen, k, , , , , , 5, , , sconf))
 						if (s >= sconf) {
 							Gdip_DisposeImage(pBMScreen)
 							HiveConfirmed := 1
 							sendinput "{" RotRight " 4}" (HiveDown ? ("{" RotUp "}") : "")
 							Send "{" ZoomOut " 5}"
-							break 2
+							return
 						}
 					}
 					Gdip_DisposeImage(pBMScreen)
@@ -449,6 +528,10 @@ class AltMacro {
 				}
 			}
 		}
+
+		CloseRoblox()
+		if (this.Reconnect())
+			return
 	}
 
 	HealthBar() {
@@ -499,7 +582,7 @@ class AltMacro {
 			sleep 250
 			pBMScreen := Gdip_BitmapFromScreen(region), s := 0
 			for i, k in bitmaps["spawn"] {
-				s := Max(s, Gdip_ImageSearch(pBMScreen, k, , , , , , 5, , , sconf))
+				s := Max(s, Gdip_ImageSearch(pBMScreen, k, , , , , , 13, , , sconf))
 				if (s >= sconf) {
 					Gdip_DisposeImage(pBMScreen)
 					spawnConfirmed := 1

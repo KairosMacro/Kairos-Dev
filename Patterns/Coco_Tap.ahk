@@ -63,6 +63,7 @@ locateCoco() {
 
 gotoCoco() {
 	start := A_TickCount
+   pwm := 50
 	GetRobloxClientPos()
 	if !(pos := locateCoco()) {
 		rotate()
@@ -73,12 +74,9 @@ gotoCoco() {
 	centerX := windowWidth // 2, centerY := windowHeight // 2
 	deadX := windowWidth * 0.035, deadY := windowHeight * 0.035
 
-	heldX := ""
-	heldY := ""
+	heldKeys := Map(FwdKey, 0, BackKey, 0, LeftKey, 0, RightKey, 0)
 	miss := 0
 
-	miss := 0
-	; make it walk in an angle towards the coconut instead of 45 degree/straght ?
 	while (A_TickCount - start < 10000) {
 		if !(pos := locateCoco()) {
 			if (miss++ > 3)
@@ -86,31 +84,41 @@ gotoCoco() {
 			continue
 		}
 		miss := 0
+
 		vecX := pos.x - centerX
 		vecY := pos.y - centerY
-		targetX := targetY := ""
-		if (Abs(vecX) > deadX)
-			targetX := (vecX > 0) ? RightKey : LeftKey
-		if (Abs(vecY) > deadY)
-			targetY := (vecY > 0) ? BackKey : FwdKey
 
-		if (heldX != targetX) {
-			if heldX
-				send "{" heldX " up}"
-			if targetX
-				send "{" targetX " down}"
-			heldX := targetX
-		}
-		if (heldY != targetY) {
-			if heldY
-				send "{" heldY " up}"
-			if targetY
-				send "{" targetY " down}"
-			heldY := targetY
-		}
-		
-		if (heldX = "" && heldY = "")
-			break
+      if (Abs(vecX) < deadX && Abs(vecY) < deadY)
+         break
+      
+      maxDist := Max(Abs(vecX), Abs(vecY))
+      dutyX := Abs(vecX) / maxDist
+      dutyY := Abs(vecY) / maxDist
+
+      targetX := (vecX > 0) ? RightKey : LeftKey
+      targetY := (vecY > 0) ? BackKey : FwdKey
+
+      cycle := Mod(A_TickCOunt, pwm)
+
+      shouldHoldX := (cycle < (pwm * dutyX)) && (Abs(vecX) > deadX)
+      shouldHoldY := (cycle < (pwm * dutyY)) && (Abs(vecY) > deadY)
+
+      for key, state in [[targetX, shouldHoldX], [targetY, shouldHoldY]] {
+         if (state[2] && !heldKeys[state[1]]) {
+            send "{" state[1] " down}"
+            heldKeys[state[1]] := true
+         } else if (!state[2] && heldKeys[state[1]]) {
+            send "{" state[1] " up}"
+            heldKeys[state[1]] := false
+         }
+      }
+
+      for k, v in heldKeys {
+         if (v && k != targetX && k != targetY) {
+            send "{" k " up}"
+            heldKeys[k] := false
+         }
+      }
 	}
 	Send "{" FwdKey " up}{" BackKey " up}{" LeftKey " up}{" RightKey " up}"
 }

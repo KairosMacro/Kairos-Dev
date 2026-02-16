@@ -34,6 +34,7 @@ class Config {
             , "SprinklerLocation", "Center"
             , "SprinklerDistance", 1
             , "PrivServer", ""
+            , "ClaimHive", 1
         )
         , "BoostBar", Map(
             "SlotActive1", 0, "SlotTimer1", 100, "SlotMode1", "Timer"
@@ -99,8 +100,10 @@ class Config {
             if (p := InStr(line, "=")) && (currentSection != "") {
                 key := Trim(SubStr(line, 1, p - 1))
                 val := Trim(SubStr(line, p + 1))
-                if IsNumber(val)
-                    val += 0
+                if IsInteger(val)
+                    val := Integer(val)
+                if IsFloat(val)
+                    val := Round(Float(val), 2)
                 this.Data[currentSection][key] := val
             }
         }
@@ -114,15 +117,14 @@ class Config {
         for section, keys in this.Default {
             iniStr .= "[" section "]`r`n"
             for key, val in keys {
-                if (this.Data.Has(section) && this.Data[section].Has(key))
-                    currentVal := this.Data[section][key]
-                else
-                    currentVal := val
+                currentVal := (this.Data.Has(section) && this.Data[section].Has(key)) ? this.Data[section][key] : val
+                if IsFloat(currentVal)
+                    currentVal := Round(currentVal, 2)
                 iniStr .= key "=" currentVal "`r`n"
             }
             iniStr .= "`r`n"
         }
-        f := FileOpen(this.path, "w-d")
+        f := FileOpen(this.path, "w", "UTF-8")
         f.Write(iniStr)
         f.Close()
     }
