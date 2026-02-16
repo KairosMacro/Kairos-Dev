@@ -1,37 +1,46 @@
 ﻿class Communicator {
 	isServer := false
+	isEnabled := false
 	thingName := ""
 	lastDweet := ""
+	readTimer := ""
 
 	__New() {
 		this.UpdateSettings()
 	}
 
 	UpdateSettings() {
+		if (this.readTimer) {
+			SetTimer(this.readTimer, 0)
+			this.readTimer := ""
+		}
+		this.isEnabled := Config.Get("Communicator", "CommunicationEnabled", 0)
+		if (!this.isEnabled)
+			return
 		this.isServer := !Config.Get("Main", "AltMacroEnabled", 0)
 		this.thingName := Config.Get("Communicator", "DweetName", "you might wanna change this...")
 		if (this.isServer) {
 			this.server := dweet(this.thingName)
-			SetTimer(this.ReadDweet.Bind(this), 0)
 		} else {
 			this.client := dweet(this.thingName)
-			SetTimer(this.ReadDweet.Bind(this), 1000)
+			this.readTimer := this.ReadDweet.Bind(this)
+			SetTimer(this.readTimer, 1000)
 		}
 	}
 
 	BroadcastBuffs(state) {
-		if (!this.isServer)
+		if (!this.isEnabled || !this.isServer)
 			return
 		payload := Map(
 			"action", "update stats",
 			"data", state,
 			"timestamp", nowUnix()
 		)
-		this.server.SendMessage(JSON.Stringify(payload))
+		try this.server.SendMessage(JSON.Stringify(payload))
 	}
 
 	ReadDweet(*) {
-		if (this.isServer)
+		if (!this.isEnabled || this.isServer)
 			return
 		try {
 			msg := this.client.ReceiveMessage()

@@ -61,12 +61,12 @@ class MainGui {
 
 		; --- Boost Bar Tab ---
 		TabCtrl.UseTab("Boost Bar")
-		this.Gui.Add("Text", "x20 y35 w40", "Active")
-		this.Gui.Add("Text", "x75 y35 w60", "Timer(s)")
-		this.Gui.Add("Text", "x130 y35 w80", "Mode(s)")
+		this.Gui.Add("Text", "x20 y25 w40", "Active")
+		this.Gui.Add("Text", "x75 y25 w60", "Timer(s)")
+		this.Gui.Add("Text", "x130 y25 w80", "Mode(s)")
 
 		loop 7 {
-			yPos := 55 + ((A_Index - 1) * 20)
+			yPos := 45 + ((A_Index - 1) * 20)
 			i := A_Index
 
 			this.Gui.Add("Text", "x10 y" yPos " w36 h20 -Wrap", "Slot " i ":")
@@ -80,8 +80,8 @@ class MainGui {
 			btn.OnEvent("Click", this.OpenModeSelector.Bind(this, i, btn))
 		}
 
-		this.Gui.Add("Text", "x280 y35", "Show when active")
-		this.Gui.Add("CheckBox", "x260 y32 w20 h20 vBoostBar_ShowWhenActive Checked" Config.Get("BoostBar", "ShowWhenActive", 1)).OnEvent("Click", this.SaveConfig.Bind(this))
+		this.Gui.Add("Text", "x290 y25", "Show when active")
+		this.Gui.Add("CheckBox", "x270 y22 w20 h20 vBoostBar_ShowWhenActive Checked" Config.Get("BoostBar", "ShowWhenActive", 1)).OnEvent("Click", this.SaveConfig.Bind(this))
 
 		; --- Alt Tab ---
 		TabCtrl.UseTab("Alt")
@@ -153,9 +153,12 @@ class MainGui {
 		; --- Communicator Tab ---
 		TabCtrl.UseTab("Communicator")
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y35 w380 h150")
-		this.Gui.Add("Text", "x20 y36", "Connection Settings")
+		this.Gui.Add("GroupBox", "x10 y20 w380 h150")
+		this.Gui.Add("Text", "x20 y21", "Connection Settings")
 		this.Gui.SetFont("s8 cDefault Norm")
+
+		this.Gui.Add("Text", "x45 y40", "Enable Communication")
+		this.Gui.Add("CheckBox", "x25 y37 w20 h20 vCommunicator_CommunicationEnabled Checked" Config.Get("Communicator", "CommunicationEnabled", 0)).OnEvent("Click", this.SaveConfig.Bind(this))
 
 		this.Gui.Add("Text", "x25 y60 w350 h30", "Both the Main and Alt must have the EXACT same 'Channel' name for this to work.")
 		this.Gui.Add("Text", "x25 y93", "Channel Name:")
@@ -187,14 +190,14 @@ class MainGui {
 		; --- Key Alignment Tab ---
 		TabCtrl.UseTab("Key Alignment")
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y35 w380 h150")
-		this.Gui.Add("Text", "x20 y36", "Key Alignment Settings")
+		this.Gui.Add("GroupBox", "x10 y20 w380 h150")
+		this.Gui.Add("Text", "x20 y21", "Key Alignment Settings")
 		this.Gui.SetFont("s8 cDefault Norm")
 
-		this.Gui.Add("Text", "x25 y60", "Alignment Key:")
-		this.Gui.Add("Edit", "x100 y60 w100 vKeyAlignment_AlignmentKey", Config.Get("KeyAlignment", "AlignmentKey", "e")).OnEvent("Change", this.SaveConfig.Bind(this))
-		this.Gui.Add("Text", "x25 y90", "Rebind Hotkey:")
-		this.Gui.Add("Edit", "x100 y90 w100 vKeyAlignment_RebindHotkey", Config.Get("KeyAlignment", "RebindHotkey", "^+k")).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Text", "x25 y45", "Alignment Key:")
+		this.Gui.Add("Edit", "x100 y45 w100 vKeyAlignment_AlignmentKey", Config.Get("KeyAlignment", "AlignmentKey", "e")).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("Text", "x25 y75", "Rebind Hotkey:")
+		this.Gui.Add("Edit", "x100 y75 w100 vKeyAlignment_RebindHotkey", Config.Get("KeyAlignment", "RebindHotkey", "^+k")).OnEvent("Change", this.SaveConfig.Bind(this))
 
 		; --- Dark Mode ---
 		SetWindowTheme(this.Gui, Config.Get("Main", "DarkMode", 1))
@@ -357,6 +360,13 @@ class MainGui {
 		FeatureName := GuiCtrl.Name
 		Config.Set("Main", FeatureName, isChecked)
 		Config.WriteIni()
+
+		if (FeatureName = "AltMacroEnabled") {
+			role := isChecked ? "Client" : "Server"
+			try this.Gui["CommsStatus"].Text := role
+			if IsSet(Comms)
+				Comms.UpdateSettings()
+		}
 		this.RefreshFeature(FeatureName)
 	}
 
@@ -382,12 +392,6 @@ class MainGui {
 		else if (Section = "Communicator")
 			if IsSet(Comms)
 				Comms.UpdateSettings()
-		else if (Key = "AltMacroEnabled") {
-			role := val ? "Client" : "Server"
-			try this.Gui["CommsStatus"].Text := role
-				if IsSet(Comms)
-					Comms.UpdateSettings()
-		}
 
 		if (Key = "DarkMode") {
 			SetWindowTheme(this.Gui, GuiCtrl.Value)
