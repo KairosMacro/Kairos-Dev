@@ -79,24 +79,24 @@ class KeyAlignment {
 		this.IsActionRunning := true
 		wasRightClick := GetKeyState("RButton", "P")
 		if (wasRightClick)
-			Click("up", "R")
+			Click "Up Right"
 		Send "{" RotRight "}"
 		sleep 6
 		Send "{" RotLeft "}"
 		if (wasRightClick)
-			Click("down", "R")
+			Click "Down Right"
 		this.IsActionRunning := false
 	}
 
 	StartRebind() {
-		if this.IsRunning
+		if this.IsRunning && this.IsRebinding
 			return
 
 		this.IsRebinding := true
 		this.Draw("Rebinding...")
 		this.RegisterActionHotkey(false)
 
-		ih := InputHook("L1 T3", "{Escape}")
+		ih := InputHook("L1 T7", "{Escape}")
 		ih.Start()
 		ih.Wait()
 
