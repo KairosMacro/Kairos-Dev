@@ -1,13 +1,20 @@
-class PassiveScanner {
+class Tracker {
 	IsRunning := false
 	IsActive := false
 	bloomStates := Map()
+	buffStates := Map()
 	numOffset := Map(0, 7, 1, 2, 2, 6, 3, 6, 4, 7, 5, 6, 6, 7, 7, 7, 8, 7, 9, 7)
+	GummyStar := {slot: -1, pity: 0, lastUse: 0}
+
 
 	modes := Map(
 		"scorch", { x1: 0, x2: 0, y1: 11, y2: 16, var: 30 }
 		, "x-flame", { x1: 0, x2: 0, y1: 9, y2: 18, var: 30 }
-		, "popstar", { x1: 0, x2: 0, y1: 7, y2:19, var: 30 }
+		, "popstar", { x1: 0, x2: 0, y1: 7, y2: 19, var: 30 }
+		, "gummystar", { x1: 0, x2: 0, y1: 10, y2:17, var: 30 }
+		, "gummymorph", { x1: 0, x2: 0, y1: 7, y2:14, var: 30 }
+		, "gummyballer", { x1: 0, x2: 0, y1: 0, y2:0, var: 30 }
+
 		, "bloom_red",        { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFC9191}
       , "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
       , "bloom_white",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFCFCFC}
@@ -26,12 +33,12 @@ class PassiveScanner {
 	__New() {
 		this.Fancy := GdipTooltip()
 		this.RefreshConfig()
-		Scheduler.Add("PassiveScanner.CheckLoop", this.CheckLoop.Bind(this), 100, () => this.IsActive)
+		Scheduler.Add("Tracker.CheckLoop", this.CheckLoop.Bind(this), 100, () => this.IsActive)
 	}
 
 	Toggle(*) {
 		this.IsRunning ^= 1
-		this.IsActive := this.IsRunning && Config.Get("Main", "PassiveScannerEnabled", 0)
+		this.IsActive := this.IsRunning && Config.Get("Main", "TrackerEnabled", 0)
 		SetTimer(() => this.Fancy.Hide(), this.IsActive ? 0 : -100)
 	}
 
@@ -49,9 +56,17 @@ class PassiveScanner {
 		passiveNames := this.PassiveList
 		msg := []
 		for i in passiveNames {
-			val := this.DetectPassive(i)
-			msg.Push([bitmaps["icon"][i], (val = -1 ? ": CD" : ": " val)])
+			if i = "gummyballer"
+				val := this.DetectBuffs(i)
+			else if i = "gummystar"
+				val := this.DetectGumdrops() ; keeps count I guess
+			else
+				val := this.DetectPassive(i)
+			msg.Push([bitmaps["icon"][i], (val = -1 ? ": " (i = "gummyballer" ? "N/A" : "CD") : ": " val)])
 		}
+
+
+
 		; "red", "blue", "white", "scarlet", "cyan", "grey", "black", "yellow", "green", "pink", "violet", "merigold", "periwinkle"
 		;for i in ["red", "pink"] {
 		;	bloomVal := this.DetectBlooms("bloom_" i)
@@ -76,6 +91,42 @@ class PassiveScanner {
 			return -1
 		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
 		return this.DetectNumber(pBMScreen, Floor(foundX / 40))
+	}
+
+	DetectBuffs(name) {
+		mode := this.modes[name]
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
+			return -1
+		
+		if !this.buffStates.Has(name)
+			this.buffStates[name] := {val: 0, fail: 0}
+		buff := this.buffStates[name]
+
+		region := win.x "|" win.y + State.offsetY + 48 "|" win.w "|" 32
+		pBMScreen := FrameCache.Get(region)
+		if !pBMScreen
+			return -1
+
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var, , 8) != 1)
+			return -1
+		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
+		foundY := Integer(SubStr(loc, InStr(loc, ",") + 1))
+
+		current := this.DetectBuffNum(foundX, foundY, pBMScreen, "tiny")
+		if (current < 100)
+			current := this.DetectBuffNum(foundX, foundY, pBMScreen, "big")
+
+		if (current > 0) {
+			buff.val := current
+			buff.fail := 0
+		} else {
+			if (++buff.fail < 10)
+				current := buff.val
+			else
+				buff.val := 0
+		}
+		return current
 	}
 
 	DetectBlooms(name) {
@@ -180,7 +231,96 @@ class PassiveScanner {
 		}
 	}
 
+	DetectBuffNum(x, y, pBitmap, numType := "big") {
+		offsets := (numType = "big") ? bigOffset : tinyOffset
+		found := []
+		priorityOrder := [8, 0, 6, 9, 4, 7, 2, 3, 5, 1]
+		sX := x - 13
+		sY := 0
+		sW := sX + 38
+		sH := 32
+		for idx in priorityOrder {
+			currentX := sX
+			while (Gdip_ImageSearch(pBitmap, bitmaps["buff"][numType][idx], &loc, currentX, sY, sW, sH, , , 6)) {
+				
+				mX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
+				isOverlap := false
+				for item in found {
+					if (mX >= item.x && mX < item.x + item.w) || (item.x >= mX && item.x < mX + offsets[idx]) {
+						isOverlap := true
+						break
+					}
+				}
+				if !isOverlap {
+					found.Push({num: idx, x: mX, w: offsets[idx]})
+				}
+				currentX := mX + offsets[idx]
+				if (currentX >= sW)
+					break
+			}
+		}
+		if (found.Length = 0)
+			return 0
+		Loop found.Length {
+			i := A_Index
+			Loop found.Length - i {
+				j := i + A_Index
+				if (found[i].x > found[j].x) {
+					temp := found[i]
+					found[i] := found[j]
+					found[j] := temp
+				}
+			}
+		}
+		result := ""
+		for item in found
+			result .= item.num
+		return Integer(result)
+	}
+
+	DetectGumdrops() {
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
+			return this.GummyStar.pity
+
+		if this.DetectPassive("gummystar") = -1 {
+			this.GummyStar.pity := 0
+			return -1
+		}
+
+		region := win.x + (win.w // 2) - 261 "|" win.y + win.h - 102 "|517|68"
+		pBMScreen := FrameCache.Get(region)
+		if !pBMScreen
+			return this.GummyStar.pity
+		
+		if (this.GummyStar.slot = -1) {
+			if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"]["gumdrop"], &loc, , , , , 5) = 1) {
+				foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
+				this.GummyStar.slot := Floor(foundX / 75) ; 0 is slot 1
+			} else {
+				return this.GummyStar.pity
+			}
+		}
+
+		xOff := this.GummyStar.slot * 75
+		xSize := xOff + 5
+		yOff := 15
+		ySize := yOff + 38
+
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"]["unused_slot"], &loc, xOff, yOff, xSize, ySize, 5) = 0) {
+			if A_TickCount - this.GummyStar.lastUse >= 2010 {
+				this.GummyStar.pity++
+				this.GummyStar.lastUse := A_TickCount
+			}
+
+			if (this.GummyStar.pity >= 75) {
+				this.GummyStar.pity := 0
+			}
+		}		
+		return this.GummyStar.pity
+	}
+
 	RefreshConfig() {
-		this.PassiveList := StrSplit(Config.Get("PassiveScanner", "Passives", "scorch"), "|")
+		this.PassiveList := StrSplit(Config.Get("Tracker", "Passives", "scorch"), "|")
 	}
 }
