@@ -6,6 +6,10 @@ class Tracker {
 	numOffset := Map(0, 7, 1, 2, 2, 6, 3, 6, 4, 7, 5, 6, 6, 7, 7, 7, 8, 7, 9, 7)
 	GummyStar := {slot: -1, pity: 0, lastUse: 0}
 
+	OffsetX := 0
+	OffsetY := 0
+	EditMode := false
+
 
 	modes := Map(
 		"scorch", { x1: 0, x2: 0, y1: 11, y2: 16, var: 30 }
@@ -34,6 +38,8 @@ class Tracker {
 		this.Fancy := GdipTooltip()
 		this.RefreshConfig()
 		Scheduler.Add("Tracker.CheckLoop", this.CheckLoop.Bind(this), 100, () => this.IsActive)
+
+		OnMessage(0x0201, ObjBindMethod(this, "OnMouseDown"))
 	}
 
 	Toggle(*) {
@@ -47,8 +53,9 @@ class Tracker {
 	}
 
 	CheckLoop(*) {
-		if (State.IsPaused)
+		if (State.IsPaused || this.EditMode)
 			return
+
 		win := WindowTracker.Get()
 		if !this.IsRunning || !IsObject(win) || !win.ok
 			return
@@ -73,8 +80,7 @@ class Tracker {
 		;	msg.Push([bitmaps["icon"]["bloom_" i], (bloomVal = -1 ? ": N/A" : ": " (8*bloomVal))])
 		;}
 
-
-		this.Fancy.Show(msg, win.x + win.w // 2, win.y + win.h // 2)
+		this.Fancy.Show(msg, (win.x + win.w // 2) + this.OffsetX, win.y + win.h // 2 + this.OffsetY)
 		return
 	}
 
@@ -320,7 +326,25 @@ class Tracker {
 		return this.GummyStar.pity
 	}
 
+	OnMouseDown(wParam, lParam, msg, hwnd) {
+		if (hwnd = this.Fancy.hwnd && State.IsPaused) {
+			SendMessage(0xA1, 2, , , "ahk_id " hwnd)
+
+			win := WindowTracker.Get()
+			if (IsObject(win) && win.ok) {
+				WinGetPos(&guiX, &guiY, , , "ahk_id " hwnd)
+				this.OffsetX := guiX - (win.x + win.w // 2)
+				this.OffsetY := guiY - (win.y + win.h // 2)
+				Config.Set("Tracker", "OffsetX", this.OffsetX)
+				Config.Set("Tracker", "OffsetY", this.OffsetY)
+				Config.WriteIni()
+			}
+		}
+	}
+
 	RefreshConfig() {
 		this.PassiveList := StrSplit(Config.Get("Tracker", "Passives", "scorch"), "|")
+		this.OffsetX := Config.Get("Tracker", "OffsetX", 0)
+		this.OffsetY := Config.Get("Tracker", "OffsetY", 0)
 	}
 }

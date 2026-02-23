@@ -1,6 +1,6 @@
 class MagnifyingGlass {
 	IsRunning := false
-	ZoomFactor := 4
+	ZoomFactor := 1.3
 	FPS := 30
 
 	width := 594
@@ -74,7 +74,7 @@ class MagnifyingGlass {
 				guiW := Floor(this.width * this.ZoomFactor)
 				guiH := Floor(this.height * this.ZoomFactor)
 				targetX := (wx + (ww // 2) - (guiW // 2))
-				targetY := wy - wh + this.offsetY + (Config.Get("Main", "BoostBarEnabled", 0) && Config.Get("BoostBar", "ShowWhenActive", 0) ? 0 : 40)
+				targetY := wy + wh + this.offsetY + (Config.Get("Main", "BoostBarEnabled", 0) && Config.Get("BoostBar", "ShowWhenActive", 0) ? 0 : 40)
 				if (this.IsRunning && !State.IsPaused && Config.Get("Main", "MagnifierEnabled", 0))
 					this.Gui.Show("NA x" targetX " y" targetY " w" guiW " h" guiH)
 				else

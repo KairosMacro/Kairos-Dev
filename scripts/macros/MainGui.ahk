@@ -471,7 +471,7 @@ class MainGui {
 			this.Gui["PauseButton"].Text := "Resume (" Config.Get("Main", "PauseHotkey", "F2") ")"
 
 			if IsSet(Track) && Track.Fancy
-				Track.Fancy.Hide()
+				WinSetExStyle("-0x20", "ahk_id " Track.Fancy.Hwnd)
 			if IsSet(Warns) && Warns.Fancy
 				Warns.Fancy.Hide()
 			if IsSet(Boost) && Boost {
@@ -492,6 +492,8 @@ class MainGui {
 			this.Gui.Title := "Kairos"
 			this.Gui["PauseButton"].Text := "Pause (" Config.Get("Main", "PauseHotkey", "F2") ")"
 
+			if IsSet(Track) && Track.Fancy
+				WinSetExStyle("+0x20", "ahk_id " Track.Fancy.Hwnd)
 			if IsSet(Boost) && Boost
 				Boost.Draw()
 			if IsSet(Aligner) && Aligner
