@@ -1,7 +1,7 @@
 class MainGui {
 	Selectors := Map()
 	Gui := unset
-	FeatureList := ["Warns", "Boost Bar", "Alt Macro", "Key Alignment", "Tracker", "Magnifier"]
+	FeatureList := ["Warns", "Boost Bar", "Alt Macro", "Key Alignment", "Tracker", "Magnifier", "StatMonitor"]
 	FwdDown := false
 	BackDown := false
 	LeftDown := false
@@ -30,7 +30,7 @@ class MainGui {
 		; --- Main Tab ---
 		TabCtrl.UseTab("Main")
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y20 w110 h145 -Wrap", "")
+		this.Gui.Add("GroupBox", "x10 y20 w110 h165 -Wrap", "")
 		this.Gui.Add("Text", "x20 y22 w85 h20 -Wrap", "Main Features")
 		this.Gui.SetFont("s8 cDefault Norm")
 		for i in this.FeatureList {
@@ -457,6 +457,7 @@ class MainGui {
 		Alt.Toggle()
 		Aligner.Toggle()
 		Mag.Toggle()
+		Stats.Toggle()
 		this.Gui.Show("Hide")
 	}
 
@@ -482,6 +483,8 @@ class MainGui {
 				Aligner.Draw()
 			if IsSet(Mag) && Mag.Gui
 				Mag.Gui.Hide()
+			if IsSet(Stats) && Stats
+				Stats.Pause()
 
 			DetectHiddenWindows true
 			if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)

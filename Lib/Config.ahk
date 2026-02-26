@@ -13,6 +13,7 @@ class Config {
             , "TrackerEnabled", 0
             , "KeyAlignmentEnabled", 0
             , "MagnifierEnabled", 0
+            , "StatMonitorEnabled", 0
             , "AlwaysOnTop", 0
             , "HideOnRun", 0
             , "GuiX", A_ScreenWidth // 2 - 200
@@ -64,6 +65,9 @@ class Config {
         , "Communicator", Map(
             "CommunicationEnabled", 0
             , "DweetName", "K" Random(10000000, 99999999) "X" Random(10000000, 99999999)
+        )
+        , "StatMonitor", Map(
+            "Enabled", 0
         )
     )
 

@@ -41,6 +41,7 @@ if !(pToken := Gdip_Startup())
 #Include "Sprinkler.ahk"
 #Include "Icons.ahk"
 #Include "Images.ahk"
+#Include "StatMonitor_Buffs.ahk"
 
 TraySetIcon "Assets\Images\Kairos.ico"
 
@@ -61,6 +62,7 @@ GetRobloxClientPos()
 #Include "KeyAlignment.ahk"
 #Include "MagnifyingGlass.ahk"
 #Include "Communicator.ahk"
+#Include "StatMonitor.ahk"
 
 class State {
 	static IsPaused := false
@@ -99,6 +101,8 @@ Aligner := KeyAlignment()
 Mag := MagnifyingGlass()
 Main := MainGui()
 Comms := Communicator()
+Stats := StatMonitor()
+
 Fancy := GdipTooltip()
 
 Amazing := GdipTooltip()
@@ -133,6 +137,7 @@ Cleanup(*) {
 	try Aligner.Cleanup()
 	try Main.Cleanup()
 	try Mag.Cleanup()
+	try Stats.Cleanup()
 	try FrameCache.Clear()
 	Gdip_Shutdown(pToken)
 }
