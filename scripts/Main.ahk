@@ -26,6 +26,7 @@ SendMode "Event"
 #Include "nowUnix.ahk"
 #Include "DarkMode.ahk"
 #Include "Dweet.ahk"
+#Include "OCR.ahk"
 
 if !(pToken := Gdip_Startup())
 	throw Error("GDI+ failed to start, exiting script.")
@@ -42,6 +43,7 @@ if !(pToken := Gdip_Startup())
 #Include "Icons.ahk"
 #Include "Images.ahk"
 #Include "StatMonitor_Buffs.ahk"
+#Include "StatMonitor_Icons.ahk"
 
 TraySetIcon "Assets\Images\Kairos.ico"
 
@@ -114,8 +116,14 @@ grjknnkjrg() {
 	Fancy.Show(bitmaps["anime"], windowX + windowWidth - 230, windowY + offset, 1, 0x00000000)
 	Amazing.Show("YOU WILL DO GOOD THIS BOOST", windowX + windowWidth - 400, windowY + offset + 30)
 }
-F2:: Reload
-F3:: ExitApp
+F4:: {
+	Stats.GenerateData()
+	Stats.DrawGraph()
+	if FileExist(A_ScriptDir "\graph.png")
+		Run(A_ScriptDir "\graph.png")
+	else
+		MsgBox("Graph image not found.")
+}
 
 Cleanup(*) {
 	Critical

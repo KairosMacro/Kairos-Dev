@@ -217,6 +217,9 @@ class MainGui {
 		SetWindowTheme(this.Gui, Config.Get("Main", "DarkMode", 1))
 		SetWindowAttribute(this.Gui, Config.Get("Main", "DarkMode", 1))
 		this.RegisterHotkeys()
+
+		; --- OnExit ---
+		OnExit((*) => (IsSet(Stats) && Stats) ? Stats.Export() : 0)
 	}
 
 	GenerateUser(GuiCtrl, *) {
@@ -512,6 +515,8 @@ class MainGui {
 	}
 
 	stop(*) {
+		if (IsSet(Stats) && Stats)
+			Stats.Export()
 		Reload
 	}
 
