@@ -91,6 +91,7 @@
 			, "dark_heat", 0xFF8F4EB4
 			, "coconut_combo", 0xFF88633E
 			, "balloon_blessing", 0xFF3350C3
+			, "festive_nymph", 0xFF47AC53
 		)
 
 		this.ocr_enabled := true
@@ -183,12 +184,19 @@
 		ToolTip(out, win.x + 350, win.y + State.offsetY + 60, 20)
 	}
 
-GenerateData() {
+	GenerateData() {
 		this.logs := []
 		starTime := A_TickCount
 
-		onOffList := ["oil", "super_smoothie", "bomb_sync_red", "bomb_sync_blue", "festive_blessing", "beesmas_cheer", "tabby_blessing", "clouds", "baby_love", "festive_mark", "flame_fuel", "guiding_star", "stinger", "enzyme", "extract_red", "extract_blue", "glue", "tropical_drink", "purple_potion", "marshmallow_bee", "jellybean_sharing", "bear_morph", "melody"]
-		digitList := ["focus", "bomb", "rage", "inspire", "balloon_aura", "clock", "honey_mark", "pollen_mark", "precise_mark", "reindeer_guidance", "mondo", "map_corruption", "cool_breeze", "precision", "sticker_stack", "puffshroom_blessing", "robo_party", "dark_heat", "coconut_combo", "balloon_blessing", "haste", "boost_red", "boost_blue", "boost_white"]
+		onOffList := ["oil", "super_smoothie", "bomb_sync_red", "bomb_sync_blue", "festive_blessing", "beesmas_cheer",
+		"tabby_blessing", "clouds", "baby_love", "festive_mark", "flame_fuel", "guiding_star", "stinger", "enzyme",
+		"extract_red", "extract_blue", "glue", "tropical_drink", "purple_potion", "marshmallow_bee", "jellybean_sharing",
+		"bear_morph", "melody"]
+		
+		digitList := ["focus", "bomb", "rage", "inspire", "balloon_aura", "clock", "honey_mark", "pollen_mark",
+		"precise_mark", "reindeer_guidance", "mondo", "map_corruption", "cool_breeze", "precision", "sticker_stack",
+		"puffshroom_blessing", "robo_party", "dark_heat", "coconut_combo", "balloon_blessing", "haste", "boost_red",
+		"boost_blue", "boost_white"]
 
 		loop 3600 {
 			tick := A_Index
@@ -393,7 +401,8 @@ GenerateData() {
 		this.DrawRightPanel(pGraphic, rightRect)
 		
 		; Save/Dispose
-		Gdip_SaveBitmapToFile(pBitmapCanvas, A_ScriptDir "\graph.png", 100)
+		time := FormatTime(A_Now, "yyyy-MM-dd_HH-mm-ss")
+		Gdip_SaveBitmapToFile(pBitmapCanvas, A_ScriptDir "\graph_" time ".png" , 100)
 		Gdip_DeleteGraphics(pGraphic)
 		Gdip_DisposeImage(pBitmapCanvas)
 	}
@@ -407,7 +416,7 @@ GenerateData() {
 		iconX := rect.x + (iconColW / 2) - (iconSize / 2)
 		iconY := rect.y + (rect.h / 2) - (iconSize / 2)
 
-		if (bitmaps.Has("stat_icon") && bitmaps["stat_icon"].Has(groupName)) {
+		if (bitmaps["stat_icon"].Has(groupName) && bitmaps["stat_icon"][groupName] > 0) {
 			Gdip_DrawImage(pGraphic, bitmaps["stat_icon"][groupName], iconX, iconY, iconSize, iconSize)
 		} else {
 			shortName := SubStr(groupName, 1, 5)
@@ -673,12 +682,21 @@ GenerateData() {
 	}
 
 	IsOnOff(buffName) {
-		static onOffList := Map("oil", 1, "super_smoothie", 1, "bomb_sync_red", 1, "bomb_sync_blue", 1, "festive_blessing", 1, "beesmas_cheer", 1, "tabby_blessing", 1, "clouds", 1, "baby_love", 1, "festive_mark", 1, "flame_fuel", 1, "guiding_star", 1, "stinger", 1, "enzyme", 1, "extract_red", 1, "extract_blue", 1, "glue", 1, "tropical_drink", 1, "purple_potion", 1, "marshmallow_bee", 1, "jellybean_sharing", 1, "bear_morph", 1, "melody", 1)
+		static onOffList := Map("melody", 1, "morph", 1, "bear_morph", 1, "oil", 1, "super_smoothie", 1,
+		"bomb_sync_red", 1, "bomb_sync_blue", 1, "festive_blessing", 1, "beesmas_cheer", 1, "tabby_blessing", 1,
+		"clouds", 1, "baby_love", 1, "festive_mark", 1, "flame_fuel", 1, "guiding_star", 1, "stinger", 1,
+		"enzyme", 1, "extract_red", 1, "extract_blue", 1, "glue", 1, "tropical_drink", 1, "purple_potion", 1,
+		"marshmallow_bee", 1, "jellybean_sharing", 1, "pop_star", 1, "scorching_star", 1, "gummy_star", 1)
 		return onOffList.Has(buffName)
 	}
 
 	isDigit(buffName) {
-		static digitList := Map("focus", 1, "bomb", 1, "rage", 1, "inspire", 1, "balloon_aura", 1, "clock", 1, "honey_mark", 1, "pollen_mark", 1, "precise_mark", 1, "reindeer_guidance", 1, "mondo", 1, "map_corruption", 1, "cool_breeze", 1, "precision", 1, "sticker_stack", 1, "puffshroom_blessing", 1, "robo_party", 1, "dark_heat", 1, "coconut_combo", 1, "balloon_blessing", 1, "haste", 1, "boost_red", 1, "boost_blue", 1, "boost_white", 1)
+		static digitList := Map("focus", 1, "bomb", 1, "rage", 1, "inspire", 1, "balloon_aura", 1, "clock", 1,
+		"honey_mark", 1, "pollen_mark", 1, "precise_mark", 1, "reindeer_guidance", 1, "mondo", 1, "map_corruption", 1,
+		"cool_breeze", 1, "precision", 1, "sticker_stack", 1, "puffshroom_blessing", 1, "robo_party", 1,
+		"dark_heat", 1, "coconut_combo", 1, "balloon_blessing", 1, "haste", 1, "boost_red", 1, "boost_blue", 1,
+		"boost_white", 1, "boost", 1, "flame_heat", 1, "bubble_bloat", 1, "comforting", 1, "motivating", 1, "satisfying", 1,
+		"refreshing", 1, "invigorating", 1, "tide_blessing", 1)
 		return digitList.Has(buffName)
 	}
 
@@ -1047,8 +1065,7 @@ GenerateData() {
 				pIRandomAccessStream := HBitmapToRandomAccessStream(hBM)
 				DllCall("DeleteObject", "Ptr", hBM)
 
-				rawText := ocr(pIRandomAccessStream, this.ocr_language)
-				ObjRelease(pIRandomAccessStream)
+				try rawText := ocr(pIRandomAccessStream, this.ocr_language)
 				cleanText := RegExReplace(StrReplace(StrReplace(StrReplace(StrReplace(rawText, "o", "0"), "i", "1"), "l", "1"), "a", "4"), "\D")
 				v := (StrLen(cleanText) > 0) ? Integer(cleanText) : 0
 				if (v > 0) {

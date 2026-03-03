@@ -49,9 +49,17 @@ class Config {
             , "ShowWhenActive", 1
         )
         , "Warns", Map(
-            "StartWarn", 25
-            , "Volume", 25
-            , "SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+            "Precise_Enabled", 0
+            , "Precise_Threshold", 25
+            , "Precise_Volume", 25
+            , "Precise_PlayOnce", 0
+            , "Precise_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+
+            , "SuperSmoothie_Enabled", 0
+            , "SuperSmoothie_Threshold", 180
+            , "SuperSmoothie_Volume", 25
+            , "SuperSmoothie_PlayOnce", 1
+            , "SuperSmoothie_SoundFile", "C:\Windows\Media\Speech On.wav"
         )
         , "Tracker", Map(
             "Passives", "scorch"

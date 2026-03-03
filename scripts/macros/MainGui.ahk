@@ -42,29 +42,39 @@ class MainGui {
 		; --- Warnings Tab ---
 		TabCtrl.UseTab("Warnings")
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y20 w180 h140 -Wrap", "")
-		this.Gui.Add("Text", "x20 y22 w103 h20 -Wrap", "Precision Settings")
+		this.Gui.Add("GroupBox", "x10 y20 w265 h130 -Wrap", "")
+		this.Gui.Add("Text", "x20 y22 w103 h20 -Wrap", "Warning Settings")
+		this.Gui.SetFont("s8 cDefault Norm")
 
-		this.Gui.Add("Text", "x15 y45", "Threshold:")
-		this.Gui.Add("Edit", "x76 y42 w50 Number vWarns_StartWarn", Config.Get("Warns", "StartWarn", 25)).OnEvent("Change", this.SaveConfig.Bind(this))
-		this.Gui.Add("UpDown", "Range0-60", Config.Get("Warns", "StartWarn", 25))
-		this.Gui.Add("Text", "x+5 yp+3", "Seconds")
+		this.Gui.Add("Text", "x45 y35 w80", "Active")
+		this.Gui.Add("Text", "x130 y35 w60", "Threshold")
+		this.Gui.Add("Text", "x200 y35 w70", "Audio/Misc")
 
-		this.Gui.Add("Text", "x15 y70", "Volume:")
-		this.Gui.Add("Edit", "x61 y68 w50 Number vWarns_Volume", Config.Get("Warns", "Volume", 25)).OnEvent("Change", this.SaveConfig.Bind(this))
-		this.Gui.Add("UpDown", "Range0-100", Config.Get("Warns", "Volume", 25))
-		this.Gui.Add("Text", "x+5 yp+3", "%")
+		WarnItems := [
+			["Precise", "Precision"]
+			, ["SuperSmoothie", "Super Smoothie"]
+		]
 
-		this.Gui.Add("Text", "x15 y95", "Sound:")
-		this.Gui.Add("Button", "x+5 y92 w60 h20", "Browse").OnEvent("Click", this.SelectSound.Bind(this))
-		this.Gui.Add("Button", "xp+60 yp w60 h20 vWarns_ResetSoundFile", "Test").OnEvent("Click", this.TestAudio.Bind(this))
-		this.Gui.Add("Edit", "x15 y120 w170 h20 ReadOnly vWarns_SoundFile", Config.Get("Warns", "SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"))
+		yPos := 55
+		for item in WarnItems {
+			key := item[1]
+			name := item[2]
+			this.Gui.Add("CheckBox", "x20 y" yPos " w20 h20 vWarns_" key "_Enabled Checked" Config.Get("Warns", key "_Enabled", 0)).OnEvent("Click", this.SaveConfig.Bind(this))
+			this.Gui.Add("Text", "x40 y" yPos + 3 " w80", name)
+
+			this.Gui.Add("Edit", "x130 y" yPos " w50 h20 Number vWarns_" key "_Threshold", Config.Get("Warns", key "_Threshold", 25)).OnEvent("Change", this.SaveConfig.Bind(this))
+			this.Gui.Add("Text", "x185 y" yPos + 3 " w20", "s")
+
+			btn := this.Gui.Add("Button", "x200 y" yPos " w60 h22", "Settings")
+			btn.OnEvent("Click", this.OpenWarnSettings.Bind(this, key, name))
+			yPos := yPos + 30
+		}
 
 		; --- Boost Bar Tab ---
 		TabCtrl.UseTab("Boost Bar")
 		this.Gui.Add("Text", "x20 y25 w40", "Active")
-		this.Gui.Add("Text", "x75 y25 w60", "Timer(s)")
-		this.Gui.Add("Text", "x130 y25 w80", "Mode(s)")
+		this.Gui.Add("Text", "x75 y25 w60", "Timers")
+		this.Gui.Add("Text", "x130 y25 w80", "Modes")
 
 		loop 7 {
 			yPos := 45 + ((A_Index - 1) * 20)
@@ -175,31 +185,30 @@ class MainGui {
 		; --- Tracker Tab ---
 		TabCtrl.UseTab("Tracker")
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y20 w130 h160")
+		this.Gui.Add("GroupBox", "x10 y20 w130 h170")
 		this.Gui.Add("Text", "x20 y22", "Tracker Settings")
 		this.Gui.SetFont("s8 cDefault Norm")
 
 		passives := Config.Get("Tracker", "Passives", "Scorch")
 		has := (str) => InStr("|" passives "|", "|" str "|")
 
+		TrackerItems := Map(
+			"scorch", "Scorch"
+			, "popstar", "Pop Star"
+			, "x-flame", "X-Flame"
+			, "gummystar", "Gummy Star"
+			, "gummymorph", "Gummy Morph"
+			, "gummyballer", "Gummy Baller"
+			, "supersmoothie", "Super Smoothie"
+		)
 
-		this.Gui.Add("CheckBox", "x25 y42 w20 h20 vTracker_Scorch Checked" has("scorch")).OnEvent("Click", this.UpdatePassives.Bind(this))
-		this.Gui.Add("Text", "x45 y45", "Scorch")
-
-		this.Gui.Add("CheckBox", "x25 y62 w20 h20 vTracker_PopStar Checked" has("popstar")).OnEvent("Click", this.UpdatePassives.Bind(this))
-		this.Gui.Add("Text", "x45 y65", "Pop Star")
-
-		this.Gui.Add("CheckBox", "x25 y82 w20 h20 vTracker_XFlame Checked" has("x-flame")).OnEvent("Click", this.UpdatePassives.Bind(this))
-		this.Gui.Add("Text", "x45 y85", "X-Flame")
-
-		this.Gui.Add("CheckBox", "x25 y102 w20 h20 vTracker_GummyStar Checked" has("gummystar")).OnEvent("Click", this.UpdatePassives.Bind(this))
-		this.Gui.Add("Text", "x45 y105", "Gummy Star")
-
-		this.Gui.Add("CheckBox", "x25 y122 w20 h20 vTracker_GummyMorph Checked" has("gummymorph")).OnEvent("Click", this.UpdatePassives.Bind(this))
-		this.Gui.Add("Text", "x45 y125", "Gummy Morph")
-
-		this.Gui.Add("CheckBox", "x25 y142 w20 h20 vTracker_GummyBaller Checked" has("gummyballer")).OnEvent("Click", this.UpdatePassives.Bind(this))
-		this.Gui.Add("Text", "x45 y145", "Gummy Baller")
+		yPos := 42
+		for key, name in TrackerItems {
+			varName := StrReplace(key, "-", "")
+			this.Gui.Add("CheckBox", "x25 y" yPos " w20 h20 vTracker_" varName " Checked" has(key)).OnEvent("Click", this.UpdatePassives.Bind(this))
+			this.Gui.Add("Text", "x45 y" yPos + 3, name)
+			yPos := yPos + 20
+		}
 
 		; --- Key Alignment Tab ---
 		TabCtrl.UseTab("Key Alignment")
@@ -261,6 +270,7 @@ class MainGui {
 			this.Gui["BoostBar_Config" index].Text := (count = 0) ? "None" : (count > 1 ? "Multiple" : saveString)
 
 			if IsSet(Boost) && Boost
+				Boost.RefreshConfig()
 				Boost.Draw()
 		}
 
@@ -293,7 +303,7 @@ class MainGui {
 	}
 
 	UpdatePassives(GuiCtrl, *) {
-		current := Config.Get("Tracker", "Passives", "Scorch")
+		current := Config.Get("Tracker", "Passives", "scorch")
 		list := StrSplit(current, "|")
 
 		name := StrLower(StrReplace(GuiCtrl.Name, "Tracker_", ""))
@@ -317,6 +327,63 @@ class MainGui {
 		Config.Set("Tracker", "Passives", saveStr)
 		Config.WriteIni()
 		this.RefreshFeature("TrackerEnabled")
+	}
+
+	OpenWarnSettings(warnKey, name, *) {
+		static WarnGui := ""
+		GuiClose(*) {
+			if (IsSet(WarnGui) && IsObject(WarnGui))
+				try WarnGui.Destroy(), WarnGui := ""
+		}
+		GuiClose()
+
+		WarnGui := Gui("+Owner" this.Gui.Hwnd " +AlwaysOnTop +Border +ToolWindow", name " Settings")
+		WarnGui.SetFont("s8 cDefault Norm", "Tahoma")
+		WarnGui.OnEvent("Close", (*) => GuiClose())
+
+		SaveLocal(*) {
+			Config.Set("Warns", warnKey "_Volume", WarnGui["Volume"].Value)
+			Config.Set("Warns", warnKey "_PlayOnce", WarnGui["PlayOnce"].Value)
+			Config.WriteIni()
+			this.RefreshFeature("WarnsEnabled")
+		}
+
+		BrowseSound(*) {
+			SelectedFile := FileSelect(1, , "Select Sound File", "Audio (*.wav; *.mp3)")
+			if SelectedFile {
+				WarnGui["SoundFile"].Value := SelectedFile
+				Config.Set("Warns", warnKey "_SoundFile", SelectedFile)
+				Config.WriteIni()
+			}
+		}
+
+		TestLocalAudio(*) {
+			soundPath := WarnGui["SoundFile"].Value
+			if !FileExist(soundPath)
+				soundPath := "C:\Windows\Media\Windows Critical Stop.wav"
+			this.AudioPlayer := unset
+			this.AudioPlayer := Audio(soundPath)
+			vol := WarnGui["Volume"].Value
+			try this.AudioPlayer.Play(vol)
+		}
+
+		col := (Config.Get("Main", "DarkMode", 1) ? "White" : "Black")
+		WarnGui.Add("Text", "x15 y15 w50 c" col, "Volume:")
+		WarnGui.Add("Edit", "x65 y12 w50 Number vVolume", Config.Get("Warns", warnKey "_Volume", 25)).OnEvent("Change", SaveLocal)
+		WarnGui.Add("UpDown", "Range0-100", Config.Get("Warns", warnKey "_Volume", 25))
+		WarnGui.Add("Text", "x120 y15 c" col, "%")
+
+		WarnGui.Add("CheckBox", "x15 y40 w20 h20 vPlayOnce Checked" Config.Get("Warns", warnKey "_PlayOnce", 0)).OnEvent("Click", SaveLocal)
+		WarnGui.Add("Text", "x35 y43 w60 c" col, "Play Once")
+
+		WarnGui.Add("Text", "x15 y70 w50 c" col, "Sound:")
+		WarnGui.Add("Button", "x60 y67 w60 h22", "Browse").OnEvent("Click", BrowseSound)
+		WarnGui.Add("Button", "x125 y67 w60 h22", "Test").OnEvent("Click", TestLocalAudio)
+		WarnGui.Add("Edit", "x15 y95 w220 h20 ReadOnly vSoundFile", Config.Get("Warns", warnKey "_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"))
+
+		WarnGui.Show("w250 h130")
+		SetWindowTheme(WarnGui, Config.Get("Main", "DarkMode", 1))
+		SetWindowAttribute(WarnGui, Config.Get("Main", "DarkMode", 1))
 	}
 
 	CopyFieldSettings(*) {
@@ -361,17 +428,6 @@ class MainGui {
 		}
 	}
 
-	TestAudio(GuiCtrl, *) {
-		soundPath := Config.Get("Warns", "SoundFile", "C:\Windows\Media\Windows Critical Stop.wav")
-		if !FileExist(soundPath) {
-			soundPath := "C:\Windows\Media\Windows Critical Stop.wav"
-		}
-		this.AudioPlayer := unset
-		this.AudioPlayer := Audio(soundPath)
-		vol := Config.Get("Warns", "Volume", 25)
-		this.AudioPlayer.Play(vol)
-	}
-
 	ToggleFeature(GuiCtrl, *) {
 		isChecked := GuiCtrl.Value
 		FeatureName := GuiCtrl.Name
@@ -388,11 +444,11 @@ class MainGui {
 	}
 
 	SaveConfig(GuiCtrl, *) {
-		Split := StrSplit(GuiCtrl.Name, "_")
-		if (Split.Length != 2)
+		p := InStr(GuiCtrl.Name, "_")
+		if !p
 			return
-		Section := Split[1]
-		Key := Split[2]
+		Section := SubStr(GuiCtrl.Name, 1, p - 1)
+		Key := SubStr(GuiCtrl.Name, p + 1)
 
 		val := (GuiCtrl.Type = "DDL") ? GuiCtrl.Text : GuiCtrl.Value
 		Config.Set(Section, Key, val)
@@ -419,6 +475,10 @@ class MainGui {
 			if IsSet(Boost) && Boost
 				Boost.Draw()
 		}
+
+		if (Section = "BoostBar")
+			if IsSet(Boost) && Boost
+				Boost.Draw()
 	}
 
 	RefreshFeature(FeatureName) {
@@ -453,6 +513,10 @@ class MainGui {
 		try {
 		if fail
 			msgbox "Failed to get y-Offset, this either means`n1. Your font is NOT the default size (e.g. font scale or broken roblox updates)`n2. Your font is wrong (e.g. custom font w/bloxstrap)`n3. the 'Pollen' text at the top is being covered`n4. Graphical issues`n5. I made a mistake...`n6. You don't have roblox open.", "Kairos", 16
+		}
+		if (IsSet(Comms) && Comms.isEnabled && Comms.isServer) {
+			Comms.BroadcastStart()
+			
 		}
 		Track.Toggle()
 		Warns.Toggle()

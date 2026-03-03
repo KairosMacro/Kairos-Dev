@@ -12,12 +12,15 @@ class Tracker {
 
 
 	modes := Map(
-		"scorch", { x1: 0, x2: 0, y1: 11, y2: 16, var: 30 }
-		, "x-flame", { x1: 0, x2: 0, y1: 9, y2: 18, var: 30 }
-		, "popstar", { x1: 0, x2: 0, y1: 7, y2: 19, var: 30 }
-		, "gummystar", { x1: 0, x2: 0, y1: 10, y2:17, var: 30 }
-		, "gummymorph", { x1: 0, x2: 0, y1: 7, y2:14, var: 30 }
-		, "gummyballer", { x1: 0, x2: 0, y1: 0, y2:0, var: 30 }
+		"scorch", { type: "passive", x1: 0, x2: 0, y1: 11, y2: 16, var: 30 }
+		, "x-flame", { type: "passive", x1: 0, x2: 0, y1: 9, y2: 18, var: 30 }
+		, "popstar", { type: "passive", x1: 0, x2: 0, y1: 7, y2: 19, var: 30 }
+		, "gummymorph", { type: "passive", x1: 0, x2: 0, y1: 7, y2: 14, var: 30 }
+		
+		, "gummyballer", { type: "buff", x1: 0, x2: 0, y1: 0, y2: 0, var: 30 }
+		, "supersmoothie", { type: "measure_buff", x1: 0, x2: 0, y1: 30, y2: 32, var: 4}
+
+		, "gummystar", { type: "custom", method: "DetectGumdrops" }
 
 		, "bloom_red",        { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFC9191}
       , "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
@@ -62,24 +65,24 @@ class Tracker {
 
 		passiveNames := this.PassiveList
 		msg := []
+
 		for i in passiveNames {
-			if i = "gummyballer"
+			if !this.modes.Has(i)
+				continue
+			mode := this.modes[i]
+
+			if (mode.type = "buff") {
 				val := this.DetectBuffs(i)
-			else if i = "gummystar"
-				val := this.DetectGumdrops() ; keeps count I guess
-			else
+				msgSuffix := (val = -1) ? ": N/A" : ": " val
+			} else if (mode.type = "custom") {
+				val := this.%mode.method%()
+				msgSuffix := (val = -1) ? ": CD" : ": " val
+			} else {
 				val := this.DetectPassive(i)
-			msg.Push([bitmaps["icon"][i], (val = -1 ? ": " (i = "gummyballer" ? "N/A" : "CD") : ": " val)])
+				msgSuffix := (val = -1) ? ": CD" : ": " val
+			}
+			msg.Push([bitmaps["icon"][i], msgSuffix])
 		}
-
-
-
-		; "red", "blue", "white", "scarlet", "cyan", "grey", "black", "yellow", "green", "pink", "violet", "merigold", "periwinkle"
-		;for i in ["red", "pink"] {
-		;	bloomVal := this.DetectBlooms("bloom_" i)
-		;	msg.Push([bitmaps["icon"]["bloom_" i], (bloomVal = -1 ? ": N/A" : ": " (8*bloomVal))])
-		;}
-
 		this.Fancy.Show(msg, (win.x + win.w // 2) + this.OffsetX, win.y + win.h // 2 + this.OffsetY)
 		return
 	}

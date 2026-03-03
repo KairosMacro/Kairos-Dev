@@ -51,7 +51,7 @@ OnExit(Cleanup)
 
 Config.Load()
 
-version := "0.2.1"
+version := "0.3.0"
 
 GetRobloxClientPos()
 
@@ -89,7 +89,7 @@ class State {
 		, "pepper", { width: 27, height: 21 }
 		, "coconut", { width: 30, height: 21 }
 	)
-	static SprinklerImages := ["saturator", "saturatorWS"]
+	static SprinklerImages := ["saturator", "saturator_blue", "saturator_gold_night", "saturator_blue_night"]
 }
 
 WindowTracker.Start(50)
@@ -145,6 +145,7 @@ Cleanup(*) {
 	try Aligner.Cleanup()
 	try Main.Cleanup()
 	try Mag.Cleanup()
+	try Comms.Cleanup()
 	try Stats.Cleanup()
 	try FrameCache.Clear()
 	Gdip_Shutdown(pToken)

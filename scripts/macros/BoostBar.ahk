@@ -142,7 +142,7 @@ class Conditions {
 
 	UpdateStreak(name, found, val) {
 		static Streak := Map("glitter", 0, "smoothie", 0)
-		static Thresholds := Map("glitter", 0.02, "smoothie", 0.02)
+		static Thresholds := Map("glitter", 0.03, "smoothie", 0.03)
 
 		if (found && val > 0 && val <= Thresholds[name]) {
 			Streak[name] += 1
@@ -448,7 +448,7 @@ class BoostBar {
 		this.IsRunning ^= 1
 		this.IsEnabled := this.ConfigCache.enabled
 		this.IsActive := this.IsRunning && this.IsEnabled
-		this.stats.BuffState["Timer"] := this.IsActive ? 1 : 0
+		this.stats.BuffState["Timer"] := (this.IsActive && !Config.Get("Main", "AltMacroEnabled", 0)) ? 1 : 0
 		this.Draw()
 		if (this.IsEnabled) {
 			if (this.IsActive && !this.ConfigCache.showWhenActive) {

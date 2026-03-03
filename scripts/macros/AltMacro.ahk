@@ -67,6 +67,8 @@ class AltMacro {
 		this.Rotation()
 		this.EnableShift(1)
 		sleep 500
+		if (IsSet(Boost) && Boost)
+			Boost.stats.BuffState["Timer"] := 1
 
 		loop {
 			if !this.Shiftlock
@@ -142,7 +144,6 @@ class AltMacro {
 		sleep 100
 		send "{" SC_1 "}"
 		sleep 500
-		
 	}
 
 	Rotation() {
@@ -474,6 +475,9 @@ class AltMacro {
 
 	Reset() {
 		static HiveDown := false
+
+		if (IsSet(Boost) && Boost)
+			Boost.stats.BuffState["Timer"] := 0
 
 		this.EnableShift(0)
 		Loop 5 {
