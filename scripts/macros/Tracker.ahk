@@ -9,7 +9,12 @@ class Tracker {
 	OffsetX := 0
 	OffsetY := 0
 	EditMode := false
-
+    cooldowns := Map(
+        "scorch", { last_not_found: 0, cooldown: 60000, duration: 45000 },
+        "x-flame", { last_not_found: 0, cooldown: 20000, duration: 0 },
+        "popstar", { last_not_found: 0, cooldown: 60000, duration: 45000 },
+        "gummystar", { last_not_found: 0, cooldown: 60000, duration: 45000 },
+    )
 
 	modes := Map(
 		"scorch", { type: "passive", x1: 0, x2: 0, y1: 11, y2: 16, var: 30 }
@@ -73,15 +78,21 @@ class Tracker {
 
 			if (mode.type = "buff") {
 				val := this.DetectBuffs(i)
-				msgSuffix := (val = -1) ? ": N/A" : ": " val
-			} else if (mode.type = "custom") {
+			} else if (mode.type = "custom")
 				val := this.%mode.method%()
-				msgSuffix := (val = -1) ? ": CD" : ": " val
-			} else {
+			else
 				val := this.DetectPassive(i)
-				msgSuffix := (val = -1) ? ": CD" : ": " val
-			}
-			msg.Push([bitmaps["icon"][i], msgSuffix])
+            if (val = -1) && this.cooldowns.Has(i) {
+                cooldown := this.cooldowns[i]
+                ; Check if the passive is active
+                if (QPC() - cooldown.last_not_found <= cooldown.duration) {
+                    val := "Active - " Round((cooldown.duration - (QPC() - cooldown.last_not_found)) / 1000) "s"
+                }
+                else {
+                    val := "Cooldown - " Round((cooldown.cooldown - (QPC() - cooldown.last_not_found)) / 1000) "s"
+                }
+            }
+			msg.Push([bitmaps["icon"][i], val = -1 ? ": N/A" : ": " . val])
 		}
 		this.Fancy.Show(msg, (win.x + win.w // 2) + this.OffsetX, win.y + win.h // 2 + this.OffsetY)
 		return
@@ -96,8 +107,12 @@ class Tracker {
 		pBMScreen := FrameCache.Get(region)
 		if !pBMScreen
 			return -1
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1) {
+            if this.cooldowns.Has(name) && (this.cooldowns[name].last_not_found == 0 || QPC() - this.cooldowns[name].last_not_found >= this.cooldowns[name].cooldown)
+                this.cooldowns[name].last_not_found := QPC()
 			return -1
+        }
+        this.cooldowns[name].last_not_found := 0 ; reset cooldown timer if found
 		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
 		return this.DetectNumber(pBMScreen, Floor(foundX / 40))
 	}
