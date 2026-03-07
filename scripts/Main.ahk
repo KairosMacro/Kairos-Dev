@@ -132,9 +132,9 @@ grjknnkjrg() {
 }
 F4:: {
 	Stats.GenerateData()
-	Stats.DrawGraph()
-	if FileExist(A_ScriptDir "\graph.png")
-		Run(A_ScriptDir "\graph.png")
+	Stats.DrawGraph(A_ScriptDir "\hi.png")
+	if FileExist(A_ScriptDir "\hi.png")
+		Run(A_ScriptDir "\hi.png")
 	else
 		MsgBox("Graph image not found.")
 }

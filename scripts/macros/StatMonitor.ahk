@@ -196,7 +196,20 @@
 		digitList := ["focus", "bomb", "rage", "inspire", "balloon_aura", "clock", "honey_mark", "pollen_mark",
 		"precise_mark", "reindeer_guidance", "mondo", "map_corruption", "cool_breeze", "precision", "sticker_stack",
 		"puffshroom_blessing", "robo_party", "dark_heat", "coconut_combo", "balloon_blessing", "haste", "boost_red",
-		"boost_blue", "boost_white"]
+		"boost_blue", "boost_white", "festive_nymph"]
+
+		genOnOff := []
+		genDigit := []
+
+		for i in onOffList{
+			if (Random(0, 2) = 1)
+				genOnOff.Push(i)
+		}
+
+		for i in digitList{
+			if (Random(0, 1) = 1)
+				genDigit.Push(i)
+		}
 
 		loop 3600 {
 			tick := A_Index
@@ -207,14 +220,14 @@
 
 			buffs := Map()
 
-			for i, buffName in onOffList {
+			for i, buffName in genOnOff {
 				cycleLength := 40 + Mod(i * 13, 60) 
 				uptime := cycleLength * 0.6
 				offset := i * 7
 				buffs[buffName] := Mod(tick + offset, cycleLength) < uptime ? 1 : 0
 			}
 
-			for i, buffName in digitList {
+			for i, buffName in genDigit {
 				waveSpeed := 10 + Mod(i * 3, 15)
 				offset := i * 5
 				sineValue := Sin((tick + offset) / waveSpeed)
@@ -242,7 +255,7 @@
 	}
 
 ; this will graph out based off the time, so the "res" of the graph might vary.
-	DrawGraph() {
+	DrawGraph(path?) {
 		if (this.logs.Length < 2)
 			return
 
@@ -401,8 +414,11 @@
 		this.DrawRightPanel(pGraphic, rightRect)
 		
 		; Save/Dispose
-		time := FormatTime(A_Now, "yyyy-MM-dd_HH-mm-ss")
-		Gdip_SaveBitmapToFile(pBitmapCanvas, A_ScriptDir "\graph_" time ".png" , 100)
+		if (!IsSet(path)) {
+			time := FormatTime(A_Now, "yyyy-MM-dd_HH-mm-ss")
+			path := A_ScriptDir "\graph_" time ".png"
+		}
+		Gdip_SaveBitmapToFile(pBitmapCanvas, path, 100)
 		Gdip_DeleteGraphics(pGraphic)
 		Gdip_DisposeImage(pBitmapCanvas)
 	}
@@ -517,6 +533,7 @@
 	DrawRightPanel(pGraphic, rect) {
 		if (this.logs.Length = 0)
 			return
+	
 		lastSnap := this.logs[this.logs.Length]
 
 		pBrushBg := Gdip_BrushCreateSolid(0xFF2A2A2A)
@@ -610,6 +627,40 @@
 				}
 			}
 		}
+
+		if (passivesDrawn > 0 && Mod(passivesDrawn, 4) != 0)
+			currentY += iconW + 40
+		
+		currentY += 20
+		pPenLine3 := Gdip_CreatePen(0xFF555555, 2)
+		Gdip_DrawLine(pGraphic, pPenLine3, rect.x + 20, currentY, rect.x + rect.w - 20, currentY)
+		Gdip_DeletePen(pPenLine3)
+		currentY += 30
+
+		startTimeTick := this.logs[1]["time"]
+		endTimeTick := lastSnap["time"]
+		durationSec := (endTimeTick - startTimeTick) // 1000
+
+		startTime := FormatTime(DateAdd(A_Now, -durationSec, "Seconds"), "HH:mm:ss")
+		endTime := FormatTime(A_Now, "HH:mm:ss")
+		date := FormatTime(A_Now, "yyyy-MM-dd")
+
+		ocrStatus := this.ocr_enabled ? "Enabled (" this.ocr_language ")" : "Disabled"
+		ver := "v" version
+		os_ver := "n/a"
+		for objItem in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_OperatingSystem")
+			os_ver := Trim(StrReplace(StrReplace(StrReplace(StrReplace(objItem.Caption, "Microsoft"), "Майкрософт"), "مايكروسوفت"), "微软"))
+
+		Gdip_TextToGraphics(pGraphic, "StatMonitor - Kairos", "s23 cffbb69fd x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
+		currentY += 30
+		Gdip_TextToGraphics(pGraphic, startTime " -> " endTime " / " date, "s23 cffa052db x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
+		currentY += 30
+		Gdip_TextToGraphics(pGraphic, "OCR: " ocrStatus, "s23 cff943eb9 x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
+		currentY += 30
+		Gdip_TextToGraphics(pGraphic, os_ver, "s23 cff912ab9 x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
+		currentY += 30
+		Gdip_TextToGraphics(pGraphic, "Macro Version: " ver, "s23 cff8621ad x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
+
 	}
 
 	FormatNumber(num) {
@@ -696,7 +747,7 @@
 		"cool_breeze", 1, "precision", 1, "sticker_stack", 1, "puffshroom_blessing", 1, "robo_party", 1,
 		"dark_heat", 1, "coconut_combo", 1, "balloon_blessing", 1, "haste", 1, "boost_red", 1, "boost_blue", 1,
 		"boost_white", 1, "boost", 1, "flame_heat", 1, "bubble_bloat", 1, "comforting", 1, "motivating", 1, "satisfying", 1,
-		"refreshing", 1, "invigorating", 1, "tide_blessing", 1)
+		"refreshing", 1, "invigorating", 1, "tide_blessing", 1, "festive_nymph", 1)
 		return digitList.Has(buffName)
 	}
 
@@ -747,12 +798,12 @@
 		this.Verify("bear_morph", bearActive, 0)
 
 		; --------------------
-		; STANDARD BUFFS (DIGITS) "1x - 10x"
+		; STANDARD BUFFS (DIGITS) "1x - 999x"
 		; --------------------
 		digitList := ["focus", "bomb", "rage", "inspire", "balloon_aura", "clock"
 						, "honey_mark", "pollen_mark", "precise_mark", "reindeer_guidance"
 						, "mondo", "map_corruption", "cool_breeze", "precision", "sticker_stack"
-						, "puffshroom_blessing", "robo_party", "dark_heat", "coconut_combo"]
+						, "puffshroom_blessing", "robo_party", "dark_heat", "coconut_combo", "festive_nymph"]
 		for index, buffName in digitList {
 			rules := buff_params[buffName]
 			if (Gdip_ImageSearch(pBMTop, bitmaps["stat_buff"][buffName], &loc, 0, rules.y1, 0, rules.y2, rules.var, , rules.dir) = 1) {

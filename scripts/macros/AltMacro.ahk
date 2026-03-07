@@ -843,7 +843,7 @@
 
 			while (this.IsRunning) {
 
-				this.Gather(this.Pattern, waitField)
+				this.Gather(this.Pattern, waitField, 1)
 
 				if this.GuidingDetected() {
 					foundField := this.DetectGuideField()

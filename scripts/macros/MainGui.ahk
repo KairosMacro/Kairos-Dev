@@ -736,7 +736,7 @@
 	}
 
 	stop(*) {
-		if (IsSet(Stats) && Stats)
+		if (this.ran && IsSet(Stats) && Stats)
 			Stats.Export()
 		Reload
 	}

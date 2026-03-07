@@ -9,6 +9,12 @@
 	OffsetX := 0
 	OffsetY := 0
 	EditMode := false
+	cooldowns := Map(
+		"scorch", { last_not_found: 0, cooldown: 60000, duration: 45000 },
+		"x-flame", { last_not_found: 0, cooldown: 20000, duration: 0 },
+		"popstar", { last_not_found: 0, cooldown: 60000, duration: 45000 },
+		"gummystar", { last_not_found: 0, cooldown: 60000, duration: 45000 },
+	)
 
 
 	modes := Map(
@@ -18,9 +24,9 @@
 		, "gummymorph", { type: "passive", x1: 0, x2: 0, y1: 7, y2: 14, var: 30 }
 		
 		, "gummyballer", { type: "buff", x1: 0, x2: 0, y1: 0, y2: 0, var: 30 }
-		, "supersmoothie", { type: "measure_buff", x1: 0, x2: 0, y1: 30, y2: 32, var: 4}
+		, "supersmoothie", { type: "percent_buff", img: "smoothie", xOff: -5, colors: [0xffFEC650] }
 
-		, "gummystar", { type: "custom", method: "DetectGumdrops" }
+		, "gummystar", { type: "custom", x1: 0, x2: 0, y1: 7, y2: 14, var: 30, method: "DetectGumdrops" }
 
 		, "bloom_red",        { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFC9191}
 		, "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
@@ -76,15 +82,41 @@
 				continue
 			mode := this.modes[i]
 
+			val := ""
 			if (mode.type = "buff") {
 				val := this.DetectBuffs(i)
-				msgSuffix := (val = -1) ? ": N/A" : ": " val
 			} else if (mode.type = "custom") {
 				val := this.%mode.method%()
-				msgSuffix := (val = -1) ? ": CD" : ": " val
+			} else if (mode.type = "percent_buff") {
+				raw := this.DetectPercentBuff(i)
+				if (raw != -1) {
+					timeVal := Round(raw * 12)
+					val := Floor(timeVal / 60) ":" Format("{:02}", Mod(timeVal, 60))
+				} else
+					val := -1
 			} else {
 				val := this.DetectPassive(i)
-				msgSuffix := (val = -1) ? ": CD" : ": " val
+			}
+
+			msgSuffix := ""
+			if (val = -1) {
+				if this.cooldowns.Has(i) {
+					cooldown := this.cooldowns[i]
+					if (cooldown.last_not_found = 0)
+						msgSuffix := ": N/A"
+					else {
+						elapse := QPC() - cooldown.last_not_found
+						if (elapse <= cooldown.duration)
+							msgSuffix := ": Active: " Round((cooldown.duration - (QPC() - cooldown.last_not_found)) / 1000) "s"
+						else
+							msgSuffix := ": CD: " Round((cooldown.cooldown - (QPC() - cooldown.last_not_found)) / 1000) "s"
+					}
+				} else
+					msgSuffix := ": N/A"
+			} else {
+				if this.cooldowns.Has(i)
+					this.cooldowns[i].last_not_found := QPC()
+				msgSuffix := ": " val
 			}
 			msg.Push([bitmaps["icon"][i], msgSuffix])
 		}
@@ -141,6 +173,77 @@
 				buff.val := 0
 		}
 		return current
+	}
+
+	DetectPercentBuff(name) {
+		mode := this.modes[name]
+		imgName := mode.HasProp("img") ? mode.img : name 
+		
+		static buffers := Map(), bufferSize := 6, tolerance := 5
+		if !buffers.Has(name)
+			buffers[name] := []
+		buff := buffers[name]
+
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
+			return -1
+
+		region := win.x "|" win.y + State.offsetY + 32 "|" win.w "|" 42
+		pBMScreen := FrameCache.Get(region)
+		if !pBMScreen
+			return -1
+
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][imgName], &loc, , , , , 4, , 6) != 1) {
+			buffers[name] := []
+			return -1
+		}
+
+		x := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
+		y := Integer(SubStr(loc, InStr(loc, ",") + 1))
+		bottomY := y
+		high := y
+		low := 0
+
+		while (low < high) {
+			if (A_Index > 20)
+				return 0
+			mid := Floor((low + high) / 2)
+			pixelColor := Gdip_GetPixel(pBMScreen, x + mode.xOff, mid)
+			match := false
+			for col in mode.colors {
+				if (col = pixelColor) {
+					match := true
+					break
+				}
+			}
+
+			if (match)
+				high := mid
+			else
+				low := mid + 1
+		}
+
+		raw := Round((bottomY - low) / 38 * 100, 2) + 2
+		buff.Push(raw)
+		if (buff.Length > bufferSize)
+			buff.RemoveAt(1)
+
+		best := []
+		for val1 in buff {
+			current := []
+			for val2 in buff {
+				if (Abs(val1 - val2) <= tolerance)
+					current.Push(val2)
+			}
+			if (current.Length > best.Length)
+				best := current
+		}
+		if (best.Length = 0)
+			return raw
+		sum := 0
+		for val in best
+			sum += val
+		return Round(sum / best.Length, 2)
 	}
 
 	DetectBlooms(name) {
@@ -296,8 +399,7 @@
 		win := WindowTracker.Get()
 		if !IsObject(win) || !win.ok
 			return this.GummyStar.pity
-
-		if this.DetectPassive("gummystar") = -1 {
+		if (this.DetectPassive("gummystar") = -1) {
 			this.GummyStar.pity := 0
 			return -1
 		}
@@ -306,7 +408,6 @@
 		pBMScreen := FrameCache.Get(region)
 		if !pBMScreen
 			return this.GummyStar.pity
-		
 		if (this.GummyStar.slot = -1) {
 			if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"]["gumdrop"], &loc, , , , , 5) = 1) {
 				foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
@@ -320,17 +421,15 @@
 		xSize := xOff + 5
 		yOff := 15
 		ySize := yOff + 38
-
 		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"]["unused_slot"], &loc, xOff, yOff, xSize, ySize, 5) = 0) {
 			if A_TickCount - this.GummyStar.lastUse >= 2010 {
 				this.GummyStar.pity++
 				this.GummyStar.lastUse := A_TickCount
 			}
-
 			if (this.GummyStar.pity >= 75) {
 				this.GummyStar.pity := 0
 			}
-		}		
+		}
 		return this.GummyStar.pity
 	}
 
