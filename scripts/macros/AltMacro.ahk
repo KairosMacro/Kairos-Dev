@@ -25,6 +25,8 @@
 		this.FieldDriftComp := Config.Get("Alt", "FieldDriftComp", 1)
 		this.DefaultField := Config.Get("Alt", "DefaultField", "pepper")
 		this.Pattern := Config.Get("Alt", "Pattern", "GeneralBooster")
+		this.UseTool := Config.Get("Alt", "UseTool", 1)
+		this.IgnoreInactiveHoney := Config.Get("Alt", "IgnoreInactiveHoney", 0)
 
 		this.PatternSize := Config.Get("Alt", "PatternSize", 5)
 		this.PatternWidth := Config.Get("Alt", "PatternWidth", 5)
@@ -79,7 +81,8 @@
 		loop {
 			if !this.Shiftlock
 				MouseMove windowX + (windowWidth // 2), windowY + (windowHeight // 2)
-			click "down"
+			if this.UseTool
+				click "down"
 			if !this.IsRunning {
 				click "up"
 				break
@@ -618,7 +621,7 @@
 		if !GetRobloxClientPos()
 			return false
 
-		if Config.Get("Alt", "IgnoreInactiveHoney", 0)
+		if this.IgnoreInactiveHoney
 			return true
 
 		pBMScreen := Gdip_BitmapFromScreen(windowX + windowWidth // 2 - 90 "|" windowY + State.offsetY "|70|34")
@@ -661,7 +664,8 @@
 		while (this.IsRunning && ((A_TickCount - start) < (seconds * 1000))) {
 			if !this.Shiftlock
 				MouseMove windowX + (windowWidth // 2), windowY + (windowHeight // 2)
-			Click "down"
+			if this.UseTool
+				Click "down"
 			this.Gather(this.Pattern, fieldName, 1)
 
 			if (this.IsDead() = true || this.Reconnect()) {
