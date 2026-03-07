@@ -1,4 +1,4 @@
-class Warnings {
+﻿class Warnings {
 	IsRunning := false
 	IsActive := false
 	AudioPlayer := unset

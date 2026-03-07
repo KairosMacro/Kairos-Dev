@@ -8,6 +8,20 @@ CoordMode "Mouse", "Screen"
 CoordMode "Pixel", "Screen"
 SendMode "Event"
 
+if (A_ScreenDPI != 96) {
+	MsgBox "
+	(
+	Kairos is designed to work at 100% scaling. Please set your display scaling to 100% and restart the script.
+
+	To fix this:
+	1. Right-click on your desktop and select 'Display settings'.
+	2. Under 'Scale', select '100%' from the dropdown menu.
+	
+	The script will close now.
+	)", "Kairos - WARNING!!!", 48 " T30"
+	ExitApp
+}
+
 #Include "%A_ScriptDir%\..\Lib"
 #Include "Config.ahk"
 #Include "Gdip_All.ahk"

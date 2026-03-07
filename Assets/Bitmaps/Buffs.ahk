@@ -1,4 +1,4 @@
-(bitmaps["buff"] := Map()).CaseSense := false
+﻿(bitmaps["buff"] := Map()).CaseSense := false
 (bitmaps["buff"]["big"] := Map()).CaseSense := false
 (bitmaps["buff"]["tiny"] := Map()).CaseSense := false
 

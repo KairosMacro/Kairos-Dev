@@ -1,4 +1,4 @@
-RunPath(movement, name := "", vars := "") {
+﻿RunPath(movement, name := "", vars := "") {
 	DetectHiddenWindows true
 	if WinExist("ahk_pid " State.currentWalk.pid " ahk_class AutoHotkey")
 		EndPath()

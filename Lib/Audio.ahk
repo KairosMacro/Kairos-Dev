@@ -1,4 +1,4 @@
-class Audio {
+﻿class Audio {
     _wmp := ""
     _useNative := false
     _filePath := ""

@@ -1,4 +1,4 @@
-/*************************************************************
+﻿/*************************************************************
 * @description: OCR with UWP API
 * @author malcev, teadrinker
 * @url https://www.autohotkey.com/boards/viewtopic.php?t=72674

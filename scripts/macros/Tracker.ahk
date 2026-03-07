@@ -1,4 +1,4 @@
-class Tracker {
+﻿class Tracker {
 	IsRunning := false
 	IsActive := false
 	bloomStates := Map()
@@ -23,26 +23,26 @@ class Tracker {
 		, "gummystar", { type: "custom", method: "DetectGumdrops" }
 
 		, "bloom_red",        { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFC9191}
-      , "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
-      , "bloom_white",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFCFCFC}
-      , "bloom_scarlet",    { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFD58989}
-      , "bloom_cyan",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF8EE2EF}
-      , "bloom_grey",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFBFBFBF}
-      , "bloom_black",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF858585}
-      , "bloom_yellow",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFF7E6A7}
-      , "bloom_green",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF91F482}
-      , "bloom_pink",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFFC1E4}
-      , "bloom_violet",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFAF93D8}
-      , "bloom_merigold",   { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFECD48E}
-      , "bloom_periwinkle", { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFCBCEF6}
+		, "bloom_blue",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
+		, "bloom_white",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFCFCFC}
+		, "bloom_scarlet",    { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFD58989}
+		, "bloom_cyan",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF8EE2EF}
+		, "bloom_grey",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFBFBFBF}
+		, "bloom_black",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF858585}
+		, "bloom_yellow",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFF7E6A7}
+		, "bloom_green",      { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF91F482}
+		, "bloom_pink",       { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFFC1E4}
+		, "bloom_violet",     { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFAF93D8}
+		, "bloom_merigold",   { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFECD48E}
+		, "bloom_periwinkle", { x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFCBCEF6}
 	)
 
 	__New() {
-		this.Fancy := GdipTooltip()
+		this.Fancy := GdipTooltip(true)
 		this.RefreshConfig()
 		Scheduler.Add("Tracker.CheckLoop", this.CheckLoop.Bind(this), 100, () => this.IsActive)
 
-		OnMessage(0x0201, ObjBindMethod(this, "OnMouseDown"))
+		OnMessage(0x0232, this.OnDragEnd.Bind(this))
 	}
 
 	Toggle(*) {
@@ -58,6 +58,11 @@ class Tracker {
 	CheckLoop(*) {
 		if (State.IsPaused || this.EditMode)
 			return
+
+		if (this.Fancy.Zoom != Config.Get("Tracker", "Zoom", 1.0)) {
+			Config.Set("Tracker", "Zoom", this.Fancy.Zoom)
+			Config.WriteIni()
+		}
 
 		win := WindowTracker.Get()
 		if !this.IsRunning || !IsObject(win) || !win.ok
@@ -329,18 +334,17 @@ class Tracker {
 		return this.GummyStar.pity
 	}
 
-	OnMouseDown(wParam, lParam, msg, hwnd) {
-		if (hwnd = this.Fancy.hwnd && State.IsPaused) {
-			SendMessage(0xA1, 2, , , "ahk_id " hwnd)
-
+	OnDragEnd(wParam, lParam, msg, hwnd) {
+		if (hwnd = this.Fancy.hwnd) {
 			win := WindowTracker.Get()
 			if (IsObject(win) && win.ok) {
-				WinGetPos(&guiX, &guiY, , , "ahk_id " hwnd)
+				WinGetPos(&guiX, &guiY, , , "ahk_id " this.Fancy.hwnd)
 				this.OffsetX := guiX - (win.x + win.w // 2)
 				this.OffsetY := guiY - (win.y + win.h // 2)
 				Config.Set("Tracker", "OffsetX", this.OffsetX)
 				Config.Set("Tracker", "OffsetY", this.OffsetY)
 				Config.WriteIni()
+				this.Fancy._manualPos := false
 			}
 		}
 	}
@@ -349,5 +353,7 @@ class Tracker {
 		this.PassiveList := StrSplit(Config.Get("Tracker", "Passives", "scorch"), "|")
 		this.OffsetX := Config.Get("Tracker", "OffsetX", 0)
 		this.OffsetY := Config.Get("Tracker", "OffsetY", 0)
+
+		this.Fancy.Zoom := Config.Get("Tracker", "Zoom", 1)
 	}
 }

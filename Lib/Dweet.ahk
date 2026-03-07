@@ -1,4 +1,4 @@
-class dweet {
+﻿class dweet {
    __New(name) {
       this.name := name
       this.baseUrl := "https://dweet.cc"

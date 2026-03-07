@@ -1,4 +1,4 @@
-(bitmaps["stat_buff"] := Map()).CaseSense := false
+﻿(bitmaps["stat_buff"] := Map()).CaseSense := false
 (buff_params := Map()).CaseSense := false
 (bitmaps["stat_digits_big"] := Map()).CaseSense := false
 (bitmaps["stat_digits_tiny"] := Map()).CaseSense := false

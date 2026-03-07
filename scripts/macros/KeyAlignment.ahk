@@ -1,4 +1,4 @@
-class KeyAlignment {
+﻿class KeyAlignment {
 	IsRunning := false
 	IsActive := false
 	IsRebinding := false

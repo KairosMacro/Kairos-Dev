@@ -1,4 +1,4 @@
-; auxiliary map/array functions
+﻿; auxiliary map/array functions
 ObjFullyClone(obj)
 {
 	nobj := obj.Clone()
@@ -30,7 +30,7 @@ ObjIndexOf(obj, val)
 ObjStrJoin(delim, arr) {
 	out := ""
 	try {
-		for v in arr
+		for k, v in arr
 			out .= (out = "" ? "" : delim) . v
 		return out
 	} catch

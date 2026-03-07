@@ -1,4 +1,4 @@
-; be prepared for your computer to EXPLODE
+﻿; be prepared for your computer to EXPLODE
 ; the dead space is here for the sake of keeping your computer alive, scroll down at your own risk
 
 

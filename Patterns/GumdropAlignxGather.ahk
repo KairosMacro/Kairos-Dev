@@ -1,4 +1,4 @@
-Padding := 8
+﻿Padding := 8
 
 AlignWidth  := (FieldWidth  / 2) - Padding
 AlignHeight := (FieldHeight / 2) - Padding

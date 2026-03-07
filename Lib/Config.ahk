@@ -1,4 +1,5 @@
-class Config {
+﻿class Config {
+    static currentPreset := "config"
     static path := A_WorkingDir "\settings\config.ini"
     static Data := Map()
 
@@ -19,6 +20,7 @@ class Config {
             , "GuiX", A_ScreenWidth // 2 - 200
             , "GuiY", A_ScreenHeight // 2 - 100
             , "DarkMode", 1
+            , "AccountType", "Main"
         )
         , "Alt", Map(
             "Movespeed", 29
@@ -37,6 +39,7 @@ class Config {
             , "PrivServer", ""
             , "ClaimHive", 1
             , "IgnoreInactiveHoney", 0
+            , "UseTool", 1
         )
         , "BoostBar", Map(
             "SlotActive1", 0, "SlotTimer1", 100, "SlotMode1", "Timer"
@@ -65,6 +68,7 @@ class Config {
             "Passives", "scorch"
             , "OffsetX", 0
             , "OffsetY", 0
+            , "Zoom", 1
         )
         , "KeyAlignment", Map(
             "AlignmentKey", "e"
@@ -77,7 +81,48 @@ class Config {
         , "StatMonitor", Map(
             "Enabled", 0
         )
+        , "Guide", Map(
+            "Enabled", 0
+            , "Field", "pepper"
+            , "PrivLink", ""
+        )
     )
+
+    static __New() {
+        if !DirExist("settings")
+            DirCreate "settings"
+        globalPath := A_WorkingDir "\settings\global.ini"
+        try
+            this.currentPreset := IniRead(globalPath, "Global", "LastPreset", "config")
+        catch
+            this.currentPreset := "config"
+        this.path := A_WorkingDir "\settings\" this.currentPreset ".ini"
+    }
+
+    static SetPreset(presetName) {
+        this.currentPreset := presetName
+        this.path := A_WorkingDir "\settings\" presetName ".ini"
+
+        globalPath := A_WorkingDir "\settings\global.ini"
+        IniWrite(presetName, globalPath, "Global", "LastPreset")
+
+        this.Data.Clear()
+        this.Load()
+    }
+
+    static GetPresets() {
+        if !DirExist("settings")
+            DirCreate "settings"
+        list := []
+        Loop Files A_WorkingDir "\settings\*.ini" {
+            name := SubStr(A_LoopFileName, 1, -4)
+            if (name != "global")
+                list.Push(name)
+        }
+        if (list.Length = 0)
+            list.Push("config")
+        return list
+    }
 
     static Load() {
         for section, keys in this.Default {
@@ -87,9 +132,8 @@ class Config {
                 this.Data[section][key] := val
             }
         }
-        if FileExist(this.path) {
+        if FileExist(this.path)
             this.ReadIni()
-        }
         this.WriteIni()
     }
 

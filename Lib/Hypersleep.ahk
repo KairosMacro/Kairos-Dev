@@ -1,4 +1,4 @@
-HyperSleep(ms)
+﻿HyperSleep(ms)
 {
 	static freq := (DllCall("QueryPerformanceFrequency", "Int64*", &f := 0), f)
 	DllCall("QueryPerformanceCounter", "Int64*", &begin := 0)
