@@ -1,4 +1,4 @@
-﻿class Config {
+class Config {
     static currentPreset := "config"
     static path := A_WorkingDir "\settings\config.ini"
     static Data := Map()
@@ -69,6 +69,39 @@
             , "OffsetX", 0
             , "OffsetY", 0
             , "Zoom", 1
+            , "WarnScorch", 25
+            , "WarnPopStar", 25
+            , "WarnXFlame", 20
+            , "WarnGummyStar", 70
+            , "WarnGummyMorph", 25
+            , "WarnGummyBaller", 900
+            , "WarnSuperSmoothie", 170
+            ; , "WarnStarShower", 25  ; TODO: Not yet implemented DULLY SEND ME THE BITMAPSSS OR ADD THEM IDC
+            , "EnableScorch", 1
+            , "EnablePopStar", 1
+            , "EnableXFlame", 1
+            , "EnableGummyStar", 1
+            , "EnableGummyMorph", 1
+            , "EnableGummyBaller", 1
+            , "EnableSuperSmoothie", 1
+            ; , "EnableStarShower", 1  ; TODO: Not yet implemented
+            , "RepeatScorch", 1
+            , "RepeatPopStar", 1
+            , "RepeatXFlame", 1
+            , "RepeatGummyStar", 0
+            , "RepeatGummyMorph", 1
+            , "RepeatGummyBaller", 1
+            , "RepeatSuperSmoothie", 1
+            ; , "RepeatStarShower", 1  ; TODO: Not yet implemented
+            , "PassiveVolume", 25
+            , "SoundScorch", "C:\Windows\Media\Windows Critical Stop.wav"
+            , "SoundPopStar", "C:\Windows\Media\Windows Critical Stop.wav"
+            , "SoundXFlame", "C:\Windows\Media\Windows Critical Stop.wav"
+            , "SoundGummyStar", "C:\Windows\Media\Windows Critical Stop.wav"
+            , "SoundGummyMorph", "C:\Windows\Media\Windows Critical Stop.wav"
+            , "SoundGummyBaller", "C:\Windows\Media\Windows Critical Stop.wav"
+            , "SoundSuperSmoothie", "C:\Windows\Media\Windows Critical Stop.wav"
+            ; , "SoundStarShower", "C:\Windows\Media\Windows Critical Stop.wav"  ; TODO: Not yet implemented
         )
         , "KeyAlignment", Map(
             "AlignmentKey", "e"
