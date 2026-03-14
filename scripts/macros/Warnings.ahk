@@ -9,11 +9,18 @@
 	EnabledWarns := []
 
 	WarnProfiles := Map(
-		"Precise", { img: "Precise", mult: 0.6, x: 9,colors: [0xff8F4EB4, 0xff774296, 0xff3E274C, 0xff211A24, 0xff201A24, 0xff221A26, 0xff55316A, 0xff8448A6] }
-		, "SuperSmoothie", { img: "smoothie", mult: 12.0, x: -5, colors: [0xffFEC650]}
+		"Precise", { loc: "buff", img: "Precise", mult: 0.6, x: 9, colors: [0xff8F4EB4, 0xff774296, 0xff3E274C, 0xff211A24, 0xff201A24, 0xff221A26, 0xff55316A, 0xff8448A6], var: 0 }
+		, "SuperSmoothie", { loc: "buff", img: "smoothie", mult: 12.0, x: -5, colors: [0xffFEC650], var: 0}
+		, "PopStar", { loc: "passive", img: "popstar", count: 30 }
+		, "ScorchStar", { loc: "passive", img: "scorch", count: 30 }
+		, "StarShower", { loc: "passive", img: "shower", count: 25 }
+		, "GummyMorph", { loc: "passive", img: "gummymorph", count: 30 }
+		, "GummyStar", { loc: "passive", img: "gummystar", count: 75 }
+		, "GummyBaller", { loc: "buff", img: "gummyballer", count: 1000 }
 	)
 
 	__New() {
+		this.scanner := Detection()
 		this.Fancy := GdipTooltip()
 		this.RefreshConfig()
 		Scheduler.Add("Warnings.CheckLoop", this.CheckLoop.Bind(this), 150, () => this.IsActive)
@@ -35,55 +42,66 @@
 	CheckLoop(*) {
 		if (State.IsPaused)
 			return
-
 		static minTime := 500
 		static maxTime := 5000
-		if !this.IsRunning || !WinActive("Roblox")
+		if (!this.IsRunning || !WinActive("Roblox"))
 			return
 		
 		for warnName, profile in this.WarnProfiles {
-			if !Config.Get("Warns", warnName "_Enabled", 0)
+			if (!Config.Get("Warns", warnName "_Enabled", 0))
 				continue
-			percent := Round(this.DetectPercent(warnName, profile.colors), 2)
-
-			if !this.HasPlayed.Has(warnName)
+			if (!this.HasPlayed.Has(warnName))
 				this.HasPlayed[warnName] := false
-			if !this.LastPlayed.Has(warnName)
+			if (!this.LastPlayed.Has(warnName))
 				this.LastPlayed[warnName] := 0
-			
-			if (percent = 0) {
-				this.HasPlayed[warnName] := false
-				continue
-			}
 
-			secondsLeft := Round(profile.mult * percent)
 			threshold := Config.Get("Warns", warnName "_Threshold", 25)
-			if warnName = "SuperSmoothie" {
-				tooltip secondsLeft "(" percent ")"
+			isTriggered := false
+			ratio := 1.0
+			currentVal := 0
+			if (profile.HasProp("colors")) {
+				percent := Round(this.DetectPercent(warnName, profile.colors), 2)
+				if (percent = 0) {
+					this.HasPlayed[warnName] := false
+					continue
+				}
+				currentVal := Round(profile.mult * percent)
+				if (currentVal <= threshold) {
+					isTriggered := true
+					ratio := currentVal / threshold
+				}
+			} else if (profile.HasProp("count")) {
+				currentVal := this.DetectNumber(warnName)
+				if (currentVal = 0) {
+					this.HasPlayed[warnName] := false
+					continue
+				}
+				if (currentVal >= threshold) {
+					isTriggered := true
+					denominator := Max(1, profile.count - threshold)
+					ratio := Max(0, Min(1, (profile.count - currentVal) / denominator))
+				}
 			}
-			vol := Config.Get("Warns", warnName "_Volume", 25)
-			playOnce := Config.Get("Warns", warnName "_PlayOnce", 0)
-			soundPath := Config.Get("Warns", warnName "_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav")
+			if (isTriggered) {
+				vol := Config.Get("Warns", warnName "_Volume", 25)
+				playOnce := Config.Get("Warns", warnName "_PlayOnce", 0)
+				soundPath := Config.Get("Warns", warnName "_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav")
 
-			if (secondsLeft <= threshold) {
 				if (playOnce) {
 					if (!this.HasPlayed[warnName]) {
 						this.PlaySound(soundPath, vol)
 						this.HasPlayed[warnName] := true
 					}
 				} else {
-					ratio := secondsLeft / threshold
 					calcDelay := minTime + (ratio * (maxTime - minTime))
 					delay := Min(Max(minTime, calcDelay), maxTime)
-
 					if (A_TickCount - this.LastPlayed[warnName] > delay) {
 						this.LastPlayed[warnName] := A_TickCount
 						this.PlaySound(soundPath, vol)
 					}
 				}
-			} else {
+			} else
 				this.HasPlayed[warnName] := false
-			}
 		}
 	}
 
@@ -114,28 +132,15 @@
 		if !pBMScreen
 			return 0
 
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][this.WarnProfiles[buffName].img], &loc, , , , , 4, , 6) != 1) {
+		imgName := this.WarnProfiles[buffName].img
+		icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][imgName], 0, 0, 0, 0, 4)
+		if (!icon.found) {
 			buffers[buffName] := []
 			return 0
 		}
 
-		x := SubStr(loc, 1, InStr(loc, ",") - 1)
-		y := SubStr(loc, InStr(loc, ",") + 1)
-		bottomY := y
-		high := y
-		low := 0
-
-		while (low < high) {
-			if (A_Index > 20)
-				return 0
-			mid := Floor((low + high) / 2)
-			if ((ObjHasValue(colors, Gdip_GetPixel(pBMScreen, x + this.WarnProfiles[buffName].x, mid))))
-				high := mid
-			else
-				low := mid + 1
-		}
-
-		raw := Round((bottomY - low) / 38 * 100, 2) + 2
+		lowY := this.scanner.ReadPercentageFill(pBMScreen, icon.x + this.WarnProfiles[buffName].x, 0, icon.y, colors, 0)
+		raw := Round((icon.y - lowY) / 38 * 100, 2) + 2
 
 		buff.Push(raw)
 		if (buff.Length > bufferSize)
@@ -153,9 +158,46 @@
 		}
 		if (best.Length = 0)
 			return raw
+		
 		sum := 0
 		for val in best
 			sum += val
 		return Round(sum / best.Length, 2)
+	}
+
+	DetectNumber(buffName) {
+		win := WindowTracker.Get()
+		if !IsObject(win) || !win.ok
+			return 0
+			
+		profile := this.WarnProfiles[buffName]
+		
+		if (profile.loc = "passive") {
+			region := win.x + (win.w // 2) - 257 "|" win.y + win.h - 142 "|517|36"
+			pBMScreen := FrameCache.Get(region)
+			if !pBMScreen
+				return 0
+				
+			icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][profile.img], 0, 0, 0, 0, 30)
+			if (!icon.found)
+				return 0
+				
+			slotX := icon.x // 40
+			return this.scanner.ReadDigits(pBMScreen, slotX * 40, 22, (slotX * 40) + 34, 33, "passive")
+			
+		} else if (profile.loc = "buff") {
+			region := win.x "|" win.y + State.offsetY + 48 "|" win.w "|" 32
+			pBMScreen := FrameCache.Get(region)
+			if !pBMScreen
+				return 0
+				
+			icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][profile.img], 0, 0, 0, 0, 30)
+			if (!icon.found)
+				return 0
+				
+			return this.scanner.ReadDigits(pBMScreen, icon.x - 13, 0, icon.x + 25, 32, "auto")
+		}
+		
+		return 0
 	}
 }

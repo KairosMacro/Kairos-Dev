@@ -6,6 +6,7 @@
 		this.isRunning := false
 
 		this.scanStartTime := 0
+		this.sessionStartHoney := 0
 		this.learningPeriod := 50000 ; guaranteed out of cooldown for passives
 		this.confirmedPassives := []
 		this.possiblePassives := ["scorching_star", "pop_star", "gummy_star"]
@@ -35,6 +36,7 @@
 			, "satisfying", 1
 			, "refreshing", 1
 			, "invigorating", 1
+			, "festive_nymph", 1
 		)
 
 		this.render_order := [
@@ -151,6 +153,9 @@
 		current_bag := this.DetectBag()
 		current_honey := this.DetectHoney()
 
+		if (this.sessionStartHoney = 0 && current_honey > 0)
+			this.sessionStartHoney := current_honey
+
 		snapshot := Map()
 		snapshot["time"] := A_TickCount
 		snapshot["bag"] := current_bag
@@ -186,7 +191,7 @@
 
 	GenerateData() {
 		this.logs := []
-		starTime := A_TickCount
+		starTime := this.scanStartTime := A_TickCount
 
 		onOffList := ["oil", "super_smoothie", "bomb_sync_red", "bomb_sync_blue", "festive_blessing", "beesmas_cheer",
 		"tabby_blessing", "clouds", "baby_love", "festive_mark", "flame_fuel", "guiding_star", "stinger", "enzyme",
@@ -211,12 +216,31 @@
 				genDigit.Push(i)
 		}
 
+		startHoney := this.sessionStartHoney := Random(100000000000, 999999999999) * 10
+		honey_values := Map(0, startHoney)
+
+		com := Random(0, 100)
+		mot := Random(0, 100)
+		sat := Random(0, 100)
+		ref := Random(0, 100)
+		inv := Random(0, 100)
+
+		stack := Random(1, 290)
+		blessing := Random(1, 100)
+		clock := Random(1, 5)
+		mondo := Random(1, 10)
+		puff := Random(1, 100)
+		flake := Random(1, 100)
+		robo := Random(1, 100)
+		nymph := Random(1, 100)
+
 		loop 3600 {
 			tick := A_Index
 			snapshot := Map()
 			snapshot["time"] := starTime + (tick * 1000)
 			snapshot["bag"] := Mod(tick, 60) * (100/60)
-			snapshot["honey"] := tick * 1500000 + (Random(1, 20) * 100000)
+			snapshot["honey"] := honey_values[tick-1] + ((Mod(tick, 100) < 50) ? Random(100000000, 999999999) : Random(1000000000, 10000000000))
+			honey_values[tick] := snapshot["honey"]
 
 			buffs := Map()
 
@@ -228,7 +252,7 @@
 			}
 
 			for i, buffName in genDigit {
-				waveSpeed := 10 + Mod(i * 3, 15)
+				waveSpeed := 10 + Mod(i * 3, 30)
 				offset := i * 5
 				sineValue := Sin((tick + offset) / waveSpeed)
 				val := Round((sineValue + 1) * 5)
@@ -239,15 +263,16 @@
 				buffs[buffName] := val
 			}
 
-			buffs["comforting"] := 100
-			buffs["motivating"] := 100
-			buffs["satisfying"] := 100
-			buffs["sticker_stack"] := 250
-			buffs["balloon_blessing"] := 67
-			buffs["clock"] := 5
-			buffs["mondo"] := 9
-			buffs["puffshroom_blessing"] := 100
-			buffs["cool_breeze"] := 100
+			for i in ["comforting", "motivating", "satisfying", "refreshing", "invigorating"]
+					buffs[i] := %SubStr(i, 1, 3)%
+			buffs["sticker_stack"] := stack
+			buffs["balloon_blessing"] := blessing
+			buffs["clock"] := clock
+			buffs["mondo"] := mondo
+			buffs["puffshroom_blessing"] := puff
+			buffs["robo_party"] := robo
+			buffs["cool_breeze"] := flake
+			buffs["festive_nymph"] := nymph
 
 			snapshot["buffs"] := buffs
 			this.logs.Push(snapshot)
@@ -259,7 +284,19 @@
 		if (this.logs.Length < 2)
 			return
 
-		
+		for index, snap in this.logs {
+			if (index > 1 && index < this.logs.Length) {
+				prevH := this.logs[index-1]["honey"]
+				currH := snap["honey"]
+				nextH := this.logs[index+1]["honey"]
+
+				if (currH > prevH && currH > nextH && (currH - nextH) > (currH * 0.01))
+					snap["honey"] := prevH
+				else if (currH < prevH && currH < nextH && (prevH - currH) > (prevH * 0.01))
+					snap["honey"] := prevH
+			}
+		}
+
 		for index, snap in this.logs {
 			if (index = 1) {
 				snap["honey_sec"] := 0
@@ -373,26 +410,39 @@
 			currentY += onOffHeight + padding
 		}
 
+		lastSnap := this.logs[this.logs.Length]
+		passiveCount := 0
+		for buffName, val in lastSnap["buffs"]
+			if (val && this.wall_buffs.Has(buffName) && !(buffName ~= "comforting|motivating|satisfying|refreshing|invigorating") && bitmaps.Has("stat_icon") && bitmaps["stat_icon"].Has(buffName))
+				passiveCount++
+
+		passiveRows := Ceil(passiveCount / 4)
+		minRightPanelH := 1050 + (passiveRows * 112) + (padding * 2)
+
 		canvasW := leftPanelW + rightPanelW + (padding * 3)
 		canvasH := currentY
-		if (canvasH < 500)
-			canvasH := 500
 
+		if (canvasH < minRightPanelH)
+			canvasH := minRightPanelH
 		rightRect := {x: leftPanelW + (padding * 2), y: padding, w: rightPanelW, h: canvasH - (padding * 2)}
 
 		; drawing
 		pBitmapCanvas := Gdip_CreateBitmap(canvasW, canvasH)
 		pGraphic := Gdip_GraphicsFromImage(pBitmapCanvas)
-		Gdip_GraphicsClear(pGraphic, 0xFF1E1E1E)
+		Gdip_SetSmoothingMode(pGraphic, 4)
+
+		pBrushBg := Gdip_CreateLineBrushFromRect(0, 0, canvasW, canvasH, 0xFF180c2e, 0xFF11103d, 2)
+		Gdip_FillRoundedRectangle(pGraphic, pBrushBg, 0, 0, canvasW, canvasH, 15)
+		Gdip_DeleteBrush(pBrushBg)
 
 		if (honeyRect.HasOwnProp("x")) {
-			GraphLeftOffset := 180
+			GraphLeftOffset := 120
 			topPadding := 36
 
 			hInner := {x: honeyRect.x + graphLeftOffset, y: honeyRect.y + topPadding, w: honeyRect.w - graphLeftOffset, h: honeyRect.h - topPadding}
 			bInner := {x: bagRect.x + graphLeftOffset, y: bagRect.y + topPadding, w: bagRect.w - graphLeftOffset, h: bagRect.h - topPadding}
 
-			Gdip_TextToGraphics(pGraphic, "Honey/Sec", "s22 Center Bold cFFFFD119 x" hInner.x " y" honeyRect.y + (honeyRect.h / 2) - 50, "Segoe UI", hInner.w)
+			Gdip_TextToGraphics(pGraphic, "Honey/Sec", "s22 Center Bold cFFFFD119 x" hInner.x " y" honeyRect.y + (honeyRect.h / 2) - 110, "Segoe UI", hInner.w)
 			Gdip_TextToGraphics(pGraphic, "Capacity", "s22 Center Bold cFF56A4E4 x" bInner.x " y" bagRect.y + (bagRect.h / 2) - 70, "Segoe UI", bInner.w)
 
 			Gdip_TextToGraphics(pGraphic, formattedPeak " honey/s", "s20 Right cFFFFD119 x" 0 " y" honeyRect.y + 2, "Segoe UI", graphLeftOffset - 8)
@@ -425,22 +475,11 @@
 
 	DrawMidGraph(pGraphic, rect, groupName, groupBuffs) {
 		iconColW := 90
-		labelColW := 90
-		totalOffset := 180
+		totalOffset := 120
 
-		iconSize := Min(72, rect.h - 20)
+		iconSize := Min(64, rect.h - 20)
 		iconX := rect.x + (iconColW / 2) - (iconSize / 2)
 		iconY := rect.y + (rect.h / 2) - (iconSize / 2)
-
-		if (bitmaps["stat_icon"].Has(groupName) && bitmaps["stat_icon"][groupName] > 0) {
-			Gdip_DrawImage(pGraphic, bitmaps["stat_icon"][groupName], iconX, iconY, iconSize, iconSize)
-		} else {
-			shortName := SubStr(groupName, 1, 5)
-			Gdip_TextToGraphics(pGraphic, shortName, "s9 Center Bold cFF888888 x" rect.x " y" iconY + (iconSize / 2) - 6, "Segoe UI", 45)
-		}
-
-		topPadding := 10
-		innerRect := {x: rect.x + totalOffset, y: rect.y + topPadding, w: rect.w - totalOffset, h: rect.h - topPadding}
 
 		groupMax := 5
 		for buffName, isActive in groupBuffs {
@@ -451,10 +490,21 @@
 			}
 		}
 
-		Gdip_TextToGraphics(pGraphic, "x" groupMax, "s20 Right cFF888888 x" (rect.x + iconColW) " y" rect.y + 2, "Segoe UI", labelColW - 8)
-		
+		if (bitmaps["stat_icon"].Has(groupName) && bitmaps["stat_icon"][groupName] > 0) {
+			Gdip_DrawImage(pGraphic, bitmaps["stat_icon"][groupName], iconX, iconY, iconSize, iconSize)
+		} else {
+			shortName := SubStr(groupName, 1, 5)
+			Gdip_TextToGraphics(pGraphic, shortName, "s14 Center Bold cFF888888 x" rect.x " y" iconY + (iconSize / 2) - 6, "Segoe UI", iconColW)
+		}
+
+		textY := iconY + iconSize + 5
+		Gdip_TextToGraphics(pGraphic, "x0 - " groupMax, "s14 Center Bold cFF888888 x" rect.x " y" textY, "Segoe UI", iconColW)
+
+		topPadding := 10
+		innerRect := {x: rect.x + totalOffset, y: rect.y + topPadding, w: rect.w - totalOffset - 20, h: rect.h - topPadding}
+
 		pPenGrid := Gdip_CreatePen(0x40FFFFFF, 1)
-		Gdip_DrawLine(pGraphic, pPenGrid, innerRect.x, innerRect.y - 30, innerRect.x + innerRect.w, innerRect.y - 30)
+		Gdip_DrawLine(pGraphic, pPenGrid, innerRect.x, innerRect.y - 15, innerRect.x + innerRect.w, innerRect.y - 15)
 		Gdip_DeletePen(pPenGrid)
 
 		for buffName, isActive in groupBuffs {
@@ -476,10 +526,10 @@
 		rowHeight := (rect.h - 40) / onOffCount
 
 		iconColW := 90
-		labelColW := 90
-		totalOffset := 100
+		totalOffset := 120
 
 		logCount := this.logs.Length
+		graphW := rect.w - totalOffset - 20
 		segmentW := (rect.w - totalOffset) / (logCount - 1)
 
 		rowIndex := 0
@@ -523,7 +573,7 @@
 				}
 			}
 			if (isDrawing) {
-				Gdip_FillRectangle(pGraphic, pBrush, startX, rowY, (rect.x + rect.w) - startX, drawH)
+				Gdip_FillRectangle(pGraphic, pBrush, startX, rowY, (rect.x + totalOffset + graphW) - startX, drawH)
 			}
 			Gdip_DeleteBrush(pBrush)
 			rowIndex++
@@ -536,62 +586,24 @@
 	
 		lastSnap := this.logs[this.logs.Length]
 
-		pBrushBg := Gdip_BrushCreateSolid(0xFF2A2A2A)
+		pBrushBg := Gdip_CreateLineBrushFromRect(0, 0, rect.w, rect.h, 0xFF0E071A, 0xFF220d42, 1, 1)
 		Gdip_FillRoundedRectangle(pGraphic, pBrushBg, rect.x, rect.y, rect.w, rect.h, 20)
 		Gdip_DeleteBrush(pBrushBg)
 
-		Gdip_TextToGraphics(pGraphic, "Current Stats", "s32 Center Bold cFFFFFFFF x" rect.x " y" rect.y + 30, "Segoe UI", rect.w)
+		Gdip_TextToGraphics(pGraphic, "Current Stats", "s32 Center Bold cFFFFFFFF x" rect.x " y" rect.y + 20, "Segoe UI", rect.w)
 
-		currentY := rect.y + 100
+		currentY := rect.y + 80
 		iconSize := 64
 		padding := 20
 
-		Gdip_TextToGraphics(pGraphic, "Honey:", "s24 cFFAAAAAA x" (rect.x + 20) " y" currentY, "Segoe UI")
-		Gdip_TextToGraphics(pGraphic, this.FormatNumber(lastSnap["honey"]), "s24 Bold Right cFFFFD119 x" rect.x " y" currentY, "Segoe UI", rect.w - 30)
-		currentY += 40
-
-		Gdip_TextToGraphics(pGraphic, "Bag:", "s24 cFFAAAAAA x" (rect.x + 20) " y" currentY, "Segoe UI")
-		Gdip_TextToGraphics(pGraphic, Round(lastSnap["bag"]) "%", "s24 Bold Right cFF56A4E4 x" rect.x " y" currentY, "Segoe UI", rect.w - 30)
-		currentY += 70
-
-		pPenLine := Gdip_CreatePen(0xFF555555, 2)
-		Gdip_DrawLine(pGraphic, pPenLine, rect.x + 20, currentY, rect.x + rect.w - 20, currentY)
-		Gdip_DeletePen(pPenLine)
-		currentY += 30
-
-		groupedSnap := Map()
-		for groupName, items in groupedSnap {
-			if (bitmaps.Has("stat_icon") && bitmaps["stat_icon"].Has(groupName)) {
-				pIcon := bitmaps["stat_icon"][groupName]
-				Gdip_DrawImage(pGraphic, pIcon, rect.x + 20, currentY, iconSize, iconSize)
-			}
-
-			for index, item in items {
-				textVal := this.IsOnOff(item.name) ? "ON" : "x" item.val
-				colorHex := this.buff_colors.Has(item.name) ? this.buff_colors[item.name] : 0xFFFFFFFF
-				colorStr := StrReplace(Format("{:08X}", colorHex), "0x", "")
-
-				gridCol := Mod(index - 1, 2)
-				gridRow := (index - 1) // 2
-
-				textX := rect.x + 20 + iconSize + 10 + (gridCol * 90)
-				textY := currentY + (gridRow * 32)
-
-				Gdip_TextToGraphics(pGraphic, textVal, "s24 Bold Left c" colorStr " x" textX " y" textY, "Segoe UI", 90)
-			}
-			rowsUsed := ((items.Length - 1) // 2) + 1
-			groupHeight := Max(iconSize, rowsUsed * 32)
-			currentY += groupHeight + padding
-		}
-
+		currentY += this.DrawSessionBlock(pGraphic, rect, currentY)
+		pPenLineSession := Gdip_CreatePen(0xFF555555, 2)
+		Gdip_DrawLine(pGraphic, pPenLineSession, rect.x + 20, currentY, rect.x + rect.w - 20, currentY)
+		Gdip_DeletePen(pPenLineSession)
 		currentY += 20
-		pPenLine2 := Gdip_CreatePen(0xFF555555, 2)
-		Gdip_DrawLine(pGraphic, pPenLine2, rect.x + 20, currentY, rect.x + rect.w - 20, currentY)
-		Gdip_DeletePen(pPenLine2)
-		currentY += 30
 
 		Gdip_TextToGraphics(pGraphic, "STATIC BUFFS", "s24 Center Bold cFFAAAAAA x" rect.x " y" currentY, "Segoe UI", rect.w)
-		currentY += 60
+		currentY += 50
 
 		gridX := rect.x + 30
 		startX := gridX
@@ -600,6 +612,8 @@
 
 		for buffName, val in lastSnap["buffs"] {
 			if (!val || !this.wall_buffs.Has(buffName))
+				continue
+			if (buffName ~= "comforting|motivating|satisfying|refreshing|invigorating")
 				continue
 			if (bitmaps.Has("stat_icon") && bitmaps["stat_icon"].Has(buffName)) {
 				peakVal := 0
@@ -631,10 +645,20 @@
 		if (passivesDrawn > 0 && Mod(passivesDrawn, 4) != 0)
 			currentY += iconW + 40
 		
-		currentY += 20
+		currentY += 15
 		pPenLine3 := Gdip_CreatePen(0xFF555555, 2)
 		Gdip_DrawLine(pGraphic, pPenLine3, rect.x + 20, currentY, rect.x + rect.w - 20, currentY)
 		Gdip_DeletePen(pPenLine3)
+		currentY += 20
+
+		Gdip_TextToGraphics(pGraphic, "NECTARS", "s24 Center Bold cFFAAAAAA x" rect.x " y" currentY, "Segoe UI", rect.w)
+		currentY += 60
+		currentY += this.DrawNectarRings(pGraphic, rect, currentY)
+
+		currentY += 20
+		pPenLine4 := Gdip_CreatePen(0xFF555555, 2)
+		Gdip_DrawLine(pGraphic, pPenLine4, rect.x + 20, currentY, rect.x + rect.w - 20, currentY)
+		Gdip_DeletePen(pPenLine4)
 		currentY += 30
 
 		startTimeTick := this.logs[1]["time"]
@@ -651,16 +675,169 @@
 		for objItem in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_OperatingSystem")
 			os_ver := Trim(StrReplace(StrReplace(StrReplace(StrReplace(objItem.Caption, "Microsoft"), "Майкрософт"), "مايكروسوفت"), "微软"))
 
-		Gdip_TextToGraphics(pGraphic, "StatMonitor - Kairos", "s23 cffbb69fd x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
+		Gdip_TextToGraphics(pGraphic, "StatMonitor - Kairos " ver, "s23 Bold cffdbb35d x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
 		currentY += 30
-		Gdip_TextToGraphics(pGraphic, startTime " -> " endTime " / " date, "s23 cffa052db x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
-		currentY += 30
-		Gdip_TextToGraphics(pGraphic, "OCR: " ocrStatus, "s23 cff943eb9 x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
-		currentY += 30
-		Gdip_TextToGraphics(pGraphic, os_ver, "s23 cff912ab9 x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
-		currentY += 30
-		Gdip_TextToGraphics(pGraphic, "Macro Version: " ver, "s23 cff8621ad x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
 
+		currentX := rect.x + 20
+		startW := StrSplit(Gdip_TextToGraphics(pGraphic, startTime, "s23 Bold cff5d70db x" (currentX) " y" currentY, "Segoe UI", rect.w - 40), "|")[3], currentX += startW
+		arrowW := StrSplit(Gdip_TextToGraphics(pGraphic,"->", "s23 Bold cffc7c7c7 x" (currentX) " y" currentY, "Segoe UI", rect.w - 40), "|")[3], currentX += arrowW
+		endW := StrSplit(Gdip_TextToGraphics(pGraphic, endTime, "s23 Bold cff4f52e2 x" (currentX) " y" currentY, "Segoe UI", rect.w - 40 - startW - arrowW), "|")[3], currentX += endW
+		slashW := StrSplit(Gdip_TextToGraphics(pGraphic, " / ", "s23 Bold cffc7c7c7 x" (currentX) " y" currentY, "Segoe UI", rect.w - 40), "|")[3], currentX += slashW
+		Gdip_TextToGraphics(pGraphic, date, "s23 Bold cffc540c5 x" (currentX) " y" currentY, "Segoe UI", rect.w - 40)
+
+		currentY += 30
+		col := this.ocr_enabled ? "cff44e4c1" : "cffaf2626"
+		Gdip_TextToGraphics(pGraphic, "OCR: ", "s23 Bold cff943eb9 x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
+		Gdip_TextToGraphics(pGraphic, ocrStatus, "s23 Bold " col " x" (rect.x + 85) " y" currentY, "Segoe UI", rect.w - 120)
+		currentY += 30
+		Gdip_TextToGraphics(pGraphic, "WIN VER: " os_ver, "s23 Bold cff5e5e5e x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
+		currentY += 30
+		Gdip_GetImageDimensions(bitmaps["stat_icon"]["watermark"], &imgW, &imgH)
+		scaleFactor := Max(400 // imgW, 400 // imgH)
+		Gdip_DrawImage(pGraphic, bitmaps["stat_icon"]["watermark"], rect.x + (rect.w / 2) - 200, currentY, imgW * scaleFactor, imgH * scaleFactor // 2)
+	}
+
+	DrawNectarRings(pGraphic, rect, startY) {
+		static nectars := ["comforting", "motivating", "satisfying", "refreshing", "invigorating"]
+		static colors := Map(
+			"comforting", 0xFF7E9EB3,
+			"motivating", 0xFF937DB3,
+			"satisfying", 0xFFB398A7,
+			"refreshing", 0xFF78B375,
+			"invigorating", 0xFFB35951
+		)
+		lastSnap := this.logs[this.logs.Length]
+		ringSize := 65
+		penWidth := 10
+
+		totalRingsWidth := 5 * ringSize
+		remainingSpace := rect.w - totalRingsWidth
+		spacing := remainingSpace / 6
+
+		for index, nectar in nectars {
+			val := lastSnap["buffs"].Has(nectar) ? lastSnap["buffs"][nectar] : 0
+			hex := colors[nectar]
+			trans := (hex & 0x00FFFFFF) | 0x40000000
+
+			ringX := rect.x + (spacing * index) + (ringSize * (index - 1))
+
+			pPenBg := Gdip_CreatePen(trans, penWidth)
+			Gdip_DrawArc(pGraphic, pPenBg, ringX, startY, ringSize, ringSize, 0, 360)
+			Gdip_DeletePen(pPenBg)
+
+			if (val > 0) {
+				pPenVal := Gdip_CreatePen(hex, penWidth)
+				sweepAngle := (val / 100) * 360
+				Gdip_DrawArc(pGraphic, pPenVal, ringX, startY, ringSize, ringSize, -90, sweepAngle)
+				Gdip_DeletePen(pPenVal)
+			}
+			Gdip_TextToGraphics(pGraphic, val "%", "s17 Center Bold cFFFFFFFF x" ringX " y" (startY + (ringSize / 2) - 12), "Segoe UI", ringSize)
+			name := Format("{1:Us}", SubStr(nectar, 1, 3))
+			pBrushTxt := Gdip_BrushCreateSolid(hex)
+			Gdip_TextToGraphics(pGraphic, name, "s17 Center Bold c" StrReplace(Format("{:08X}", hex), "0x", "") " x" ringX " y" (startY + ringSize + 10), "Segoe UI", ringSize)
+			Gdip_DeleteBrush(pBrushTxt)
+		}
+		return ringSize + 40
+	}
+
+	DrawSessionBlock(pGraphic, rect, startY) {
+		lastSnap := this.logs[this.logs.Length]
+		currentHoney := lastSnap["honey"]
+
+		startHoney := (this.sessionStartHoney > 0) ? this.sessionStartHoney : this.logs[1]["honey"]
+		sessionHoney := currentHoney - startHoney
+
+		if (sessionHoney < 0)
+			sessionHoney := 0
+				
+		elapseSecs := (A_TickCount - this.scanStartTime) // 1000
+		h := elapseSecs // 3600
+		m := Mod(elapseSecs // 60, 60)
+		s := Mod(elapseSecs, 60)
+		timeStr := Format("{:02}:{:02}:{:02}", h, m, s)
+
+		Gdip_TextToGraphics(pGraphic, "SESSION", "s24 Center Bold cFFAAAAAA x" rect.x " y" startY, "Segoe UI", rect.w)
+		currentY := startY + 45
+
+		leftPad := rect.x + 20
+		rightW := rect.w - 40
+		rowSpacing := 35
+		graphHeight := 250
+
+		Gdip_TextToGraphics(pGraphic, "Current Honey:", "s20 Bold cFFFFFFFF x" leftPad " y" currentY, "Segoe UI")
+		Gdip_TextToGraphics(pGraphic, this.FormatNumber(currentHoney), "s20 Bold Right cFFFFFFFF x" leftPad " y" currentY, "Segoe UI", rightW)
+		currentY += rowSpacing
+
+		Gdip_TextToGraphics(pGraphic, "Session Honey:", "s20 Bold cFF41FF80 x" leftPad " y" currentY, "Segoe UI")
+		Gdip_TextToGraphics(pGraphic, "+" this.FormatNumber(sessionHoney), "s20 Bold Right cFF41FF80 x" leftPad " y" currentY, "Segoe UI", rightW)
+		currentY += rowSpacing
+
+		Gdip_TextToGraphics(pGraphic, "Session Time:", "s20 Bold cFF56A4E4 x" leftPad " y" currentY, "Segoe UI")
+		Gdip_TextToGraphics(pGraphic, timeStr, "s20 Bold Right cFF56A4E4 x" leftPad " y" currentY, "Segoe UI", rightW)
+		currentY += rowSpacing
+
+		Gdip_TextToGraphics(pGraphic, "Elapse Honey", "s20 Bold cffa3a3a3 x" leftPad " y" currentY, "Segoe UI")
+		currentY += 30
+
+		graphBg := Gdip_BrushCreateSolid(0x66000000)
+		Gdip_FillRoundedRectangle(pGraphic, graphBg, leftPad, currentY, rightW, graphHeight, 10)
+		Gdip_DeleteBrush(graphBg)
+		if (this.logs.Length > 1) {
+			baseHoney := (this.sessionStartHoney > 0) ? this.sessionStartHoney : this.logs[1]["honey"]
+
+			maxGain := 0
+			for index, entry in this.logs {
+				gain := entry["honey"] - baseHoney
+				if (gain < 0)
+					gain := 0
+				if (gain > maxGain)
+					maxGain := gain
+			}
+			if (maxGain = 0)
+				maxGain := 1
+			labelX := leftPad
+			labelW := 55
+			padding := 10
+
+			levels := [1.0, .75, .5, .25, 0.0]
+			for i, percent in levels {
+				val := baseHoney + (maxGain * percent)
+				textVal := this.FormatNumber(val)
+				labelY := (currentY + padding) + ((1 - percent) * (graphHeight - (padding * 2))) - 10
+				Gdip_TextToGraphics(pGraphic, textVal, "s14 Bold Right cFFAAAAAA x" labelX " y" labelY, "Segoe UI", labelW)
+			}
+
+			gX := leftPad + labelW + 5
+			gW := rightW - labelW - padding - 5
+			gH := graphHeight - (padding * 2)
+			bottomY := currentY + graphHeight - 10
+
+			linePoints := []
+			polyPoints := []
+
+			polyPoints.Push([gX, bottomY])
+			for index, entry in this.logs {
+				x := gX + ((index-1) / (this.logs.Length-1) * gW)
+				gain := entry["honey"] - baseHoney
+				y := bottomY - ((gain / maxGain) * gH)
+				if (y < currentY + padding)
+					y := currentY + padding
+				if (y > bottomY)
+					y := bottomY
+				linePoints.Push([x, y])
+				polyPoints.Push([x, y])
+			}
+			polyPoints.Push([gX + gW, bottomY])
+
+			pBrush := Gdip_CreateLineBrushFromRect(gX, currentY, gW, graphHeight, 0x6000FF00, 0x00000000, 1)
+			Gdip_FillPolygon(pGraphic, pBrush, polyPoints)
+			Gdip_DeleteBrush(pBrush)
+
+			pPen := Gdip_CreatePen(0xFF41FF80, 2)
+			Gdip_DrawLines(pGraphic, pPen, linePoints)
+			Gdip_DeletePen(pPen)
+		}
+		return (currentY + graphHeight + 20) - startY
 	}
 
 	FormatNumber(num) {
@@ -699,6 +876,10 @@
 		
 		for index, snap in this.logs {
 			val := isBuff ? (snap["buffs"].Has(dataKey) ? snap["buffs"][dataKey] : 0) : snap[dataKey]
+			if (val < 0)
+				val := 0
+			if (val > maxVal)
+				val := maxVal
 			xPos := rect.x + ((index - 1) * (rect.w / (logCount - 1)))
 			yPos := rect.y + rect.h - ((val / maxVal) * rect.h)
 			points.Push([xPos, yPos])
@@ -1135,18 +1316,15 @@
 		DllCall("psapi.dll\EmptyWorkingSet", "UInt", -1)
 
 		current_honey := 0
-		for k, val in detected {
-			if (val > 2 && k > current_honey) {
+		for k, val in detected
+			if (val > 2 && k > current_honey)
 				current_honey := k
-			}
-		}
 		return current_honey
 	}
 
 	Export() {
-		if (this.logs.Length >= 2) {
+		if (this.logs.Length >= 2)
 			this.DrawGraph()
-		}
 		this.logs := []
 		this.previousBuffs := Map()
 		this.currentBuffs := Map()

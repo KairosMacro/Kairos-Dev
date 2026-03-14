@@ -64,7 +64,7 @@
 		TabCtrl.UseTab("Home")
 		this.Gui.SetFont("w700")
 
-		this.Gui.Add("GroupBox", "x10 y25 w190 h165 -Wrap", "")
+		this.Gui.Add("GroupBox", "x10 y25 w190 h115 -Wrap", "")
 		this.Gui.Add("Text", "x20 y24 h20 -Wrap", "Profile Manager")
 		this.Gui.SetFont("s10 cDefault Norm")
 
@@ -78,12 +78,11 @@
 		this.Gui.Add("Button", "x20 y105 w160 h22", "Delete").OnEvent("Click", this.DeletePreset.Bind(this))
 
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x210 y25 w130 h165 -Wrap", "")
+		this.Gui.Add("GroupBox", "x210 y25 w130 h" 20 + ((Config.Get("Main", "AccountType", "Main") = "Main" ? 6 : 2) * 20) " -Wrap vFeaturesGroup", "")
 		this.Gui.Add("Text", "x220 y24 h20 -Wrap", "Enable Features")
 		this.Gui.SetFont("s10 cDefault Norm")
 
 		this.FeatureControls := Map()
-
 		for i in this.FeatureList {
 			name := StrReplace(i, " ", "") "Enabled"
 			isEnabled := Config.Get("Main", name, 0)
@@ -95,20 +94,22 @@
 			this.FeatureControls[i] := {chk: chk, txt: txt, name: name}
 		}
 		; --- Warnings Tab ---
+
+		; actual name (in settings) - display name
+		WarnItems := [
+			["Precise", "Precision"]
+			, ["SuperSmoothie", "Super Smoothie"]
+		]
+
 		TabCtrl.UseTab("Warnings")
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y25 w" (tabInnerWidth - 120) " h100 -Wrap", "")
+		this.Gui.Add("GroupBox", "x10 y25 w" (tabInnerWidth - 120) " h" 30 + (WarnItems.Length * 30) " -Wrap", "")
 		this.Gui.Add("Text", "x20 y27 -Wrap", "Warning Settings")
 		this.Gui.SetFont("s10 cDefault Norm")
 
 		this.Gui.Add("Text", "x45 y40 w80", "Active")
 		this.Gui.Add("Text", "x130 y40 w60", "Threshold")
 		this.Gui.Add("Text", "x200 y40 w70", "Audio/Misc")
-
-		WarnItems := [
-			["Precise", "Precision"]
-			, ["SuperSmoothie", "Super Smoothie"]
-		]
 
 		yPos := 57
 		for item in WarnItems {
@@ -266,14 +267,6 @@
 
 		; --- Tracker Tab ---
 		TabCtrl.UseTab("Tracker")
-		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y25 w135 h170")
-		this.Gui.Add("Text", "x20 y27", "Tracker Settings")
-		this.Gui.SetFont("s10 cDefault Norm")
-
-		passives := Config.Get("Tracker", "Passives", "Scorch")
-		has := (str) => InStr("|" passives "|", "|" str "|")
-
 		TrackerItems := Map(
 			"scorch", "Scorch"
 			, "popstar", "Pop Star"
@@ -283,8 +276,15 @@
 			, "gummyballer", "Gummy Baller"
 			, "supersmoothie", "Super Smoothie"
 		)
+		this.Gui.SetFont("w700")
+		this.Gui.Add("GroupBox", "x10 y25 w140 h" 25 + (TrackerItems.Count * 20))
+		this.Gui.Add("Text", "x20 y27", "Tracker Settings")
+		this.Gui.SetFont("s10 cDefault Norm")
 
-		yPos := 47
+		passives := Config.Get("Tracker", "Passives", "Scorch")
+		has := (str) => InStr("|" passives "|", "|" str "|")
+
+		yPos := 45
 		for key, name in TrackerItems {
 			varName := StrReplace(key, "-", "")
 			this.Gui.Add("CheckBox", "x25 y" yPos " w20 h20 vTracker_" varName " Checked" has(key)).OnEvent("Click", this.UpdatePassives.Bind(this))
@@ -311,7 +311,7 @@
 		this.RegisterHotkeys()
 
 		; --- OnExit ---
-		OnExit((*) => (IsSet(Stats) && Stats) ? Stats.Export() : 0)
+		;OnExit((*) => (IsSet(Stats) && Stats) ? Stats.Export() : 0)
 	}
 
 	; --- Functions ---
@@ -637,6 +637,7 @@
 				ctrls.txt.Visible := false
 			}
 		}
+		this.Gui["FeaturesGroup"].Move(, , , (20 * (visibleIdx + 1)))
 	}
 
 	SelectSound(GuiCtrl, *) {

@@ -41,6 +41,7 @@ if (A_ScreenDPI != 96) {
 #Include "DarkMode.ahk"
 #Include "Dweet.ahk"
 #Include "OCR.ahk"
+#Include "Detection.ahk"
 
 if !(pToken := Gdip_Startup())
 	throw Error("GDI+ failed to start, exiting script.")
@@ -137,6 +138,7 @@ F4:: {
 		Run(A_ScriptDir "\hi.png")
 	else
 		MsgBox("Graph image not found.")
+	Stats.Cleanup()
 }
 
 Cleanup(*) {

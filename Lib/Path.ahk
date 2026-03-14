@@ -32,6 +32,9 @@
 	#Include "%A_ScriptDir%\Assets\Bitmaps\"
 	#Include "Offset.ahk"
 	#Include "Movement.ahk"
+	#Include "General.ahk"
+	#Include "Sprinkler.ahk"
+
 	offsetY := ' State.offsetY '
 	' KeyVars() '
 	' vars '
@@ -444,7 +447,6 @@ LocateSprinkler(&X:="", &Y:="") {
 	}
 	if (found) {
 		X := finalX, Y := finalY + 75
-		;tooltip "Located sprinkler at (" X ", " Y ") using image " name , X-10, Y-10
 		lastPos := {x: X, y: Y}
 		return 1
 	}

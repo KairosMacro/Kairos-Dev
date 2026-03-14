@@ -44,6 +44,7 @@
 	)
 
 	__New() {
+		this.scanner := Detection()
 		this.Fancy := GdipTooltip(true)
 		this.RefreshConfig()
 		Scheduler.Add("Tracker.CheckLoop", this.CheckLoop.Bind(this), 100, () => this.IsActive)
@@ -133,10 +134,11 @@
 		pBMScreen := FrameCache.Get(region)
 		if !pBMScreen
 			return -1
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
+		icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][name], mode.x1, mode.y1, mode.x2, mode.y2, mode.var)
+		if (!icon.found)
 			return -1
-		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-		return this.DetectNumber(pBMScreen, Floor(foundX / 40))
+		slotX := Floor(icon.x / 40)
+		return this.scanner.ReadDigits(pBMScreen, slotX * 40, 22, (slotX * 40) + 34, 33, "passive")
 	}
 
 	DetectBuffs(name) {
@@ -154,15 +156,14 @@
 		if !pBMScreen
 			return -1
 
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var, , 8) != 1)
-			return -1
-		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-		foundY := Integer(SubStr(loc, InStr(loc, ",") + 1))
-
-		current := this.DetectBuffNum(foundX, foundY, pBMScreen, "tiny")
-		if (current < 100)
-			current := this.DetectBuffNum(foundX, foundY, pBMScreen, "big")
-
+		icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][name], mode.x1, mode.y1, mode.x2, mode.y2, mode.var)
+		if (!icon.found) {
+			if (++buff.fail < 10)
+				return buff.val
+			buff.val := 0
+			return 0
+		}
+		current := this.scanner.ReadDigit(pBMScreen, icon.x - 13, 0, icon.x + 25, 32, "auto")
 		if (current > 0) {
 			buff.val := current
 			buff.fail := 0
@@ -193,48 +194,23 @@
 		if !pBMScreen
 			return -1
 
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][imgName], &loc, , , , , 4, , 6) != 1) {
+		icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][imgName], 0, 0, 0, 0, 4)
+		if (!icon.found) {
 			buffers[name] := []
 			return -1
 		}
 
-		x := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-		y := Integer(SubStr(loc, InStr(loc, ",") + 1))
-		bottomY := y
-		high := y
-		low := 0
-
-		while (low < high) {
-			if (A_Index > 20)
-				return 0
-			mid := Floor((low + high) / 2)
-			pixelColor := Gdip_GetPixel(pBMScreen, x + mode.xOff, mid)
-			match := false
-			for col in mode.colors {
-				if (col = pixelColor) {
-					match := true
-					break
-				}
-			}
-
-			if (match)
-				high := mid
-			else
-				low := mid + 1
-		}
-
-		raw := Round((bottomY - low) / 38 * 100, 2) + 2
+		lowY := this.scanner.ReadPercentageFill(pBMScreen, icon.x + mode.xOff, 0, icon.y, mode.colors, 0)
+		raw := Round((icon.y - lowY) / 38 * 100, 2) + 2
 		buff.Push(raw)
 		if (buff.Length > bufferSize)
 			buff.RemoveAt(1)
-
 		best := []
 		for val1 in buff {
 			current := []
-			for val2 in buff {
+			for val2 in buff
 				if (Abs(val1 - val2) <= tolerance)
 					current.Push(val2)
-			}
 			if (current.Length > best.Length)
 				best := current
 		}
@@ -255,144 +231,24 @@
 		pBMScreen := FrameCache.Get(region)
 		if !pBMScreen
 			return -1
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["buff"][name], &loc, mode.x1, mode.y1, mode.x2, mode.y2, mode.var) != 1)
+		icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][name], mode.x1, mode.y1, mode.x2, mode.y2, mode.var)
+		if (!icon.found)
 			return -1
-		foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-		slotX := Floor(foundX / 38) * 38
-		; verify that it's an actual bloom by doing the "percentage" stuff,
-		return this.MeasureBuff(pBMScreen, slotX, mode.col, name)
-	}
-
-	MeasureBuff(pBitmap, slotX, color, name) {
+		slotX := Floor(icon.x / 38) * 38
+		scanX := slotX + 6
+		
 		if !this.bloomStates.Has(name)
 			this.bloomStates[name] := {val: 0, fail: 0}
 		state := this.bloomStates[name]
-		scanX := slotX + 6
-
-		if !this.inRange(Gdip_GetPixel(pBitmap, scanX, 37), color) {
+		
+		if !this.scanner._IsColorMatch(Gdip_GetPixel(pBMScreen, scanX, 37), mode.col, 100) {
 			if (++state.fail < 15)
 				return state.val
 			return 0
 		}
-
 		state.fail := 0
-		low := 0, high := 35
-		while (low < high) {
-			mid := Floor((low + high) / 2)
-			if this.inRange(Gdip_GetPixel(pBitmap, scanX, mid), color)
-				high := mid
-			else
-				low := mid + 1
-		}
-		return Round((36 - low) / 36, 2)
-	}
-
-	inRange(pixel, color, tolerance := 100) {
-		r := (pixel >> 16) & 0xFF
-		g := (pixel >> 8) & 0xFF
-		b := pixel & 0xFF
-
-		cr := (color >> 16) & 0xFF
-		cg := (color >> 8) & 0xFF
-		cb := color & 0xFF
-
-		return (Abs(r - cr) <= tolerance) && (Abs(g - cg) <= tolerance) && (Abs(b - cb) <= tolerance)
-	}
-
-	DetectNumber(pBitmap, slot) {
-		searchX := slot * 40
-		searchY := 22
-		searchW := 34
-		searchH := 11
-
-		found := []
-
-		loop 10 {
-			idx := 10 - A_Index
-
-			if (Gdip_ImageSearch(pBitmap, bitmaps["buff"][idx], &loc1, searchX, searchY, searchX + searchW, searchY + searchH, 6) = 1) {
-				mX := SubStr(loc1, 1, InStr(loc1, ",") - 1)
-				currentWidth := this.numOffset[idx]
-
-				isOverlap := false
-				for item in found {
-					if (mX >= item.x && mX < item.x + item.w - 1) {
-						isOverlap := true
-						break
-					}
-					if (item.x >= mX && item.x < (mX + currentWidth - 1)) {
-						isOverlap := true
-						break
-					}
-				}
-				if (!isOverlap) {
-					found.Push({ num: idx, x: Integer(mX), w: currentWidth })
-					if (Gdip_ImageSearch(pBitmap, bitmaps["buff"][idx], &loc2, mX + currentWidth - 1, searchY, searchX + searchW, searchY + searchH, 6) = 1) {
-						mX2 := SubStr(loc2, 1, InStr(loc2, ",") - 1)
-						found.Push({ num: idx, x: Integer(mX2), w: currentWidth })
-					}
-				}
-			}
-		}
-
-		if (found.Length = 0) {
-			return 0
-		} else if (found.Length = 1) {
-			return found[1].num
-		} else {
-			if (found[1].x < found[2].x) {
-				return found[1].num . found[2].num
-			} else {
-				return found[2].num . found[1].num
-			}
-		}
-	}
-
-	DetectBuffNum(x, y, pBitmap, numType := "big") {
-		offsets := (numType = "big") ? bigOffset : tinyOffset
-		found := []
-		priorityOrder := [8, 0, 6, 9, 4, 7, 2, 3, 5, 1]
-		sX := x - 13
-		sY := 0
-		sW := sX + 38
-		sH := 32
-		for idx in priorityOrder {
-			currentX := sX
-			while (Gdip_ImageSearch(pBitmap, bitmaps["buff"][numType][idx], &loc, currentX, sY, sW, sH, , , 6)) {
-				
-				mX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
-				isOverlap := false
-				for item in found {
-					if (mX >= item.x && mX < item.x + item.w) || (item.x >= mX && item.x < mX + offsets[idx]) {
-						isOverlap := true
-						break
-					}
-				}
-				if !isOverlap {
-					found.Push({num: idx, x: mX, w: offsets[idx]})
-				}
-				currentX := mX + offsets[idx]
-				if (currentX >= sW)
-					break
-			}
-		}
-		if (found.Length = 0)
-			return 0
-		Loop found.Length {
-			i := A_Index
-			Loop found.Length - i {
-				j := i + A_Index
-				if (found[i].x > found[j].x) {
-					temp := found[i]
-					found[i] := found[j]
-					found[j] := temp
-				}
-			}
-		}
-		result := ""
-		for item in found
-			result .= item.num
-		return Integer(result)
+		lowY := this.scanner.ReadPercentageFill(pBMScreen, scanX, 0, 35, mode.col, 100)
+		return Round((36 - lowY) / 36, 2)
 	}
 
 	DetectGumdrops() {

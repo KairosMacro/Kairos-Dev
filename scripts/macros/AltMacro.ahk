@@ -63,26 +63,26 @@
 		this.Settings()
 
 		; If the Guiding Star cycle is enabled, run that flow instead of the normal Alt loop.
-		if (Config.Get("Guide", "Enabled", 0)) {
-			this.GuideCycle()
-			return
-		}
-		if !(this.Reconnect())
-			this.Reset()
+		;if (Config.Get("Guide", "Enabled", 0)) {
+		;	this.GuideCycle()
+		;	return
+		;}
+		;if !(this.Reconnect())
+		;	this.Reset()
 		fieldName := this.DefaultField
-		this.GotoField(fieldName)
-		this.PlaceSprinkler()
-		this.Rotation()
-		this.EnableShift(1)
+		;this.GotoField(fieldName)
+		;this.PlaceSprinkler()
+		;this.Rotation()
+		;this.EnableShift(1)
 		sleep 500
 		if (IsSet(Boost) && Boost)
 			Boost.stats.BuffState["Timer"] := 1
 
 		loop {
-			if !this.Shiftlock
-				MouseMove windowX + (windowWidth // 2), windowY + (windowHeight // 2)
-			if this.UseTool
-				click "down"
+			;if !this.Shiftlock
+			;	MouseMove windowX + (windowWidth // 2), windowY + (windowHeight // 2)
+			;if this.UseTool
+			;	click "down"
 			if !this.IsRunning {
 				click "up"
 				break
@@ -690,22 +690,6 @@
 		try CloseRoblox()
 		try Run '"roblox://placeID=1537690962"'
 		return this.WaitForRobloxLoaded(420)
-	}
-	CloseRoblox() {
-		for proc in ["RobloxPlayerBeta.exe"] {
-			try {
-				ProcessClose(proc)
-			}
-		}
-
-		start := A_TickCount
-		while (ProcessExist("RobloxPlayerBeta.exe")) {
-			if (A_TickCount - start > 5000)
-				break
-			Sleep 100
-		}
-
-		Sleep 1500
 	}
 
 	JoinPrivateServer(link) {
