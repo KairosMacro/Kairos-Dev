@@ -138,6 +138,10 @@ F4:: {
 		Run(A_ScriptDir "\hi.png")
 	else
 		MsgBox("Graph image not found.")
+	if FileExist(A_ScriptDir "\hi.txt")
+		Run(A_ScriptDir "\hi.txt")
+	else
+		MsgBox("Txt file not found.")
 	Stats.Cleanup()
 }
 

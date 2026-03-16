@@ -431,7 +431,7 @@ class BoostBar {
 				wx := win.x, wy := win.y, ww := win.w, wh := win.h
 				targetX := wx + (ww // 2) - 261
 				targetY := wy + wh - 182
-				show := this.ConfigCache.enabled && ((!this.IsRunning || State.IsPaused || WinActive("ahk_id " win.hwnd)) || this.ConfigCache.showWhenActive)
+				show := this.ConfigCache.enabled && (!this.IsRunning || State.IsPaused ||(this.IsRunning && this.ConfigCache.showWhenActive))
 				(show ? this.Gui.Show("NA x" targetX " y" targetY " w" this.TotalW " h" this.TotalH) : this.Gui.Hide())
 			} else {
 				this.Gui.Hide()

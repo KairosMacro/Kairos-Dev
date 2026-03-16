@@ -37,10 +37,106 @@
 			, "refreshing", 1
 			, "invigorating", 1
 			, "festive_nymph", 1
+			, "bubble_bloat", 1
+			, "tide_blessing", 1
 		)
 
-		this.render_order := [
-			"boost", "haste", "crit", "bomb", "inspire", "mark", "coconut_combo" 
+		this.buff_limits := Map(
+			"comforting", 100
+			, "motivating", 100
+			, "satisfying", 100
+			, "refreshing", 100
+			, "invigorating", 100
+			, "sticker_stack", 300
+			, "balloon_blessing", 100
+			, "puffshroom_blessing", 100
+			, "robo_party", 100
+			, "cool_breeze", 100
+			, "festive_nymph", 100
+			, "map_corruption", 100
+			, "reindeer_guidance", 10
+			, "dark_heat", 999
+			, "clock", 5 
+			, "mondo", 10 
+			, "boost_red", 10
+			, "boost_blue", 10
+			, "boost_white", 10
+			, "focus", 10
+			, "haste", 10
+			, "precision", 10
+			, "bomb", 10
+			, "inspire", 100
+			, "rage", 4
+			, "balloon_aura", 10
+			, "coconut_combo", 100
+			, "honey_mark", 3
+			, "pollen_mark", 3
+			, "precise_mark", 3
+			, "bubble_bloat", 6
+			, "tide_blessing", 1.2
+			, "flame_heat", 2
+		)
+
+		this.active_render_order := [ ; possibly make the generic ones ordered here
+			"boost"
+			, "haste"
+			, "crit"
+			, "bomb"
+			, "inspire"
+			, "coconut_combo"
+			, "map_corruption"
+			, "reindeer_guidance"
+			, "rage"
+			, "flame_heat"
+			, "dark_heat"
+			, "balloon_aura"
+			, "mark"
+			, "precise_mark"
+		]
+
+		this.onoff_render_order := [
+			"pop_star"
+			, "scorching_star"
+			, "gummy_star"
+
+			, "guiding_star"
+			, "bear_morph"
+			, "melody"
+			, "baby_love"
+
+			, "tabby_blessing"
+			, "festive_blessing"
+			, "beesmas_cheer"
+			, "festive_mark"
+			, "bomb_sync_blue"
+			, "bomb_sync_red"
+			, "clouds"
+			, "jellybean_sharing"
+			, "flame_fuel"
+			
+			, "super_smoothie"
+			, "purple_potion"
+			, "marshmallow_bee"
+			, "extract_blue"
+			, "extract_red"
+			, "oil"
+			, "enzyme"
+			, "glue"
+			, "tropical_drink"
+			, "stingers"
+		]
+
+		this.wall_render_order := [
+			"balloon_blessing"
+			, "puffshroom_blessing"
+			, "sticker_stack"
+			, "robo_party"
+			, "mondo"
+			, "clock"
+			, "festive_nymph"
+			, "cool_breeze"
+			, "bubble_bloat"
+			, "tide_blessing"
 		]
 
 		this.buff_colors := Map(
@@ -74,6 +170,7 @@
 			, "tabby_blessing", 0xFFF99D28
 			, "clouds", 0xFFECF0F1
 			, "flame_fuel", 0xFFCF2013
+			, "flame_heat", 0xFFCF1F14
 			, "stinger", 0xFFFF0100
 			, "enzyme", 0xFFFEC650
 			, "extract_red", 0xFFFEC650
@@ -94,6 +191,11 @@
 			, "coconut_combo", 0xFF88633E
 			, "balloon_blessing", 0xFF3350C3
 			, "festive_nymph", 0xFF47AC53
+			, "scorching_star", 0xFFFF3400
+			, "gummy_star", 0xFFF191FF
+			, "bubble_bloat", 0xFF4880CC
+			, "tide_blessing", 0xFF91C2FD
+			
 		)
 
 		this.ocr_enabled := true
@@ -194,14 +296,14 @@
 		starTime := this.scanStartTime := A_TickCount
 
 		onOffList := ["oil", "super_smoothie", "bomb_sync_red", "bomb_sync_blue", "festive_blessing", "beesmas_cheer",
-		"tabby_blessing", "clouds", "baby_love", "festive_mark", "flame_fuel", "guiding_star", "stinger", "enzyme",
-		"extract_red", "extract_blue", "glue", "tropical_drink", "purple_potion", "marshmallow_bee", "jellybean_sharing",
-		"bear_morph", "melody"]
+					"tabby_blessing", "clouds", "baby_love", "festive_mark", "flame_fuel", "guiding_star", "stinger", "enzyme",
+					"extract_red", "extract_blue", "glue", "tropical_drink", "purple_potion", "marshmallow_bee", "jellybean_sharing",
+					"bear_morph", "melody", "pop_star", "scorching_star", "gummy_star"]
 		
 		digitList := ["focus", "bomb", "rage", "inspire", "balloon_aura", "clock", "honey_mark", "pollen_mark",
-		"precise_mark", "reindeer_guidance", "mondo", "map_corruption", "cool_breeze", "precision", "sticker_stack",
-		"puffshroom_blessing", "robo_party", "dark_heat", "coconut_combo", "balloon_blessing", "haste", "boost_red",
-		"boost_blue", "boost_white", "festive_nymph"]
+					"precise_mark", "reindeer_guidance", "mondo", "map_corruption", "cool_breeze", "precision", "sticker_stack",
+					"puffshroom_blessing", "robo_party", "dark_heat", "coconut_combo", "balloon_blessing", "haste", "boost_red",
+					"boost_blue", "boost_white", "festive_nymph", "bubble_bloat", "tide_blessing", "flame_heat"]
 
 		genOnOff := []
 		genDigit := []
@@ -225,6 +327,19 @@
 		ref := Random(0, 100)
 		inv := Random(0, 100)
 
+				this.wall_render_order := [
+			"balloon_blessing"
+			, "puffshroom_blessing"
+			, "sticker_stack"
+			, "robo_party"
+			, "mondo"
+			, "clock"
+			, "festive_nymph"
+			, "cool_breeze"
+			, "bubble_bloat"
+			, "tide_blessing"
+		]
+
 		stack := Random(1, 290)
 		blessing := Random(1, 100)
 		clock := Random(1, 5)
@@ -233,25 +348,29 @@
 		flake := Random(1, 100)
 		robo := Random(1, 100)
 		nymph := Random(1, 100)
+		bloat := Round(Random(1.0, 6.0), 2)
+		tide := Round(Random(1.0, 1.2), 2)
+
+
 
 		loop 3600 {
 			tick := A_Index
 			snapshot := Map()
 			snapshot["time"] := starTime + (tick * 1000)
-			snapshot["bag"] := Mod(tick, 60) * (100/60)
+			snapshot["bag"] := Round(Mod(tick, 60) * (100/60), 2)
 			snapshot["honey"] := honey_values[tick-1] + ((Mod(tick, 100) < 50) ? Random(100000000, 999999999) : Random(1000000000, 10000000000))
 			honey_values[tick] := snapshot["honey"]
 
 			buffs := Map()
 
-			for i, buffName in genOnOff {
+			for i, buffName in onOffList {
 				cycleLength := 40 + Mod(i * 13, 60) 
 				uptime := cycleLength * 0.6
 				offset := i * 7
 				buffs[buffName] := Mod(tick + offset, cycleLength) < uptime ? 1 : 0
 			}
 
-			for i, buffName in genDigit {
+			for i, buffName in digitList {
 				waveSpeed := 10 + Mod(i * 3, 30)
 				offset := i * 5
 				sineValue := Sin((tick + offset) / waveSpeed)
@@ -263,8 +382,11 @@
 				buffs[buffName] := val
 			}
 
-			for i in ["comforting", "motivating", "satisfying", "refreshing", "invigorating"]
-					buffs[i] := %SubStr(i, 1, 3)%
+			buffs["comforting"] := com
+			buffs["motivating"] := mot
+			buffs["satisfying"] := sat
+			buffs["refreshing"] := ref
+			buffs["invigorating"] := inv
 			buffs["sticker_stack"] := stack
 			buffs["balloon_blessing"] := blessing
 			buffs["clock"] := clock
@@ -273,6 +395,8 @@
 			buffs["robo_party"] := robo
 			buffs["cool_breeze"] := flake
 			buffs["festive_nymph"] := nymph
+			buffs["bubble_bloat"] := bloat
+			buffs["tide_blessing"] := tide
 
 			snapshot["buffs"] := buffs
 			this.logs.Push(snapshot)
@@ -392,7 +516,7 @@
 			formattedPeak := this.FormatNumber(peakHoney)
 		}
 		if (groupCount > 0) {
-			for index, expectedGroup in this.render_order {
+			for index, expectedGroup in this.active_render_order {
 				if (activeDigitGroups.Has(expectedGroup)) {
 					buffsInGroup := activeDigitGroups[expectedGroup]
 					groupRects.Push({name: expectedGroup, rect: {x: padding, y: currentY, w: leftPanelW, h: sectionH}, buffs: buffsInGroup})
@@ -465,12 +589,52 @@
 		
 		; Save/Dispose
 		if (!IsSet(path)) {
-			time := FormatTime(A_Now, "yyyy-MM-dd_HH-mm-ss")
-			path := A_ScriptDir "\graph_" time ".png"
+			dateFolder := FormatTime(A_Now, "yyyy-MM-dd")
+			timeStr := FormatTime(A_Now, "HH-mm-ss")
+			dirPath := A_ScriptDir "\..\graphs\" dateFolder
+			if !DirExist(dirPath)
+				DirCreate(dirPath)
+			path := dirPath "\graph_" timeStr ".png"
+			txtPath := dirPath "\data_" timeStr ".txt"
+			this.ExportData(txtPath)
+		} else {
+			txtPath := StrReplace(path, ".png", ".txt")
+			this.ExportData(txtPath)
 		}
 		Gdip_SaveBitmapToFile(pBitmapCanvas, path, 100)
 		Gdip_DeleteGraphics(pGraphic)
 		Gdip_DisposeImage(pBitmapCanvas)
+		this.logs := []
+	}
+
+	ExportData(path?) {
+		if (this.logs.Length = 0)
+			return
+		if (!IsSet(path)) {
+			timeStr := FormatTime(A_Now, "yyyy-MM-dd_HH-mm-ss")
+			path := A_ScriptDir "\export_" timeStr ".txt"
+		}
+		out := "RAW DATA OF DETECTION `n====================`n"
+		for index, snap in this.logs {
+			out .= "Time: " snap["time"] " | Honey: " snap["honey"] " | Bag: " snap["bag"] "%`n"
+			out .= "Buffs: "
+			buffCount := 0
+			for buff, val in snap["buffs"] {
+				if (val > 0) {
+					out .= buff ": " val ", "
+					buffCount++
+				}
+			}
+			if (buffCount > 0)
+				out := RTrim(out, ", ")
+			else
+				out .= "None"
+			out .= "`n--------------------`n"
+		}
+		if FileExist(path)
+			FileDelete(path)
+		FileAppend(out, path, "UTF-8")
+		;Run("notepad.exe " path)
 	}
 
 	DrawMidGraph(pGraphic, rect, groupName, groupBuffs) {
@@ -481,13 +645,19 @@
 		iconX := rect.x + (iconColW / 2) - (iconSize / 2)
 		iconY := rect.y + (rect.h / 2) - (iconSize / 2)
 
-		groupMax := 5
+		groupMax := 0
 		for buffName, isActive in groupBuffs {
+			limit := this.buff_limits.Has(buffName) ? this.buff_limits[buffName] : 5
+			peak := 0
 			for index, snap in this.logs {
 				val := snap["buffs"].Has(buffName) ? snap["buffs"][buffName] : 0
-				if (val > groupMax)
-					groupMax := val
+				if (val > peak)
+					peak := val
 			}
+			if (peak > limit)
+				peak := limit
+			if (peak > groupMax)
+				groupMax := peak
 		}
 
 		if (bitmaps["stat_icon"].Has(groupName) && bitmaps["stat_icon"][groupName] > 0) {
@@ -532,11 +702,23 @@
 		graphW := rect.w - totalOffset - 20
 		segmentW := (rect.w - totalOffset) / (logCount - 1)
 
-		rowIndex := 0
-		for buffName, isActive in activeBuffs {
-			if (!isActive)
-				continue
+		orderedBuffs := []
+		tempBuffs := activeBuffs.Clone()
+		if (this.HasOwnProp("onoff_render_order")) {
+			for index, expectedBuff in this.onoff_render_order {
+				if (tempBuffs.Has(expectedBuff) && tempBuffs[expectedBuff]) {
+					orderedBuffs.Push(expectedBuff)
+					tempBuffs.Delete(expectedBuff)
+				}
+			}
+		}
+		for buffName, isActive in tempBuffs {
+			if (isActive)
+				orderedBuffs.Push(buffName)
+		}
 
+		rowIndex := 0
+		for index, buffName in orderedBuffs {
 			rowY := rect.y + 40 + (rowIndex * rowHeight)
 			drawH := rowHeight - 4
 
@@ -605,46 +787,52 @@
 		Gdip_TextToGraphics(pGraphic, "STATIC BUFFS", "s24 Center Bold cFFAAAAAA x" rect.x " y" currentY, "Segoe UI", rect.w)
 		currentY += 50
 
-		gridX := rect.x + 30
-		startX := gridX
-		passivesDrawn := 0
-		iconW := 72
+		iconW := 83
+		spacing := 18
+		maxPerRow := 4
 
+		activeStaticBuffs := []
 		for buffName, val in lastSnap["buffs"] {
 			if (!val || !this.wall_buffs.Has(buffName))
 				continue
 			if (buffName ~= "comforting|motivating|satisfying|refreshing|invigorating")
 				continue
-			if (bitmaps.Has("stat_icon") && bitmaps["stat_icon"].Has(buffName)) {
-				peakVal := 0
-				for index, snap in this.logs {
-					if (snap["buffs"].Has(buffName) && snap["buffs"][buffName] > peakVal)
-						peakVal := snap["buffs"][buffName]
-				}
+			if (bitmaps.Has("stat_icon") && bitmaps["stat_icon"].Has(buffName))
+				activeStaticBuffs.Push(buffName)
+		}
 
-				textStr := ""
-				if (this.isDigit(buffName)) {
-					textStr := "x" peakVal
-				} else if (!this.IsOnOff(buffName)) {
-					textStr := peakVal "%"
-				}
-				Gdip_DrawImage(pGraphic, bitmaps["stat_icon"][buffName], gridX, currentY, iconW, iconW)
-				if (textStr != "") {
-					Gdip_TextToGraphics(pGraphic, textStr, "s18 Center Bold cFFFFFFFF x" (gridX - 10) " y" (currentY + iconW + 4), "Segoe UI", iconW + 20)
-				}
-				gridX += iconW + 16
-				passivesDrawn++
+		totalItems := activeStaticBuffs.Length
+		if (totalItems > 0) {
+			rowIndex := 0
+			while ((rowIndex * maxPerRow) < totalItems) {
+				itemsInRow := Min(maxPerRow, totalItems - (rowIndex * maxPerRow))
+				rowWidth := (itemsInRow * iconW) + ((itemsInRow - 1) * spacing)
+				startX := rect.x + (rect.w / 2) - (rowWidth / 2)
+				gridX := startX
 
-				if (Mod(passivesDrawn, 4) = 0) {
-					gridX := startX
-					currentY += iconW + 40
+				loop itemsInRow {
+					itemIdx := (rowIndex * maxPerRow) + A_Index
+					buffName := activeStaticBuffs[itemIdx]
+					peakVal := 0
+					for index, snap in this.logs {
+						if (snap["buffs"].Has(buffName) && snap["buffs"][buffName] > peakVal)
+							peakVal := snap["buffs"][buffName]
+					}
+					textStr := ""
+					if (this.isDigit(buffName))
+						textStr := "x" peakVal
+					else if (!this.IsOnOff(buffName))
+						textStr := peakVal "%"
+					Gdip_DrawImage(pGraphic, bitmaps["stat_icon"][buffName], gridX, currentY, iconW, iconW)
+					if (textStr != "")
+						Gdip_TextToGraphics(pGraphic, textStr, "s18 Center Bold cFFFFFFFF x" (gridX - 10) " y" (currentY + iconW + 4), "Segoe UI", iconW + 20)
+					gridX += iconW + spacing
 				}
+				currentY += iconW + 40
+				rowIndex++
 			}
 		}
 
-		if (passivesDrawn > 0 && Mod(passivesDrawn, 4) != 0)
-			currentY += iconW + 40
-		
 		currentY += 15
 		pPenLine3 := Gdip_CreatePen(0xFF555555, 2)
 		Gdip_DrawLine(pGraphic, pPenLine3, rect.x + 20, currentY, rect.x + rect.w - 20, currentY)
@@ -1121,6 +1309,8 @@
 	}
 
 	Verify(buffName, val, threshold := 1) {
+		if (this.buff_limits.Has(buffName) && val > this.buff_limits[buffName])
+			val := this.buff_limits[buffName]
 		lastVal := this.previousBuffs.Has(buffName) ? this.previousBuffs[buffName] : 0
 		if (val <= threshold && lastVal > threshold) {
 			this.currentBuffs[buffName] := lastVal
