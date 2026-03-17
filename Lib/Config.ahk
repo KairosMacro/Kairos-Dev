@@ -58,11 +58,47 @@
 			, "Precise_PlayOnce", 0
 			, "Precise_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
 
-			, "SuperSmoothie_Enabled", 0
-			, "SuperSmoothie_Threshold", 180
-			, "SuperSmoothie_Volume", 25
-			, "SuperSmoothie_PlayOnce", 1
-			, "SuperSmoothie_SoundFile", "C:\Windows\Media\Speech On.wav"
+			, "Smoothie_Enabled", 0
+			, "Smoothie_Threshold", 180
+			, "Smoothie_Volume", 25
+			, "Smoothie_PlayOnce", 1
+			, "Smoothie_SoundFile", "C:\Windows\Media\Speech On.wav"
+
+			, "Pop_Enabled", 0
+			, "Pop_Threshold", 25
+			, "Pop_Volume", 25
+			, "Pop_PlayOnce", 0
+			, "Pop_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+
+			, "Scorch_Enabled", 0
+			, "Scorch_Threshold", 25
+			, "Scorch_Volume", 25
+			, "Scorch_PlayOnce", 0
+			, "Scorch_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+
+			, "Shower_Enabled", 0
+			, "Shower_Threshold", 20
+			, "Shower_Volume", 25
+			, "Shower_PlayOnce", 0
+			, "Shower_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+
+			, "Morph_Enabled", 0
+			, "Morph_Threshold", 25
+			, "Morph_Volume", 25
+			, "Morph_PlayOnce", 0
+			, "Morph_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+
+			, "Gummy_Enabled", 0
+			, "Gummy_Threshold", 70
+			, "Gummy_Volume", 27
+			, "Gummy_PlayOnce", 0
+			, "Gummy_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+
+			, "Baller_Enabled", 0
+			, "Baller_Threshold", 901
+			, "Baller_Volume", 25
+			, "Baller_PlayOnce", 0
+			, "Baller_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
 		)
 		, "Tracker", Map(
 			"Passives", "scorch"

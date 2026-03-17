@@ -29,19 +29,18 @@ if (A_ScreenDPI != 96) {
 #Include "Roblox.ahk"
 #Include "Tooltip.ahk"
 #Include "Audio.ahk"
-#Include "Auxiliary.ahk"
-#Include "QPC.ahk"
 #Include "Import.ahk"
 #Include "FrameCache.ahk"
 #Include "Scheduler.ahk"
 #Include "WindowTracker.ahk"
 #Include "Path.ahk"
 #Include "JSON.ahk"
-#Include "nowUnix.ahk"
 #Include "DarkMode.ahk"
 #Include "Dweet.ahk"
 #Include "OCR.ahk"
 #Include "Detection.ahk"
+#Include "Utility.ahk"
+#Include "Scanner.ahk"
 
 if !(pToken := Gdip_Startup())
 	throw Error("GDI+ failed to start, exiting script.")
@@ -110,6 +109,7 @@ class State {
 WindowTracker.Start(50)
 Scheduler.Start()
 
+Scanner := ScannerEngine()
 Track := Tracker()
 Warns := Warnings()
 Boost := BoostBar()

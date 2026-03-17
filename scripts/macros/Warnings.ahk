@@ -1,28 +1,25 @@
 ﻿class Warnings {
 	IsRunning := false
 	IsActive := false
-	AudioPlayer := unset
 
 	AudioCache := Map()
 	LastPlayed := Map()
 	HasPlayed := Map()
-	EnabledWarns := []
 
 	WarnProfiles := Map(
-		"Precise", { loc: "buff", img: "Precise", mult: 0.6, x: 9, colors: [0xff8F4EB4, 0xff774296, 0xff3E274C, 0xff211A24, 0xff201A24, 0xff221A26, 0xff55316A, 0xff8448A6], var: 0 }
-		, "SuperSmoothie", { loc: "buff", img: "smoothie", mult: 12.0, x: -5, colors: [0xffFEC650], var: 0}
-		, "PopStar", { loc: "passive", img: "popstar", count: 30 }
-		, "ScorchStar", { loc: "passive", img: "scorch", count: 30 }
-		, "StarShower", { loc: "passive", img: "shower", count: 25 }
-		, "GummyMorph", { loc: "passive", img: "gummymorph", count: 30 }
-		, "GummyStar", { loc: "passive", img: "gummystar", count: 75 }
-		, "GummyBaller", { loc: "buff", img: "gummyballer", count: 1000 }
+		"Precision", { conf: "Precise", key: "precise", max: 60, mult: 0.6 }
+		, "Super Smoothie", { conf: "Smoothie", key: "supersmoothie", max: 1200, mult: 12.0 }
+		, "Gummy Star", { conf: "Gummy", key: "gummystar", max: 75 }
+		, "Pop Star", { conf: "Pop", key: "popstar", max: 30 }
+		, "Scorching Star", { conf: "Scorch", key: "scorch", max: 30 }
+		, "Star Shower", { conf: "Shower", key: "shower", max: 25 }
+		, "Gummy Morph", { conf: "Morph", key: "gummymorph", max: 30 }
+		, "Gummyballer", { conf: "Baller", key: "gummyballer", max: 1000 }
+		, "Coconut Combo", { conf: "Combo", key: "combo", max: 40 }
 	)
 
 	__New() {
-		this.scanner := Detection()
 		this.Fancy := GdipTooltip()
-		this.RefreshConfig()
 		Scheduler.Add("Warnings.CheckLoop", this.CheckLoop.Bind(this), 150, () => this.IsActive)
 	}
 
@@ -40,68 +37,68 @@
 	}
 
 	CheckLoop(*) {
-		if (State.IsPaused)
+		if (State.IsPaused || !this.IsRunning || !WinActive("Roblox"))
 			return
-		static minTime := 500
-		static maxTime := 5000
-		if (!this.IsRunning || !WinActive("Roblox"))
-			return
-		
+
 		for warnName, profile in this.WarnProfiles {
-			if (!Config.Get("Warns", warnName "_Enabled", 0))
+			prefix := profile.conf
+			if (!Config.Get("Warns", prefix "_Enabled", 0))
 				continue
+
 			if (!this.HasPlayed.Has(warnName))
 				this.HasPlayed[warnName] := false
 			if (!this.LastPlayed.Has(warnName))
 				this.LastPlayed[warnName] := 0
 
-			threshold := Config.Get("Warns", warnName "_Threshold", 25)
+			currentVal := Scanner.Data[profile.key]
+			if (currentVal = -1) {
+				this.HasPlayed[warnName] := false
+				continue
+			}
+
+			threshold := Config.Get("Warns", prefix "_Threshold", 25)
 			isTriggered := false
 			ratio := 1.0
-			currentVal := 0
-			if (profile.HasProp("colors")) {
-				percent := Round(this.DetectPercent(warnName, profile.colors), 2)
-				if (percent = 0) {
-					this.HasPlayed[warnName] := false
-					continue
-				}
-				currentVal := Round(profile.mult * percent)
+
+			if (profile.HasProp("mult")) {
+				currentVal := Round(profile.mult * currentVal)
 				if (currentVal <= threshold) {
 					isTriggered := true
 					ratio := currentVal / threshold
 				}
-			} else if (profile.HasProp("count")) {
-				currentVal := this.DetectNumber(warnName)
-				if (currentVal = 0) {
-					this.HasPlayed[warnName] := false
-					continue
-				}
+			} else {
 				if (currentVal >= threshold) {
 					isTriggered := true
-					denominator := Max(1, profile.count - threshold)
-					ratio := Max(0, Min(1, (profile.count - currentVal) / denominator))
+					denominator := Max(1, profile.max - threshold)
+					ratio := Max(0, Min(1, (profile.max - currentVal) / denominator))
 				}
 			}
-			if (isTriggered) {
-				vol := Config.Get("Warns", warnName "_Volume", 25)
-				playOnce := Config.Get("Warns", warnName "_PlayOnce", 0)
-				soundPath := Config.Get("Warns", warnName "_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav")
-
-				if (playOnce) {
-					if (!this.HasPlayed[warnName]) {
-						this.PlaySound(soundPath, vol)
-						this.HasPlayed[warnName] := true
-					}
-				} else {
-					calcDelay := minTime + (ratio * (maxTime - minTime))
-					delay := Min(Max(minTime, calcDelay), maxTime)
-					if (A_TickCount - this.LastPlayed[warnName] > delay) {
-						this.LastPlayed[warnName] := A_TickCount
-						this.PlaySound(soundPath, vol)
-					}
-				}
-			} else
+			if (isTriggered)
+				this.HandleAlert(warnName, ratio)
+			else
 				this.HasPlayed[warnName] := false
+		}
+	}
+
+	HandleAlert(warnName, ratio) {
+		prefix := this.WarnProfiles[warnName].conf
+		vol := Config.Get("Warns", prefix "_Volume", 25)
+		playOnce := Config.Get("Warns", prefix "_PlayOnce", 0)
+		soundPath := Config.Get("Warns", prefix "_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav")
+
+		if (playOnce) {
+			if (!this.HasPlayed[warnName]) {
+				this.PlaySound(soundPath, vol)
+				this.HasPlayed[warnName] := true
+			}
+		} else {
+			minDelay := 1000, maxDelay := 5000
+			delay := minDelay + (ratio * (maxDelay - minDelay))
+
+			if (A_TickCount - this.LastPlayed[warnName] > delay) {
+				this.LastPlayed[warnName] := A_TickCount
+				this.PlaySound(soundPath, vol)
+			}
 		}
 	}
 
@@ -114,90 +111,6 @@
 	}
 
 	RefreshConfig() {
-
-	}
-
-	DetectPercent(buffName, colors) {
-		static buffers := Map(), bufferSize := 6, tolerance := 5
-		if !buffers.Has(buffName)
-			buffers[buffName] := []
-		buff := buffers[buffName]
-
-		win := WindowTracker.Get()
-		if !IsObject(win) || !win.ok
-			return 0
-
-		region := win.x "|" win.y + State.offsetY + 32 "|" win.w "|" 42
-		pBMScreen := FrameCache.Get(region)
-		if !pBMScreen
-			return 0
-
-		imgName := this.WarnProfiles[buffName].img
-		icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][imgName], 0, 0, 0, 0, 4)
-		if (!icon.found) {
-			buffers[buffName] := []
-			return 0
-		}
-
-		lowY := this.scanner.ReadPercentageFill(pBMScreen, icon.x + this.WarnProfiles[buffName].x, 0, icon.y, colors, 0)
-		raw := Round((icon.y - lowY) / 38 * 100, 2) + 2
-
-		buff.Push(raw)
-		if (buff.Length > bufferSize)
-			buff.RemoveAt(1)
-
-		best := []
-		for val1 in buff {
-			current := []
-			for val2 in buff {
-				if (Abs(val1 - val2) <= tolerance)
-					current.Push(val2)
-			}
-			if (current.Length > best.Length)
-				best := current
-		}
-		if (best.Length = 0)
-			return raw
-		
-		sum := 0
-		for val in best
-			sum += val
-		return Round(sum / best.Length, 2)
-	}
-
-	DetectNumber(buffName) {
-		win := WindowTracker.Get()
-		if !IsObject(win) || !win.ok
-			return 0
-			
-		profile := this.WarnProfiles[buffName]
-		
-		if (profile.loc = "passive") {
-			region := win.x + (win.w // 2) - 257 "|" win.y + win.h - 142 "|517|36"
-			pBMScreen := FrameCache.Get(region)
-			if !pBMScreen
-				return 0
-				
-			icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][profile.img], 0, 0, 0, 0, 30)
-			if (!icon.found)
-				return 0
-				
-			slotX := icon.x // 40
-			return this.scanner.ReadDigits(pBMScreen, slotX * 40, 22, (slotX * 40) + 34, 33, "passive")
-			
-		} else if (profile.loc = "buff") {
-			region := win.x "|" win.y + State.offsetY + 48 "|" win.w "|" 32
-			pBMScreen := FrameCache.Get(region)
-			if !pBMScreen
-				return 0
-				
-			icon := this.scanner.SearchIcon(pBMScreen, bitmaps["buff"][profile.img], 0, 0, 0, 0, 30)
-			if (!icon.found)
-				return 0
-				
-			return this.scanner.ReadDigits(pBMScreen, icon.x - 13, 0, icon.x + 25, 32, "auto")
-		}
-		
-		return 0
+		; this will have a refresh function at some point
 	}
 }
