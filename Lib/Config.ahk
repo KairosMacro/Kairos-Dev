@@ -56,49 +56,55 @@
 			, "Precise_Threshold", 25
 			, "Precise_Volume", 25
 			, "Precise_PlayOnce", 0
-			, "Precise_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+			, "Precise_SoundFile", A_WorkingDir "\Assets\Audio\Precision.mp3"
 
 			, "Smoothie_Enabled", 0
 			, "Smoothie_Threshold", 180
 			, "Smoothie_Volume", 25
 			, "Smoothie_PlayOnce", 1
-			, "Smoothie_SoundFile", "C:\Windows\Media\Speech On.wav"
+			, "Smoothie_SoundFile", A_WorkingDir "\Assets\Audio\Smoothie.mp3"
 
 			, "Pop_Enabled", 0
 			, "Pop_Threshold", 25
 			, "Pop_Volume", 25
 			, "Pop_PlayOnce", 0
-			, "Pop_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+			, "Pop_SoundFile", A_WorkingDir "\Assets\Audio\PopStar.mp3"
 
 			, "Scorch_Enabled", 0
 			, "Scorch_Threshold", 25
 			, "Scorch_Volume", 25
 			, "Scorch_PlayOnce", 0
-			, "Scorch_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+			, "Scorch_SoundFile", A_WorkingDir "\Assets\Audio\ScorchStar.mp3"
 
 			, "Shower_Enabled", 0
 			, "Shower_Threshold", 20
 			, "Shower_Volume", 25
 			, "Shower_PlayOnce", 0
-			, "Shower_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+			, "Shower_SoundFile", A_WorkingDir "\Assets\Audio\Shower.mp3"
 
 			, "Morph_Enabled", 0
 			, "Morph_Threshold", 25
 			, "Morph_Volume", 25
 			, "Morph_PlayOnce", 0
-			, "Morph_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+			, "Morph_SoundFile", A_WorkingDir "\Assets\Audio\GummyMorph.mp3"
 
 			, "Gummy_Enabled", 0
 			, "Gummy_Threshold", 70
 			, "Gummy_Volume", 27
 			, "Gummy_PlayOnce", 0
-			, "Gummy_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+			, "Gummy_SoundFile", A_WorkingDir "\Assets\Audio\GummyStar.mp3"
 
 			, "Baller_Enabled", 0
 			, "Baller_Threshold", 901
 			, "Baller_Volume", 25
 			, "Baller_PlayOnce", 0
-			, "Baller_SoundFile", "C:\Windows\Media\Windows Critical Stop.wav"
+			, "Baller_SoundFile", A_WorkingDir "\Assets\Audio\Baller.mp3"
+
+			, "Combo_Enabled", 0
+			, "Combo_Threshold", 35
+			, "Combo_Volume", 25
+			, "Combo_PlayOnce", 0
+			, "Combo_SoundFile", A_WorkingDir "\Assets\Audio\CocoCombo.mp3"
 		)
 		, "Tracker", Map(
 			"Passives", "scorch"

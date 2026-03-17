@@ -49,9 +49,9 @@
 				continue
 			val := Scanner.Data[i]
 			if (i = "precise")
-				val := (val = -1) ? -1 : Round((val / 100) * 60) . "s"
+				val := (val = -1) ? -1 : this.FormatTime(Round((val / 100) * 60))
 			else if (i = "supersmoothie")
-				val := (val = -1) ? -1 : Round((val / 100) * 1200) . "s"
+				val := (val = -1) ? -1 : this.FormatTime(Round((val / 100) * 1200))
 			
 			msgSuffix := ""
 			if (val = -1) {
@@ -76,6 +76,15 @@
 			msg.Push([bitmaps["icon"][i], msgSuffix])
 		}
 		this.Fancy.Show(msg, (win.x + win.w // 2) + this.OffsetX, win.y + win.h // 2 + this.OffsetY)
+	}
+
+	FormatTime(totalSecs) {
+		if (totalSecs > 60) {
+			mins := Floor(totalSecs / 60)
+			secs := Mod(totalSecs, 60)
+			return (secs > 0) ? mins "m " secs "s" : mins "m"
+		}
+		return totalSecs "s"
 	}
 
 	OnDragEnd(wParam, lParam, msg, hwnd) {

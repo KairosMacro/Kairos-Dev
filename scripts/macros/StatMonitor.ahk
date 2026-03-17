@@ -52,7 +52,7 @@
 			, "puffshroom_blessing", 100
 			, "robo_party", 100
 			, "cool_breeze", 100
-			, "festive_nymph", 100
+			, "festive_nymph", 250
 			, "map_corruption", 100
 			, "reindeer_guidance", 10
 			, "dark_heat", 999
