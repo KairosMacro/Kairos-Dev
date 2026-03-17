@@ -7,6 +7,8 @@
 	LeftDown := false
 	RightDown := false
 	ran := 0
+	ListeningKeybind := ""
+
 	__New() {
 		width := 500
 		height := 300
@@ -321,17 +323,20 @@
 			}
 		}
 
-		; --- Key Alignment Tab ---
+		; --- Settings Tab ---
 		TabCtrl.UseTab("Settings")
+		this.Gui.Add("Button", "x0 y0 w0 h0")
 		this.Gui.SetFont("w700")
 		this.Gui.Add("GroupBox", "x10 y25 w210 h90")
 		this.Gui.Add("Text", "x20 y27", "Key Alignment Settings")
 		this.Gui.SetFont("s10 cDefault Norm")
 
 		this.Gui.Add("Text", "x20 y45", "Alignment Key :")
-		this.Gui.Add("Edit", "x115 y45 w100 vKeyAlignment_AlignmentKey", Config.Get("KeyAlignment", "AlignmentKey", "e")).OnEvent("Change", this.SaveConfig.Bind(this))
+		alignCtrl := this.Gui.Add("Edit", "x115 y45 w100 ReadOnly", Config.Get("KeyAlignment", "AlignmentKey", "e"))
+		alignCtrl.OnEvent("Focus", this.CaptureHotkey.Bind(this, "KeyAlignment", "AlignmentKey"))
 		this.Gui.Add("Text", "x20 y75", "Rebind Key :")
-		this.Gui.Add("Edit", "x100 y75 w100 vKeyAlignment_RebindHotkey", Config.Get("KeyAlignment", "RebindHotkey", "^+k")).OnEvent("Change", this.SaveConfig.Bind(this))
+		rebindCtrl := this.Gui.Add("Edit", "x100 y75 w100 ReadOnly", Config.Get("KeyAlignment", "RebindHotkey", "^+k"))
+		rebindCtrl.OnEvent("Focus", this.CaptureHotkey.Bind(this, "KeyAlignment", "RebindHotkey"))
 
 		; --- Dark Mode & Other Stuff ---
 		this.UpdateUI()
@@ -370,6 +375,41 @@
 		} catch {
 			ToolTip("Error Pasting.")
 			SetTimer(ToolTip, -500)
+		}
+	}
+	
+	CaptureHotkey(Section, KeyName, GuiCtrl, *) {
+		originalText := GuiCtrl.Value
+		GuiCtrl.Value := "Listening..."
+
+		ih := InputHook("L1 T5", "{Escape}{Space}{Tab}{Enter}{Backspace}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}")
+		capturedKey := ""
+		MouseCallback := (ThisHotkey) => (capturedKey := StrReplace(ThisHotkey, "$"), ih.Stop())
+		mouseKeys := ["LButton", "RButton", "MButton", "XButton1", "XButton2"]
+		for key in mouseKeys
+			Hotkey("$" key, MouseCallback, "On")
+		ih.Start()
+		ih.Wait()
+
+		for key in mouseKeys
+			Hotkey("$" key, "Off")
+		
+		finalKey := ""
+		if (capturedKey != "")
+			finalKey := capturedKey
+		else if (ih.EndReason = "Max")
+			finalKey := ih.Input
+		else if (ih.EndReason = "EndKey")
+			if (ih.EndKey != "Escape")
+				finalKey := ih.EndKey
+		if (finalKey = "")
+			GuiCtrl.Value := originalText
+		else {
+			GuiCtrl.Value := finalKey
+			Config.Set(Section, KeyName, finalKey)
+			Config.WriteIni()
+			if (KeyName ~= "Start|Pause|Stop")
+				this.RegisterHotkeys()
 		}
 	}
 

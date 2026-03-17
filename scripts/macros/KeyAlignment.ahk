@@ -106,15 +106,28 @@
 		this.Draw("Rebinding...")
 		this.RegisterActionHotkey(false)
 
-		ih := InputHook("L1 T7", "{Escape}")
+		ih := InputHook("L1 T7", "{Escape}{Space}{Tab}{Enter}{Backspace}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}")
+		capturedKey := ""
+		MouseCallback := (ThisHotkey) => (capturedKey := StrReplace(ThisHotkey, "$"), ih.Stop())
+		mouseKeys := ["LButton", "RButton", "MButton", "XButton1", "XButton2"]
+		for key in mouseKeys
+			Hotkey("$" key, MouseCallback, "On")
 		ih.Start()
 		ih.Wait()
 
-		if (ih.EndReason = "Max") {
+		for key in mouseKeys
+			Hotkey("$" key, "Off")
+		
+		if (capturedKey != "")
+			this.CurrentKey := capturedKey
+		else if (ih.EndReason = "Max")
 			this.CurrentKey := ih.Input
-			Config.Set("KeyAlignment", "AlignmentKey", this.CurrentKey)
-			Config.WriteIni()
-		}
+		else if (ih.EndReason = "EndKey")
+			if (ih.EndKey != "Escape")
+				this.CurrentKey := ih.EndKey
+
+		Config.Set("KeyAlignment", "AlignmentKey", this.CurrentKey)
+		Config.WriteIni()
 
 		this.IsRebinding := false
 		this.RegisterActionHotkey(true)
