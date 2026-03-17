@@ -325,18 +325,36 @@
 
 		; --- Settings Tab ---
 		TabCtrl.UseTab("Settings")
-		this.Gui.Add("Button", "x0 y0 w0 h0")
 		this.Gui.SetFont("w700")
-		this.Gui.Add("GroupBox", "x10 y25 w210 h90")
-		this.Gui.Add("Text", "x20 y27", "Key Alignment Settings")
+		this.Gui.Add("GroupBox", "x10 y25 w230 h165")
+		this.Gui.Add("Text", "x20 y27", "Keybind Settings")
 		this.Gui.SetFont("s10 cDefault Norm")
+		col := Config.Get("Main", "DarkMode", 1) ? "cFFB347" : "c0055A4"
 
-		this.Gui.Add("Text", "x20 y45", "Alignment Key :")
-		alignCtrl := this.Gui.Add("Edit", "x115 y45 w100 ReadOnly", Config.Get("KeyAlignment", "AlignmentKey", "e"))
-		alignCtrl.OnEvent("Focus", this.CaptureHotkey.Bind(this, "KeyAlignment", "AlignmentKey"))
-		this.Gui.Add("Text", "x20 y75", "Rebind Key :")
-		rebindCtrl := this.Gui.Add("Edit", "x100 y75 w100 ReadOnly", Config.Get("KeyAlignment", "RebindHotkey", "^+k"))
-		rebindCtrl.OnEvent("Focus", this.CaptureHotkey.Bind(this, "KeyAlignment", "RebindHotkey"))
+		this.Gui.Add("Text", "x20 y53 w90", "Start Macro :")
+		dispStart := this.Gui.Add("Text", "x110 y53 w60 " col, Config.Get("Main", "StartHotkey", "F1"))
+		btnStart := this.Gui.Add("Button", "x170 y49 w60", "Rebind")
+		btnStart.OnEvent("Click", this.CaptureHotkey.Bind(this, "Main", "StartHotkey", dispStart))
+
+		this.Gui.Add("Text", "x20 y80 w90", "Pause Macro :")
+		dispPause := this.Gui.Add("Text", "x110 y80 w60 " col, Config.Get("Main", "PauseHotkey", "F2"))
+		btnPause := this.Gui.Add("Button", "x170 y76 w60", "Rebind")
+		btnPause.OnEvent("Click", this.CaptureHotkey.Bind(this, "Main", "PauseHotkey", dispPause))
+
+		this.Gui.Add("Text", "x20 y107 w90", "Stop Macro :")
+		dispStop := this.Gui.Add("Text", "x110 y107 w60 " col, Config.Get("Main", "StopHotkey", "F3"))
+		btnStop := this.Gui.Add("Button", "x170 y103 w60", "Rebind")
+		btnStop.OnEvent("Click", this.CaptureHotkey.Bind(this, "Main", "StopHotkey", dispStop))
+
+		this.Gui.Add("Text", "x20 y134 w90", "Align Key :")
+		dispAlign := this.Gui.Add("Text", "x110 y134 w60 " col, Config.Get("KeyAlignment", "AlignmentKey", "e"))
+		btnAlign := this.Gui.Add("Button", "x170 y130 w60", "Rebind")
+		btnAlign.OnEvent("Click", this.CaptureHotkey.Bind(this, "KeyAlignment", "AlignmentKey", dispAlign))
+
+		this.Gui.Add("Text", "x20 y161 w90", "Rebind Align :")
+		dispRebind := this.Gui.Add("Text", "x110 y161 w60 " col, Config.Get("KeyAlignment", "RebindHotkey", "^+k"))
+		btnRebind := this.Gui.Add("Button", "x170 y157 w60", "Rebind")
+		btnRebind.OnEvent("Click", this.CaptureHotkey.Bind(this, "KeyAlignment", "RebindHotkey", dispRebind))
 
 		; --- Dark Mode & Other Stuff ---
 		this.UpdateUI()
@@ -378,21 +396,25 @@
 		}
 	}
 	
-	CaptureHotkey(Section, KeyName, GuiCtrl, *) {
-		originalText := GuiCtrl.Value
-		GuiCtrl.Value := "Listening..."
+	CaptureHotkey(Section, KeyName, DisplayCtrl, GuiCtrl, *) {
+		originalText := DisplayCtrl.Value
+		DisplayCtrl.Value := "Listening..."
+		GuiCtrl.Enabled := false
 
-		ih := InputHook("L1 T5", "{Escape}{Space}{Tab}{Enter}{Backspace}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}")
+		ih := InputHook("L1 T7", "{Escape}{Space}{Tab}{Enter}{Backspace}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}")
+
 		capturedKey := ""
 		MouseCallback := (ThisHotkey) => (capturedKey := StrReplace(ThisHotkey, "$"), ih.Stop())
 		mouseKeys := ["LButton", "RButton", "MButton", "XButton1", "XButton2"]
 		for key in mouseKeys
 			Hotkey("$" key, MouseCallback, "On")
+
 		ih.Start()
 		ih.Wait()
 
 		for key in mouseKeys
 			Hotkey("$" key, "Off")
+		GuiCtrl.Enabled := true
 		
 		finalKey := ""
 		if (capturedKey != "")
@@ -402,14 +424,35 @@
 		else if (ih.EndReason = "EndKey")
 			if (ih.EndKey != "Escape")
 				finalKey := ih.EndKey
-		if (finalKey = "")
-			GuiCtrl.Value := originalText
-		else {
-			GuiCtrl.Value := finalKey
+
+		if (finalKey != "") {
+			if (KeyName ~= "StartHotkey|PauseHotkey|StopHotkey") {
+				blacklist := "|LButton|RButton|Enter|Space|Tab|Backspace|Escape|"
+				if InStr(blacklist, "|" finalKey "|") {
+					MsgBox("You cannot bind '" finalKey "' to this option.", "Invalid Keybind", 48 " T10")
+					finalKey := ""
+				}
+			}
+		}
+		if (finalKey = "") {
+			DisplayCtrl.Value := originalText
+		} else {
+			DisplayCtrl.Value := finalKey
 			Config.Set(Section, KeyName, finalKey)
 			Config.WriteIni()
-			if (KeyName ~= "Start|Pause|Stop")
+			if (Section = "KeyAlignment" && IsSet(Aligner) && Aligner)
+				Aligner.RefreshConfig()
+
+			if (KeyName ~= "StartHotkey|PauseHotkey|StopHotkey") {
+				try Hotkey(originalText, "Off")
 				this.RegisterHotkeys()
+				if (KeyName = "StartHotkey")
+					this.Gui["StartButton"].Text := "Start (" finalKey ")"
+				else if (KeyName = "PauseButton")
+					this.Gui["PauseButton"].Text := "PauseButton (" finalKey ")"
+				else if (KeyName = "StopHotkey")
+					this.Gui["StopHotkey"].Text := "Stop (" finalKey ")"
+			}
 		}
 	}
 
