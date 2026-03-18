@@ -16,8 +16,8 @@
 	#Include "Gdip_All.ahk"
 	#Include "Gdip_ImageSearch.ahk"
 	#Include "Roblox.ahk"
-	#Include "QPC.ahk"
-	#Include "Hypersleep.ahk"
+	#Include "Scheduler.ahk"
+	#Include "Utility.ahk"
 	#Include "Move.ahk"
 	#Include "JSON.ahk"
 

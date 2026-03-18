@@ -10,3 +10,33 @@ C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\macros\StatMonitor.ahk (256) :
 
 ====================
 
+====================
+Time: 2026-03-18 01:37:22
+Error: This variable has not been assigned a value.
+File: C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\macros\StatMonitor.ahk
+Line: 1278
+Specifically: local confirmedPassives
+Call Stack:
+C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\macros\StatMonitor.ahk (1278) : [StatMonitor.Prototype.DetectBuffs] tooltip(JSON.stringify(confirmedPassives))
+C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\macros\StatMonitor.ahk (254) : [StatMonitor.Prototype.RunScan] this.DetectBuffs()
+> Timer
+
+====================
+
+====================
+Time: 2026-03-18 15:57:40
+Error: This variable has not been assigned a value.
+File: C:\Users\Dully176\Desktop\Kairos-Dev-main\Lib\DarkMode.ahk
+Line: 168
+Specifically: global TextBackgroundBrush
+Call Stack:
+C:\Users\Dully176\Desktop\Kairos-Dev-main\Lib\DarkMode.ahk (168) : [WindowProc] Return TextBackgroundBrush
+> Callback
+C:\Users\Dully176\Desktop\Kairos-Dev-main\Lib\DarkMode.ahk (143) : [SetWindowTheme] WindowProcOld := DllCall("user32\" SetWindowLong, "Ptr", GuiObj.Hwnd, "Int", GWL_WNDPROC, "Ptr", WindowProcNew, "Ptr")
+C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\macros\MainGui.ahk (361) : [MainGui.Prototype.__New] SetWindowTheme(this.Gui, Config.Get("Main", "DarkMode", 1))
+C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\Main.ahk (120) : [Object.Call] Main := MainGui()
+C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\Main.ahk (120) : [] Main := MainGui()
+> Auto-execute
+
+====================
+

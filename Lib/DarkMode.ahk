@@ -1,4 +1,9 @@
-﻿ToggleTheme(GuiCtrlObj, *)
+﻿global DarkColors := Map("Background", "0x202020", "Controls", "0x404040", "Font", "0xE0E0E0")
+global TextBackgroundBrush := DllCall("gdi32\CreateSolidBrush", "UInt", DarkColors["Background"], "Ptr")
+global ControlsBackgroundBrush := DllCall("gdi32\CreateSolidBrush", "UInt", DarkColors["Controls"], "Ptr")
+global IsDarkMode := False
+
+ToggleTheme(GuiCtrlObj, *)
 {
 	switch GuiCtrlObj.Text
 	{
@@ -17,9 +22,6 @@
 
 SetWindowAttribute(GuiObj, DarkMode := True)
 {
-	global DarkColors := Map("Background", "0x202020", "Controls", "0x404040", "Font", "0xE0E0E0")
-	global TextBackgroundBrush := DllCall("gdi32\CreateSolidBrush", "UInt", DarkColors["Background"], "Ptr")
-	global ControlsBackgroundBrush := DllCall("gdi32\CreateSolidBrush", "UInt", DarkColors["Controls"], "Ptr")
 	static PreferredAppMode := Map("Default", 0, "AllowDark", 1, "ForceDark", 2, "ForceLight", 3, "Max", 4)
 
 	if (VerCompare(A_OSVersion, "10.0.17763") >= 0)

@@ -1,0 +1,326 @@
+﻿RAW DATA OF DETECTION 
+====================
+Time: 48227421 | Honey: 839980741300 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48228390 | Honey: 839980741300 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48229406 | Honey: 839980871352 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48230390 | Honey: 839980871352 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48231421 | Honey: 839981049090 | Bag: 0%
+Buffs: baby_love: 1, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48232375 | Honey: 839981049090 | Bag: 0%
+Buffs: baby_love: 1, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48233406 | Honey: 839981161312 | Bag: 0%
+Buffs: baby_love: 1, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48234375 | Honey: 839981224271 | Bag: 0%
+Buffs: baby_love: 1, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48235421 | Honey: 839981347568 | Bag: 0%
+Buffs: baby_love: 1, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48236375 | Honey: 839981714406 | Bag: 0%
+Buffs: baby_love: 1, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48237359 | Honey: 839981983583 | Bag: 0%
+Buffs: baby_love: 1, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48238421 | Honey: 839984850270 | Bag: 0%
+Buffs: boost_blue: 1, flame_fuel: 1, flame_heat: 1.05, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48239375 | Honey: 839985368194 | Bag: 0%
+Buffs: boost_blue: 1, flame_fuel: 1, flame_heat: 1.13, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48240453 | Honey: 839986411483 | Bag: 0%
+Buffs: boost_blue: 1, flame_fuel: 1, flame_heat: 1.13, guiding_star: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48241406 | Honey: 839987155635 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 2, boost_red: 1, flame_fuel: 1, focus: 2, guiding_star: 1, haste: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48242390 | Honey: 839988680041 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 2, boost_red: 2, flame_fuel: 1, focus: 2, guiding_star: 1, haste: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48243421 | Honey: 839992631212 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 2, boost_red: 2, flame_fuel: 1, flame_heat: 1.11, focus: 3, guiding_star: 1, haste: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48244390 | Honey: 839995350691 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.11, focus: 7, guiding_star: 1, haste: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48245406 | Honey: 840000372255 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.61, focus: 7, guiding_star: 1, haste: 1, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48246406 | Honey: 840006871324 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.95, focus: 7, guiding_star: 1, haste: 1, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48247406 | Honey: 840045960917 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 2.00, focus: 7, guiding_star: 1, haste: 1, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48248406 | Honey: 840051476331 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.08, focus: 10, guiding_star: 1, haste: 1, pollen_mark: 2, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48249390 | Honey: 840054417653 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.08, focus: 10, guiding_star: 1, haste: 1, pollen_mark: 2, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48250406 | Honey: 840056692786 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.82, focus: 10, guiding_star: 1, haste: 1, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48251390 | Honey: 840061880539 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.95, focus: 10, guiding_star: 1, haste: 1, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48252406 | Honey: 840071293332 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 2.00, focus: 10, guiding_star: 1, haste: 1, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48253390 | Honey: 840078011854 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.97, focus: 10, guiding_star: 1, haste: 1, precise_mark: 2, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48254390 | Honey: 840084760595 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 2.00, focus: 10, guiding_star: 1, haste: 2, precise_mark: 2, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48255406 | Honey: 840091397320 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.95, focus: 10, guiding_star: 1, haste: 2, precise_mark: 2, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48256468 | Honey: 840100132818 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.97, focus: 10, guiding_star: 1, haste: 2, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48257390 | Honey: 840109972789 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.95, focus: 10, guiding_star: 1, haste: 3, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48258390 | Honey: 840136095131 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.95, focus: 10, guiding_star: 1, haste: 3, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48259390 | Honey: 840137557424 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 3, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48260390 | Honey: 840142160630 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 2, boost_red: 10, flame_fuel: 1, flame_heat: 1.05, focus: 10, guiding_star: 1, haste: 3, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48261453 | Honey: 840148231033 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 2, boost_red: 10, flame_fuel: 1, flame_heat: 1.05, focus: 10, guiding_star: 1, haste: 4, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48262453 | Honey: 840149481431 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 2, flame_fuel: 1, flame_heat: 1.08, focus: 10, guiding_star: 1, haste: 4, map_corruption: 30, precise_mark: 2, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48263406 | Honey: 840152087712 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 1, boost_white: 1, flame_fuel: 1, flame_heat: 1.16, focus: 10, guiding_star: 1, haste: 4, map_corruption: 30, precise_mark: 2, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48264437 | Honey: 840153883548 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 1, flame_fuel: 1, flame_heat: 1.13, focus: 10, guiding_star: 1, haste: 4, map_corruption: 30, precise_mark: 2, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48265406 | Honey: 840155147338 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_blue: 1, flame_fuel: 1, flame_heat: 1.13, focus: 10, guiding_star: 1, haste: 5, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48266390 | Honey: 840161873133 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, bomb: 1, boost_blue: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 5, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48267406 | Honey: 840180100960 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, bomb: 1, boost_blue: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 5, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48268390 | Honey: 840183963555 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, boost_blue: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 5, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48269421 | Honey: 840188800410 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, boost_blue: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 5, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48270406 | Honey: 840190605351 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, boost_blue: 1, flame_fuel: 1, focus: 10, haste: 5, inspire: 1, map_corruption: 30, pollen_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48271390 | Honey: 840203102361 | Bag: 0%
+Buffs: baby_love: 1, boost_blue: 1, flame_fuel: 1, focus: 10, haste: 5, map_corruption: 38, pollen_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48272453 | Honey: 840204342821 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 5, map_corruption: 38, pollen_mark: 3, precise_mark: 2, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48273390 | Honey: 840205829731 | Bag: 5%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, focus: 10, guiding_star: 1, haste: 5, map_corruption: 38, pollen_mark: 3, precise_mark: 2, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48274406 | Honey: 840207163467 | Bag: 5%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, focus: 10, guiding_star: 1, haste: 5, map_corruption: 38, pollen_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48275390 | Honey: 840207952762 | Bag: 5%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, flame_heat: 1.05, focus: 10, guiding_star: 1, haste: 5, map_corruption: 38, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48276468 | Honey: 840219210198 | Bag: 5%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, flame_heat: 1.16, focus: 10, guiding_star: 1, haste: 5, map_corruption: 38, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48277390 | Honey: 840219609829 | Bag: 5%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 1, boost_white: 3, flame_heat: 1.11, focus: 10, guiding_star: 1, haste: 5, map_corruption: 38, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48278390 | Honey: 840221696292 | Bag: 5%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 1, boost_white: 3, flame_heat: 1.13, focus: 10, guiding_star: 1, haste: 5, map_corruption: 38, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48279437 | Honey: 840228570848 | Bag: 5%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 1, flame_heat: 1.16, focus: 10, guiding_star: 1, haste: 5, map_corruption: 30, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48280468 | Honey: 840240328294 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 1, flame_heat: 1.16, focus: 10, guiding_star: 1, haste: 6, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48281609 | Honey: 840270447739 | Bag: 0%
+Buffs: baby_love: 1, bomb: 4, bomb_sync_red: 1, boost_red: 1, flame_heat: 1.16, focus: 10, guiding_star: 1, haste: 6, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48282437 | Honey: 840280192571 | Bag: 0%
+Buffs: baby_love: 1, bomb: 4, bomb_sync_red: 1, boost_red: 1, flame_heat: 1.47, focus: 10, guiding_star: 1, haste: 6, inspire: 1, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48283390 | Honey: 840290109180 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 1, flame_fuel: 1, flame_heat: 1.47, focus: 10, guiding_star: 1, haste: 6, inspire: 3, map_corruption: 30, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48284390 | Honey: 840346320305 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 1, flame_fuel: 1, flame_heat: 1.16, focus: 10, guiding_star: 1, haste: 6, inspire: 3, map_corruption: 38, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48285406 | Honey: 840433269356 | Bag: 15%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 1, flame_fuel: 1, flame_heat: 1.11, focus: 10, guiding_star: 1, haste: 6, inspire: 3, map_corruption: 38, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48286390 | Honey: 840481847768 | Bag: 15%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 1, flame_fuel: 1, flame_heat: 1.63, focus: 10, guiding_star: 1, haste: 6, inspire: 3, map_corruption: 38, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48287390 | Honey: 840514871085 | Bag: 20%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 1, flame_fuel: 1, flame_heat: 1.79, focus: 10, guiding_star: 1, haste: 6, inspire: 3, map_corruption: 38, pollen_mark: 3, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48288406 | Honey: 840600271243 | Bag: 20%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 2, flame_fuel: 1, flame_heat: 1.84, focus: 10, guiding_star: 1, haste: 6, map_corruption: 38, pollen_mark: 3, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48289390 | Honey: 840674300529 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, clouds: 1, flame_fuel: 1, flame_heat: 1.21, focus: 10, guiding_star: 1, haste: 6, map_corruption: 38, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48290406 | Honey: 840735487752 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, clouds: 1, flame_fuel: 1, flame_heat: 1.71, focus: 10, guiding_star: 1, haste: 6, map_corruption: 38, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48291390 | Honey: 840745221962 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, clouds: 1, flame_fuel: 1, flame_heat: 1.71, focus: 10, guiding_star: 1, haste: 6, map_corruption: 38, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48292421 | Honey: 840758511826 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, clouds: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 6, map_corruption: 38, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48293390 | Honey: 840780506548 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, clouds: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 7, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48294421 | Honey: 840794398433 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, clouds: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 8, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48295406 | Honey: 840810040677 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, boost_white: 1, clouds: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 8, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48296390 | Honey: 840821641296 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 8, map_corruption: 30, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48297406 | Honey: 840825815224 | Bag: 0%
+Buffs: bear_morph: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, flame_fuel: 1, flame_heat: 2.00, focus: 10, guiding_star: 1, haste: 8, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48298375 | Honey: 840830039783 | Bag: 0%
+Buffs: bear_morph: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, flame_fuel: 1, flame_heat: 2.00, focus: 10, guiding_star: 1, haste: 8, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48299406 | Honey: 840834377103 | Bag: 0%
+Buffs: bear_morph: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 4, flame_fuel: 1, flame_heat: 2.00, focus: 10, guiding_star: 1, haste: 8, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48300515 | Honey: 840838440842 | Bag: 0%
+Buffs: bear_morph: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 5, flame_fuel: 1, flame_heat: 1.97, focus: 10, guiding_star: 1, haste: 9, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48301500 | Honey: 840845057421 | Bag: 0%
+Buffs: bear_morph: 1, bomb_sync_red: 1, boost_blue: 1, boost_red: 7, flame_fuel: 1, flame_heat: 1.97, focus: 10, haste: 9, precise_mark: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48302453 | Honey: 840848481659 | Bag: 0%
+Buffs: bear_morph: 1, boost_red: 8, flame_fuel: 1, flame_heat: 1.92, focus: 10, guiding_star: 1, haste: 9, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48303406 | Honey: 840856881585 | Bag: 0%
+Buffs: bear_morph: 1, boost_red: 8, flame_fuel: 1, flame_heat: 1.92, focus: 10, guiding_star: 1, haste: 9, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48304406 | Honey: 840859145752 | Bag: 0%
+Buffs: bear_morph: 1, boost_red: 8, flame_fuel: 1, flame_heat: 1.92, focus: 10, guiding_star: 1, haste: 9, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48305421 | Honey: 840861990951 | Bag: 0%
+Buffs: bear_morph: 1, boost_red: 8, flame_fuel: 1, flame_heat: 1.97, focus: 10, guiding_star: 1, haste: 9, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48306453 | Honey: 840894305537 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 1, boost_red: 8, flame_fuel: 1, flame_heat: 1.92, focus: 10, guiding_star: 1, haste: 9, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48307531 | Honey: 840906305554 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 3, boost_red: 8, flame_fuel: 1, flame_heat: 1.03, focus: 10, guiding_star: 1, haste: 9, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48308421 | Honey: 840909323396 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 3, boost_red: 8, flame_fuel: 1, flame_heat: 1.03, focus: 10, guiding_star: 1, haste: 9, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48309406 | Honey: 840928232940 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 3, bomb_sync_red: 1, boost_red: 10, boost_white: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48310421 | Honey: 840936895801 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 3, bomb_sync_red: 1, boost_red: 10, boost_white: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 10, inspire: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48311406 | Honey: 840952038152 | Bag: 0%
+Buffs: bear_morph: 1, bomb: 3, bomb_sync_red: 1, boost_red: 10, boost_white: 1, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 10, inspire: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48312515 | Honey: 840986816151 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, bomb: 3, bomb_sync_red: 1, boost_blue: 2, boost_red: 10, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 10, inspire: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48313406 | Honey: 841000495504 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, bomb: 1, bomb_sync_red: 1, boost_blue: 2, boost_red: 10, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48314546 | Honey: 841029232823 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, focus: 10, haste: 10, pollen_mark: 2, precise_mark: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48315421 | Honey: 841040230558 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 10, pollen_mark: 2, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48316671 | Honey: 841044673906 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, focus: 10, guiding_star: 1, haste: 10, precise_mark: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48317421 | Honey: 841047499276 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 2.00, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48318468 | Honey: 841050042698 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.97, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48319609 | Honey: 841055813117 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.92, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48320406 | Honey: 841070423280 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.87, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48321468 | Honey: 841079514960 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_fuel: 1, flame_heat: 1.82, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48322500 | Honey: 841084552210 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_heat: 1.76, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48323500 | Honey: 841096162178 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_heat: 1.74, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48324484 | Honey: 841099741248 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_heat: 1.68, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48325437 | Honey: 841105917378 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_heat: 1.63, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48326515 | Honey: 841110311674 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_heat: 1.61, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48327578 | Honey: 841140193357 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_heat: 1.61, focus: 10, haste: 10, inspire: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48328437 | Honey: 841169342592 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_heat: 1.68, focus: 10, haste: 10, inspire: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48329390 | Honey: 841195247806 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_blue: 3, boost_red: 10, flame_heat: 1.63, focus: 10, haste: 10, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48330406 | Honey: 841257540241 | Bag: 0%
+Buffs: baby_love: 1, bomb: 2, bomb_sync_red: 1, boost_red: 10, flame_fuel: 1, flame_heat: 1.63, focus: 10, guiding_star: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48331437 | Honey: 841288292073 | Bag: 0%
+Buffs: baby_love: 1, bomb: 2, bomb_sync_red: 1, boost_red: 10, clouds: 1, flame_fuel: 1, flame_heat: 1.11, focus: 10, guiding_star: 1, inspire: 1, pollen_mark: 3, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48332390 | Honey: 841299013211 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 10, clouds: 1, flame_heat: 1.11, focus: 10, guiding_star: 1, haste: 1, pollen_mark: 3, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48333406 | Honey: 841341366517 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 10, flame_fuel: 1, focus: 10, haste: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------
+Time: 48334546 | Honey: 841345123367 | Bag: 0%
+Buffs: baby_love: 1, bomb_sync_red: 1, boost_red: 10, flame_fuel: 1, focus: 10, haste: 1, puffshroom_blessing: 4, scorching_star: 1, super_smoothie: 1
+--------------------

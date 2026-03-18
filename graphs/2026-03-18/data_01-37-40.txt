@@ -1,0 +1,26 @@
+﻿RAW DATA OF DETECTION 
+====================
+Time: 48211468 | Honey: 839979287877 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48212421 | Honey: 839979388723 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48213500 | Honey: 839979388723 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48214468 | Honey: 839979516949 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48215531 | Honey: 839979516949 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48216515 | Honey: 839979651335 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48217421 | Honey: 839979859280 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------
+Time: 48218484 | Honey: 839980067225 | Bag: 0%
+Buffs: baby_love: 1, bear_morph: 1, puffshroom_blessing: 4, super_smoothie: 1
+--------------------

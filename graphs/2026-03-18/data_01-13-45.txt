@@ -1,0 +1,146 @@
+﻿RAW DATA OF DETECTION 
+====================
+Time: 46093687 | Honey: 823177707843 | Bag: 0%
+Buffs: bomb: 1, boost_blue: 2, boost_red: 3, flame_fuel: 1, flame_heat: 1.18, focus: 1, haste: 1, map_corruption: 30
+--------------------
+Time: 46094640 | Honey: 823178324632 | Bag: 0%
+Buffs: bomb: 1, boost_blue: 2, boost_red: 3, flame_fuel: 1, flame_heat: 1.16, focus: 1, haste: 1, inspire: 2, map_corruption: 30
+--------------------
+Time: 46095640 | Honey: 823178488694 | Bag: 0%
+Buffs: bomb: 1, boost_blue: 2, boost_red: 4, flame_fuel: 1, flame_heat: 1.16, focus: 1, haste: 1, inspire: 2, map_corruption: 30
+--------------------
+Time: 46096656 | Honey: 823178627475 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 5, flame_fuel: 1, flame_heat: 1.16, focus: 1, haste: 1, inspire: 2, map_corruption: 30
+--------------------
+Time: 46097687 | Honey: 823179229086 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 5, flame_fuel: 1, flame_heat: 1.16, focus: 1, haste: 1, inspire: 3, map_corruption: 30
+--------------------
+Time: 46098640 | Honey: 823179463347 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 6, flame_fuel: 1, flame_heat: 1.13, focus: 1, haste: 1, inspire: 3, map_corruption: 30
+--------------------
+Time: 46099640 | Honey: 823179880422 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 6, flame_fuel: 1, flame_heat: 1.08, focus: 1, haste: 1, honey_mark: 1, inspire: 3, map_corruption: 30
+--------------------
+Time: 46100750 | Honey: 823180159307 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 6, clouds: 1, flame_fuel: 1, flame_heat: 1.03, focus: 1, haste: 1, inspire: 3, map_corruption: 30
+--------------------
+Time: 46101656 | Honey: 823181032601 | Bag: 0%
+Buffs: bomb: 1, boost_blue: 2, boost_red: 6, clouds: 1, flame_fuel: 1, flame_heat: 1.03, focus: 1, haste: 1, inspire: 3, map_corruption: 30
+--------------------
+Time: 46102750 | Honey: 823181521149 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 6, clouds: 1, flame_fuel: 1, focus: 1, haste: 1, inspire: 3, map_corruption: 30, pollen_mark: 2
+--------------------
+Time: 46103734 | Honey: 823182448513 | Bag: 0%
+Buffs: bomb: 1, boost_blue: 2, boost_red: 6, clouds: 1, flame_fuel: 1, flame_heat: 1.11, focus: 2, haste: 2, map_corruption: 30, pollen_mark: 2
+--------------------
+Time: 46104640 | Honey: 823182880739 | Bag: 0%
+Buffs: bomb: 1, boost_blue: 2, boost_red: 6, clouds: 1, flame_fuel: 1, flame_heat: 1.45, focus: 3, haste: 2, honey_mark: 2, map_corruption: 30, pollen_mark: 3
+--------------------
+Time: 46105656 | Honey: 823183146729 | Bag: 0%
+Buffs: bomb: 1, boost_blue: 2, boost_red: 6, flame_fuel: 1, flame_heat: 1.89, focus: 3, haste: 2, honey_mark: 2, map_corruption: 30, pollen_mark: 3
+--------------------
+Time: 46106625 | Honey: 823183256202 | Bag: 0%
+Buffs: bomb: 1, boost_blue: 2, boost_red: 6, flame_fuel: 1, flame_heat: 1.97, focus: 3, haste: 2, honey_mark: 2, map_corruption: 30, pollen_mark: 3
+--------------------
+Time: 46107625 | Honey: 823183393132 | Bag: 0%
+Buffs: boost_blue: 1, boost_red: 6, flame_fuel: 1, flame_heat: 1.97, focus: 3, haste: 2, map_corruption: 30
+--------------------
+Time: 46108734 | Honey: 823183471566 | Bag: 0%
+Buffs: boost_blue: 1, boost_red: 6, flame_fuel: 1, flame_heat: 1.92, focus: 3, haste: 2, map_corruption: 30
+--------------------
+Time: 46109640 | Honey: 823183578710 | Bag: 0%
+Buffs: boost_blue: 1, boost_red: 6, flame_fuel: 1, flame_heat: 1.87, focus: 3, haste: 2, map_corruption: 1
+--------------------
+Time: 46110640 | Honey: 823184039470 | Bag: 0%
+Buffs: boost_blue: 1, boost_red: 6, flame_fuel: 1, flame_heat: 1.82, focus: 3, haste: 2, map_corruption: 1
+--------------------
+Time: 46111625 | Honey: 823184102826 | Bag: 0%
+Buffs: boost_blue: 1, boost_red: 6, flame_fuel: 1, flame_heat: 1.76, focus: 3, haste: 2
+--------------------
+Time: 46112687 | Honey: 823184151555 | Bag: 0%
+Buffs: boost_blue: 1, boost_red: 6, flame_fuel: 1, flame_heat: 1.71, focus: 3, haste: 2, inspire: 1
+--------------------
+Time: 46113656 | Honey: 823184223786 | Bag: 0%
+Buffs: boost_blue: 1, boost_red: 6, flame_fuel: 1, flame_heat: 1.66, focus: 3, haste: 2, inspire: 1
+--------------------
+Time: 46114656 | Honey: 823184380857 | Bag: 0%
+Buffs: boost_blue: 1, flame_fuel: 1, flame_heat: 1.63, focus: 3, haste: 2, inspire: 1
+--------------------
+Time: 46115656 | Honey: 823184549984 | Bag: 0%
+Buffs: boost_blue: 1, flame_fuel: 1, flame_heat: 1.58, focus: 3, haste: 2, inspire: 1, rage: 1
+--------------------
+Time: 46116687 | Honey: 823184751327 | Bag: 0%
+Buffs: boost_blue: 1, flame_fuel: 1, flame_heat: 1.53, focus: 3, haste: 2, rage: 1
+--------------------
+Time: 46117656 | Honey: 823184817207 | Bag: 0%
+Buffs: boost_blue: 1, flame_fuel: 1, flame_heat: 1.47, focus: 3, haste: 2, rage: 1
+--------------------
+Time: 46118718 | Honey: 823184985560 | Bag: 0%
+Buffs: boost_blue: 1, flame_heat: 1.16, focus: 3, haste: 2, rage: 1
+--------------------
+Time: 46119765 | Honey: 823185273538 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, flame_heat: 1.16, focus: 3, haste: 3, rage: 1
+--------------------
+Time: 46120703 | Honey: 823185803559 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, flame_heat: 1.16, focus: 3, haste: 3, rage: 4
+--------------------
+Time: 46121640 | Honey: 823186208433 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, flame_heat: 1.16, focus: 3, haste: 3, rage: 4
+--------------------
+Time: 46122656 | Honey: 823187803114 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, flame_heat: 1.16, focus: 3, haste: 3, inspire: 1, rage: 4
+--------------------
+Time: 46123750 | Honey: 823188955695 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, flame_heat: 1.16, focus: 3, haste: 3, inspire: 1, rage: 4
+--------------------
+Time: 46124656 | Honey: 823189163052 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, flame_heat: 1.13, focus: 3, haste: 3, inspire: 1, pollen_mark: 1, rage: 4
+--------------------
+Time: 46125656 | Honey: 823189293570 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, flame_heat: 1.08, haste: 3, inspire: 1, pollen_mark: 1, rage: 4
+--------------------
+Time: 46126765 | Honey: 823189450716 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, flame_heat: 1.03, haste: 3, inspire: 1, rage: 4
+--------------------
+Time: 46127625 | Honey: 823193037071 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, flame_heat: 1.03, haste: 3, map_corruption: 8, rage: 4
+--------------------
+Time: 46128656 | Honey: 823195568488 | Bag: 0%
+Buffs: boost_blue: 2, flame_fuel: 1, haste: 3, map_corruption: 8, rage: 4
+--------------------
+Time: 46129656 | Honey: 823196317252 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 1, flame_fuel: 1, flame_heat: 1.03, haste: 3, map_corruption: 8, rage: 4
+--------------------
+Time: 46130656 | Honey: 823196666231 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 1, flame_fuel: 1, flame_heat: 1.03, haste: 3, map_corruption: 8, pollen_mark: 1, rage: 4
+--------------------
+Time: 46131656 | Honey: 823196865012 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 1, flame_fuel: 1, haste: 3, map_corruption: 8, rage: 4
+--------------------
+Time: 46132671 | Honey: 823197325480 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 1, flame_fuel: 1, haste: 3, inspire: 1, map_corruption: 8, rage: 4
+--------------------
+Time: 46133671 | Honey: 823197938167 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 1, flame_fuel: 1, haste: 3, inspire: 1, map_corruption: 8, pollen_mark: 1, rage: 4
+--------------------
+Time: 46134671 | Honey: 823198472379 | Bag: 0%
+Buffs: boost_blue: 2, boost_red: 1, flame_fuel: 1, haste: 3, inspire: 1, map_corruption: 8, rage: 4
+--------------------
+Time: 46135718 | Honey: 823200030907 | Bag: 0%
+Buffs: boost_red: 4, flame_fuel: 1, flame_heat: 1.05, haste: 3, inspire: 1, map_corruption: 8, rage: 4
+--------------------
+Time: 46136671 | Honey: 823201384593 | Bag: 0%
+Buffs: boost_red: 4, flame_fuel: 1, flame_heat: 1.08, haste: 3, inspire: 1, pollen_mark: 1, rage: 4
+--------------------
+Time: 46137718 | Honey: 823201828147 | Bag: 0%
+Buffs: boost_red: 4, flame_fuel: 1, flame_heat: 1.16, haste: 3, pollen_mark: 1, rage: 4
+--------------------
+Time: 46138750 | Honey: 823207576023 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 1, boost_red: 5, flame_fuel: 1, flame_heat: 1.16, focus: 1, haste: 3, honey_mark: 1, pollen_mark: 3, rage: 4
+--------------------
+Time: 46139687 | Honey: 823224394967 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 1, boost_red: 5, flame_fuel: 1, flame_heat: 1.08, focus: 3, honey_mark: 1, pollen_mark: 3, rage: 4
+--------------------
+Time: 46140671 | Honey: 823227626030 | Bag: 0%
+Buffs: bear_morph: 1, boost_blue: 1, boost_red: 5, flame_fuel: 1, flame_heat: 1.16, focus: 3, honey_mark: 1, pollen_mark: 3, rage: 4
+--------------------
