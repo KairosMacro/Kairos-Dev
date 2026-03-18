@@ -1,5 +1,6 @@
 ﻿settings/
 graphs/
+logs/
 *.env.*
 *.test.*
 *.temp.*

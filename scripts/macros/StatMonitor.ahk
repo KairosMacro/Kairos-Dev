@@ -255,6 +255,8 @@
 		current_bag := this.DetectBag()
 		current_honey := this.DetectHoney()
 
+		if (current_honey = 0 && this.logs.Length > 0)
+			current_honey := this.logs[this.logs.Length]["honey"]
 		if (this.sessionStartHoney = 0 && current_honey > 0)
 			this.sessionStartHoney := current_honey
 
@@ -265,11 +267,8 @@
 		snapshot["buffs"] := this.currentBuffs.Clone()
 
 		this.logs.Push(snapshot)
-		if (this.logs.Length > 3600) { ; 1 hour limit, it'll probably be better if it exports and starts at 0
-			this.logs.RemoveAt(1)
-		}
-		if (this.logs.Length = 3600 && Mod(A_TickCount, 1000) = 0) {
-			this.DrawGraph()
+		if (this.logs.Length >= 3600) { ; 1 hour limit, it'll probably be better if it exports and starts at 0
+			this.Export()
 		}
 	}
 
@@ -412,8 +411,13 @@
 			if (index > 1 && index < this.logs.Length) {
 				prevH := this.logs[index-1]["honey"]
 				currH := snap["honey"]
-				nextH := this.logs[index+1]["honey"]
 
+				nextIdx := index + 1
+				nextH := this.logs[nextIdx]["honey"]
+				while (nextH == currH && nextIdx < this.logs.Length) {
+					nextIdx++
+					nextH := this.logs[nextIdx]["honey"]
+				}
 				if (currH > prevH && currH > nextH && (currH - nextH) > (currH * 0.01))
 					snap["honey"] := prevH
 				else if (currH < prevH && currH < nextH && (prevH - currH) > (prevH * 0.01))
@@ -1488,6 +1492,9 @@
 				DllCall("DeleteObject", "Ptr", hBM)
 
 				try rawText := ocr(pIRandomAccessStream, this.ocr_language)
+				catch
+					rawText := ""
+
 				cleanText := RegExReplace(StrReplace(StrReplace(StrReplace(StrReplace(rawText, "o", "0"), "i", "1"), "l", "1"), "a", "4"), "\D")
 				v := (StrLen(cleanText) > 0) ? Integer(cleanText) : 0
 				if (v > 0) {

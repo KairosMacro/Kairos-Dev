@@ -1,0 +1,12 @@
+====================
+Time: 2026-03-18 01:16:32
+Error: This is a simulated test crash to check the logger!
+File: C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\macros\StatMonitor.ahk
+Line: 1497
+Call Stack:
+C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\macros\StatMonitor.ahk (1497) : [StatMonitor.Prototype.DetectHoney] Throw Error("This is a simulated test crash to check the logger!")
+C:\Users\Dully176\Desktop\Kairos-Dev-main\scripts\macros\StatMonitor.ahk (256) : [StatMonitor.Prototype.RunScan] current_honey := this.DetectHoney()
+> Timer
+
+====================
+

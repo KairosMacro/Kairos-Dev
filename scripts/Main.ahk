@@ -62,6 +62,7 @@ if !(pToken := Gdip_Startup())
 TraySetIcon "Assets\Images\Kairos.ico"
 
 OnExit(Cleanup)
+OnError(LogError)
 
 Config.Load()
 
@@ -169,4 +170,24 @@ Cleanup(*) {
 	try Stats.Cleanup()
 	try FrameCache.Clear()
 	Gdip_Shutdown(pToken)
+}
+
+LogError(exception, mode) {
+	timeStr := FormatTime(A_Now, "yyyy-MM-dd HH:mm:ss")
+
+	log := "====================`n"
+	log .= "Time: " timeStr "`n"
+	log .= "Error: " exception.Message "`n"
+	log .= "File: " exception.File "`n"
+	log .= "Line: " exception.Line "`n"
+
+	if (exception.Extra != "")
+		log .= "Specifically: " exception.Extra "`n"
+	log .= "Call Stack:`n" exception.Stack "`n"
+	log .= "====================`n`n"
+
+	if !DirExist("logs")
+		DirCreate("logs")
+	try FileAppend(log, A_WorkingDir "\logs\Kairos_crash_log.txt")
+	return 0
 }
