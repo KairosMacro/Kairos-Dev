@@ -1,80 +1,74 @@
 #Warn All, Off
 
 global GatherPath := [
-   {key: FwdKey, dist: 3},
-   {key: RightKey, dist: 1.5},
-   {key: BackKey, dist: 6},
-   {key: RightKey, dist: 1.5},
-   {key: FwdKey, dist: 6},
-   {key: RightKey, dist: 1.5},
-   {key: BackKey, dist: 6},
+	{key: FwdKey, dist: 3},
+	{key: RightKey, dist: 1.5},
+	{key: BackKey, dist: 6},
+	{key: RightKey, dist: 1.5},
+	{key: FwdKey, dist: 6},
+	{key: RightKey, dist: 1.5},
+	{key: BackKey, dist: 6},
 
-   {key: LeftKey, dist: 1.5},
-   {key: FwdKey, dist: 6},
-   {key: LeftKey, dist: 1.5},
-   {key: BackKey, dist: 6},
-   {key: LeftKey, dist: 1.5},
-   {key: FwdKey, dist: 6},
+	{key: LeftKey, dist: 1.5},
+	{key: FwdKey, dist: 6},
+	{key: LeftKey, dist: 1.5},
+	{key: BackKey, dist: 6},
+	{key: LeftKey, dist: 1.5},
+	{key: FwdKey, dist: 6},
 
-   {key: LeftKey, dist: 1.5},
-   {key: BackKey, dist: 6},
-   {key: LeftKey, dist: 1.5},
-   {key: FwdKey, dist: 6},
-   {key: LeftKey, dist: 1.5},
-   {key: BackKey, dist: 6},
+	{key: LeftKey, dist: 1.5},
+	{key: BackKey, dist: 6},
+	{key: LeftKey, dist: 1.5},
+	{key: FwdKey, dist: 6},
+	{key: LeftKey, dist: 1.5},
+	{key: BackKey, dist: 6},
 
-   {key: RightKey, dist: 1.5},
-   {key: FwdKey, dist: 6},
-   {key: RightKey, dist: 1.5},
-   {key: BackKey, dist: 6},
-   {key: RightKey, dist: 1.5},
-   {key: FwdKey, dist: 3}
+	{key: RightKey, dist: 1.5},
+	{key: FwdKey, dist: 6},
+	{key: RightKey, dist: 1.5},
+	{key: BackKey, dist: 6},
+	{key: RightKey, dist: 1.5},
+	{key: FwdKey, dist: 3}
 ]
 
-global SpawningCombo := false
-global comboMissed := false
 global comboEnded := false
 global CameraRot := 0
 
 dy_Walk(tiles, dir) {
+	static comboDetect := 0
 	send "{" dir " down}"
 	current := DetectMovespeed() + 0.45
+	lastCheck := A_TickCount
 	while ((current += DetectMovespeed()) < tiles * 4) {
-		if (SpawningCombo) {
-			send "{" dir " up}"
-			return true
+		if (A_TickCount - lastCheck > 75) {
+			state := GetComboState(10)
+			if ((state = 1) && ++comboDetect >= 2) {
+				send "{" dir " up}"
+				comboDetect := 0
+				return true
+			} else
+				comboDetect := 0
+			lastCheck := A_TickCount
 		}
 	}
 	send "{" dir " up}"
 	return false
 }
 
-Background() {
-	global SpawningCombo, ComboMissed
-	static comboDetect := 0
-	state := GetComboState(7)
-	if (state = 1 && ++comboDetect >= 8) 
-		SpawningCombo := true, comboDetect := 0
-	else if (state = 0)
-		ComboMissed := true, comboDetect := 0
-	else if (state = -1)
-		comboDetect := 0
-}
-
-SetTimer(Background, 25)
 
 interrupt := false
 send "{" RotUp " 8}"
 for path in GatherPath {
 	if (interrupt := dy_Walk(path.dist, path.key)) {
-		ComboMissed := false
 		ComboEnded := false
 		CameraRot := 0
 		rotate(true)
 		SetTimer(spam, 1)
 		loop {
 			gotoCoco()
-			if (ComboMissed || ComboEnded)
+			if (GetComboState(30) = 0)
+				break
+			if comboEnded
 				break
 		}
 		SetTimer(spam, 0)
@@ -87,8 +81,6 @@ for path in GatherPath {
 		break
 	}
 }
-
-SetTimer(Background, 0)
 
 BitmapVisible(bmName, var:=0) {
 	Gdip_GetImageDimensions(bitmaps[bmName], &nWidth, &nHeight)
@@ -209,7 +201,7 @@ locateCoco() {
 
 gotoCoco() {
 	start := A_TickCount
-   pwm := 25
+	pwm := 50
 	GetRobloxClientPos()
 	if !(pos := locateCoco()) {
 		rotate()
@@ -276,18 +268,20 @@ rotate(reset := false) {
 	static last := 0
 	timeLimit := 15000
 
+	tick := A_TickCount
+
 	if (reset) {
-		last := A_TickCount + 275
+		last := tick + 275
 		startTime := last 
 		return
 	}
-	if (A_TickCount - startTime >= timeLimit) {
+	if (tick - startTime >= timeLimit) {
 		comboEnded := true
 		return
 	}
-	if (A_TickCount - last < 40)
+	if (tick - last < 40)
 		return
-	last := A_TickCount
+	last := tick
 	if (Mod(count, 4) < 2) {
 		send "{" RotLeft "}"
 		CameraRot++

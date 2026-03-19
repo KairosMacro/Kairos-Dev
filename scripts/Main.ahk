@@ -132,6 +132,7 @@ grjknnkjrg() {
 	Fancy.Show(bitmaps["anime"], windowX + windowWidth - 230, windowY + offset, 1, 0x00000000)
 	Amazing.Show("YOU WILL DO GOOD THIS BOOST", windowX + windowWidth - 400, windowY + offset + 30)
 }
+/*
 F4:: {
 	Stats.GenerateData()
 	Stats.DrawGraph(A_ScriptDir "\hi.png")
@@ -145,6 +146,8 @@ F4:: {
 		MsgBox("Txt file not found.")
 	Stats.Cleanup()
 }
+*/
+F4:: msgbox Alt.atHive()
 
 Cleanup(*) {
 	Critical

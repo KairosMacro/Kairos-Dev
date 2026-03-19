@@ -508,7 +508,7 @@
 				n += ((Gdip_ImageSearch(pBMScreen, bitmaps["emptyhealth"], , , , , , 10) || this.HealthBar()) = (n = 0))
 				Gdip_DisposeImage(pBMScreen)
 			}
-			sleep 500
+			sleep 750
 			SetKeyDelay PrevKeyDelay
 
 			if (!this.ClaimHiveEnabled) {
@@ -574,7 +574,7 @@
 		ActivateRoblox()
 		GetRobloxClientPos()
 		pBMScreen := Gdip_BitmapFromScreen(windowX + windowWidth // 2 - 150 "|" windowY + State.offsetY + 40 "|350|60")
-		out := Gdip_ImageSearch(pBMScreen, bitmaps["colhey"], , , , , , 5)
+		out := Gdip_ImageSearch(pBMScreen, bitmaps["honey"], , , , , , 5) = 1 ||  Gdip_ImageSearch(pBMScreen, bitmaps["collect"], , , , , , 5) = 1
 		Gdip_DisposeImage(pBMScreen)
 		fail := out = 1 ? 0 : fail + 1
 		if fail > 3 {
