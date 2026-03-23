@@ -66,7 +66,7 @@ OnError(LogError)
 
 Config.Load()
 
-version := "0.3.0"
+version := "0.3.2"
 
 GetRobloxClientPos()
 
@@ -147,7 +147,7 @@ F4:: {
 	Stats.Cleanup()
 }
 */
-F4:: msgbox Alt.atHive()
+; F4:: msgbox Alt.atHive()
 
 Cleanup(*) {
 	Critical

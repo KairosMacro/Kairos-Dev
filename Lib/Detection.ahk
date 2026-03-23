@@ -1,6 +1,7 @@
 class Detection {
 	numOffset := Map(0, 7, 1, 2, 2, 6, 3, 6, 4, 7, 5, 6, 6, 7, 7, 7, 8, 7, 9, 7)
-	
+	bigOffset := Map(0, 8, 1, 2, 2, 7, 3, 7, 4, 8, 5, 7, 6, 8, 7, 8, 8, 8, 9, 8)
+	tinyOffset := Map(0, 6, 1, 1, 2, 5, 3, 4, 4, 6, 5, 5, 6, 5, 7, 6, 8, 5, 9, 5)
 	__New() {
 
 	}
@@ -11,7 +12,7 @@ class Detection {
 		return { found: false , x: 0, y: 0 }
 	}
 
-	ReadDigits(pBitmap, x1, y1, x2, y2, numType := "auto") {
+	ReadDigits(pBitmap, x1, y1, x2, y2, numType := "auto", name := "") {
 		if (numType = "passive")
 			return this._ReadPassive(pBitmap, x1, y1, x2, y2)
 
@@ -106,7 +107,7 @@ class Detection {
 	}
 
 	_ReadBuff(pBitmap, sizeType, x1, y1, x2, y2) {
-		offsets := (sizeType = "big") ? bigOffset: tinyOffset
+		offsets := (sizeType = "big") ? this.bigOffset : this.tinyOffset
 		found := []
 		priorityOrder := [8, 0, 6, 9, 4, 7, 2, 3, 5, 1]
 		for idx in priorityOrder {

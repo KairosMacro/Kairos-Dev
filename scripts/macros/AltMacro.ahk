@@ -63,10 +63,10 @@
 		this.Settings()
 
 		; If the Guiding Star cycle is enabled, run that flow instead of the normal Alt loop.
-		if (Config.Get("Guide", "Enabled", 0)) {
-			this.GuideCycle()
-			return
-		}
+		;if (Config.Get("Guide", "Enabled", 0)) {
+		;	this.GuideCycle()
+		;	return
+		;}
 		if !(this.Reconnect())
 			this.Reset()
 		fieldName := this.DefaultField

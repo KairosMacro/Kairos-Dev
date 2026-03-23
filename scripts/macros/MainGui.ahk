@@ -43,14 +43,8 @@
 		this.Gui.Add("Button", "x5 y" footerY " w67 h" footerButtonHeight " -Wrap vStartButton", "Start (" Config.Get("Main", "StartHotkey", "F1") ")").OnEvent("Click", this.start.Bind(this))
 		this.Gui.Add("Button", "x75 y" footerY " w67 h" footerButtonHeight " -Wrap vPauseButton", "Pause (" Config.Get("Main", "PauseHotkey", "F2") ")").OnEvent("Click", this.pause.Bind(this))
 		this.Gui.Add("Button", "x145 y" footerY " w67 h" footerButtonHeight " -Wrap vStopButton", "Stop (" Config.Get("Main", "StopHotkey", "F3") ")").OnEvent("Click", this.stop.Bind(this))
-	
-		/*
-		main - Warns, BoostBar, Key Alignment, Tracker, Magnifier, StatMonitor
-		alt - Alt Macro, Boost Bar
 
-		based off what mode, it should automatically disable features that arent used for that type.
-		"and maybe only show the specific features on the "Main" tab based off the mode, and maybe also the TabArr below"
-		*/
+
 		accountType := Config.Get("Main", "AccountType", "Main")
 		accountList := ["Main", "Alt"]
 		this.Gui.Add("Text", "x215 y" footerY+5 " -Wrap", "Account Type:")
@@ -60,7 +54,8 @@
 		if (accountType = "Main")
 			TabArr := ["Home", "Tracker", "Warnings", "Boost Bar", "Communicator", "Settings"]
 		else
-			TabArr := ["Home", "Alt", "Guide", "Boost Bar", "Communicator", "Settings"]
+			TabArr := ["Home", "Alt", "Boost Bar", "Communicator", "Settings"]
+		; TODO - Finish "Guide" for Alts
 		(TabCtrl := this.Gui.Add("Tab", "x-1 y-1 w" tabWidth+2 " h" footerY " -Wrap " (Config.Get("Main", "DarkMode", 1) ? "cFFFFFF" : "C000000"), TabArr)).OnEvent("Change", (*) => TabCtrl.Focus())
 		SendMessage 0x1331, 0, 20, , TabCtrl
 
@@ -248,6 +243,8 @@
 			this.Gui.Add("UpDown", "Range0-8", Config.Get("Alt", "RotationAmount", 0))
 			this.Gui.Add("DropDownList", "x" Group2 + 102 " y153 w60 vAlt_RotationDirection Choose" ObjIndexOf(["Right", "Left"], Config.Get("Alt", "RotationDirection", "Right")), ["Right", "Left"]).OnEvent("Change", this.SaveConfig.Bind(this))
 
+
+			/*
 			; --- Guide Tab ---
 			TabCtrl.UseTab("Guide")
 			this.Gui.SetFont("w700")
@@ -268,6 +265,7 @@
 
 			this.Gui.Add("Text", "x20 y105", "Private Server Link:")
 			this.Gui.Add("Edit", "x20 y125 w350 h20 vGuide_PrivLink", Config.Get("Guide", "PrivLink", "")).OnEvent("Change", this.SaveConfig.Bind(this))
+			*/
 		}
 
 		; --- Communicator Tab ---

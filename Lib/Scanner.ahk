@@ -3,7 +3,7 @@ class ScannerEngine {
 	Detector := unset
 
 	Data := Map()
-
+	BuffStates := Map()
 	PercentBuffers := Map()
 	GummyStar := {slot: -1, pity: 0, lastUse: 0}
 
@@ -89,10 +89,25 @@ class ScannerEngine {
 	}
 
 	ScanBuff(pBitmap, name, profile) {
+		if !this.BuffStates.Has(name)
+			this.BuffStates[name] := {val: 0, fail: 0}
+
 		icon := this.Detector.SearchIcon(pBitmap, bitmaps["buff"][name], profile.x1, profile.y1, profile.x2, profile.y2, profile.var)
-		if (!icon.found)
+		if (!icon.found) {
+			this.BuffStates[name].val := 0
+			this.BuffStates[name].fail := 0
 			return -1
-		val := this.Detector.ReadDigits(pBitmap, icon.x - 13, 0, icon.x + 25, 32, "auto")
+		}
+		val := this.Detector.ReadDigits(pBitmap, icon.x - 5, 0, icon.x + 38, 32, "auto", name)
+		if (val > 1) { ; number was failed to detect, it always returns 1.
+			this.BuffStates[name].val := val
+			this.BuffStates[name].fail := 0
+		} else {
+			if (++this.BuffStates[name].fail < 10)
+				val := this.BuffStates[name].val
+			else
+				this.BuffStates[name].val := 0
+		}
 		return (val > 0) ? val : -1
 	}
 
@@ -100,7 +115,6 @@ class ScannerEngine {
 		imgName := profile.HasProp("img") ? profile.img : name
 		if !this.PercentBuffers.Has(name)
 			this.PercentBuffers[name] := []
-		buff := this.PercentBuffers[name]
 
 		icon := this.Detector.SearchIcon(pBitmap, bitmaps["buff"][imgName], 0, 0, 0, 0, 4)
 		if (!icon.found) {
@@ -109,13 +123,13 @@ class ScannerEngine {
 		}
 		lowY := this.Detector.ReadPercentageFill(pBitmap, icon.x + profile.xOff, 0, icon.y, profile.colors, 0)
 		raw := Round((icon.y - lowY) / 38 * 100, 2) + 2
-		buff.Push(raw)
-		if (buff.Length > 6)
-			buff.RemoveAt(1)
+		this.PercentBuffers[name].Push(raw)
+		if (this.PercentBuffers[name].Length > 6)
+			this.PercentBuffers[name].RemoveAt(1)
 		best := []
-		for val1 in buff {
+		for val1 in this.PercentBuffers[name] {
 			current := []
-			for val2 in buff
+			for val2 in this.PercentBuffers[name]
 				if (Abs(val1 - val2) <= 5)
 					current.Push(val2)
 			if (current.Length > best.Length)

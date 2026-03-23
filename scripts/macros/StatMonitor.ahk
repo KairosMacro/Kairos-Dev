@@ -7,9 +7,19 @@
 
 		this.scanStartTime := 0
 		this.sessionStartHoney := 0
+
+		this.realTime := 0
+		this.spentHoney := 0
+
 		this.learningPeriod := 50000 ; guaranteed out of cooldown for passives
 		this.confirmedPassives := []
 		this.possiblePassives := ["scorching_star", "pop_star", "gummy_star"]
+
+		this.os_ver := "n/a"
+		try {
+			for objItem in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_OperatingSystem")
+				this.os_ver := Trim(StrReplace(StrReplace(StrReplace(StrReplace(objItem.Caption, "Microsoft"), "Майкрософт"), "مايكروسوفت"), "微软"))
+      }
 
 		this.buff_groups := Map(
 			"boost_red", "boost"
@@ -233,8 +243,11 @@
 		if !Config.Get("Main", "StatMonitorEnabled", 0)
 			return
 		this.isRunning := true
-		if (this.scanStartTime = 0)
+		if (this.scanStartTime = 0) {
 			this.scanStartTime := A_TickCount
+			this.realTime := A_Now
+			this.spentHoney := 0
+		}
 		SetTimer(this.RunScan.Bind(this), 1000)
 	}
 
@@ -253,16 +266,50 @@
 			return
 		this.DetectBuffs()
 		current_bag := this.DetectBag()
-		current_honey := this.DetectHoney()
+		raw_honey := this.DetectHoney()
 
-		if (current_honey = 0 && this.logs.Length > 0)
-			current_honey := this.logs[this.logs.Length]["honey"]
+		if (!this.HasOwnProp("honeyBuffer"))
+			this.honeyBuffer := []
+
+		if (raw_honey > 0) {
+			this.honeyBuffer.Push(raw_honey)
+			if (this.honeyBuffer.Length > 3)
+				this.honeyBuffer.RemoveAt(1)
+		}
+
+		current_honey := 0
+		for val in this.honeyBuffer {
+			if (val > current_honey)
+				current_honey := val
+		}
+
+		if (!this.HasOwnProp("max_valid_honey")) {
+			this.max_valid_honey := current_honey
+			this.low_honey_count := 0
+		}
+
+		if (current_honey > this.max_valid_honey) {
+			this.max_valid_honey := current_honey
+			this.low_honey_count := 0
+		} else if (current_honey < this.max_valid_honey && current_honey > 0) {
+			this.low_honey_count++
+			if (this.low_honey_count >= 4) {
+				if (!this.HasOwnProp("spentHoney"))
+					this.spentHoney := 0
+				this.spentHoney += (this.max_valid_honey - current_honey)
+				this.max_valid_honey := current_honey
+				this.low_honey_count := 0
+			} else {
+				current_honey := this.max_valid_honey
+			}
+		}
 		if (this.sessionStartHoney = 0 && current_honey > 0)
 			this.sessionStartHoney := current_honey
 
 		snapshot := Map()
 		snapshot["time"] := A_TickCount
 		snapshot["bag"] := current_bag
+		snapshot["raw_honey"] := raw_honey
 		snapshot["honey"] := current_honey
 		snapshot["buffs"] := this.currentBuffs.Clone()
 
@@ -293,6 +340,8 @@
 	GenerateData() {
 		this.logs := []
 		starTime := this.scanStartTime := A_TickCount
+		this.realTime := 0
+		this.spentHoney := 0
 
 		onOffList := ["oil", "super_smoothie", "bomb_sync_red", "bomb_sync_blue", "festive_blessing", "beesmas_cheer",
 					"tabby_blessing", "clouds", "baby_love", "festive_mark", "flame_fuel", "guiding_star", "stinger", "enzyme",
@@ -408,7 +457,7 @@
 			return
 
 		for index, snap in this.logs {
-			if (index > 1 && index < this.logs.Length) {
+			if (index >= 5 && index < this.logs.Length) {
 				prevH := this.logs[index-1]["honey"]
 				currH := snap["honey"]
 
@@ -432,11 +481,13 @@
 				prevSnap := this.logs[index - 1]
 				timeDiff := (snap["time"] - prevSnap["time"]) / 1000
 				honeyDiff := snap["honey"] - prevSnap["honey"]
-				if (timeDiff > 0 && honeyDiff >= 0) {
-					snap["honey_sec"] := honeyDiff / timeDiff
-				} else {
+				if (timeDiff > 0) {
+					if (honeyDiff > 0)
+						snap["honey_sec"] := honeyDiff / timeDiff
+					else
+						snap["honey_sec"] := prevSnap.Has("honey_sec") ? prevSnap["honey_sec"] : 0
+				} else
 					snap["honey_sec"] := 0
-				}
 			}
 		}
 
@@ -608,7 +659,6 @@
 		Gdip_SaveBitmapToFile(pBitmapCanvas, path, 100)
 		Gdip_DeleteGraphics(pGraphic)
 		Gdip_DisposeImage(pBitmapCanvas)
-		this.logs := []
 	}
 
 	ExportData(path?) {
@@ -620,7 +670,7 @@
 		}
 		out := "RAW DATA OF DETECTION `n====================`n"
 		for index, snap in this.logs {
-			out .= "Time: " snap["time"] " | Honey: " snap["honey"] " | Bag: " snap["bag"] "%`n"
+			out .= "Time: " snap["time"] " | Honey: " snap["honey"] " (" snap["raw_honey"] ") | Bag: " snap["bag"] "%`n"
 			out .= "Buffs: "
 			buffCount := 0
 			for buff, val in snap["buffs"] {
@@ -853,19 +903,15 @@
 		Gdip_DeletePen(pPenLine4)
 		currentY += 30
 
-		startTimeTick := this.logs[1]["time"]
-		endTimeTick := lastSnap["time"]
-		durationSec := (endTimeTick - startTimeTick) // 1000
-
-		startTime := FormatTime(DateAdd(A_Now, -durationSec, "Seconds"), "HH:mm:ss")
+		if (this.HasOwnProp("realTime") && this.realTime != "")
+			startTime := FormatTime(this.realTime, "HH:mm:ss")
+		else
+			startTime := FormatTime(A_Now, "HH:mm:ss")
 		endTime := FormatTime(A_Now, "HH:mm:ss")
 		date := FormatTime(A_Now, "yyyy-MM-dd")
 
 		ocrStatus := this.ocr_enabled ? "Enabled (" this.ocr_language ")" : "Disabled"
 		ver := "v" version
-		os_ver := "n/a"
-		for objItem in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_OperatingSystem")
-			os_ver := Trim(StrReplace(StrReplace(StrReplace(StrReplace(objItem.Caption, "Microsoft"), "Майкрософт"), "مايكروسوفت"), "微软"))
 
 		Gdip_TextToGraphics(pGraphic, "StatMonitor - Kairos " ver, "s23 Bold cffdbb35d x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
 		currentY += 30
@@ -882,7 +928,7 @@
 		Gdip_TextToGraphics(pGraphic, "OCR: ", "s23 Bold cff943eb9 x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
 		Gdip_TextToGraphics(pGraphic, ocrStatus, "s23 Bold " col " x" (rect.x + 85) " y" currentY, "Segoe UI", rect.w - 120)
 		currentY += 30
-		Gdip_TextToGraphics(pGraphic, "WIN VER: " os_ver, "s23 Bold cff5e5e5e x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
+		Gdip_TextToGraphics(pGraphic, "WIN VER: " this.os_ver, "s23 Bold cff5e5e5e x" (rect.x + 20) " y" currentY, "Segoe UI", rect.w - 40)
 		currentY += 30
 		Gdip_GetImageDimensions(bitmaps["stat_icon"]["watermark"], &imgW, &imgH)
 		scaleFactor := Max(400 // imgW, 400 // imgH)
@@ -898,7 +944,6 @@
 			"refreshing", 0xFF78B375,
 			"invigorating", 0xFFB35951
 		)
-		lastSnap := this.logs[this.logs.Length]
 		ringSize := 65
 		penWidth := 10
 
@@ -907,7 +952,12 @@
 		spacing := remainingSpace / 6
 
 		for index, nectar in nectars {
-			val := lastSnap["buffs"].Has(nectar) ? lastSnap["buffs"][nectar] : 0
+			peakVal := 0
+			for i, snap in this.logs {
+				if (snap["buffs"].Has(nectar) && snap["buffs"][nectar] > peakVal)
+					peakVal := snap["buffs"][nectar]
+			}
+			val := peakVal
 			hex := colors[nectar]
 			trans := (hex & 0x00FFFFFF) | 0x40000000
 
@@ -937,12 +987,16 @@
 		currentHoney := lastSnap["honey"]
 
 		startHoney := (this.sessionStartHoney > 0) ? this.sessionStartHoney : this.logs[1]["honey"]
-		sessionHoney := currentHoney - startHoney
-
+		offset := this.HasOwnProp("spentHoney") ? this.spentHoney : 0
+		sessionHoney := (currentHoney + offset) - startHoney
 		if (sessionHoney < 0)
 			sessionHoney := 0
-				
-		elapseSecs := (A_TickCount - this.scanStartTime) // 1000
+
+		if (this.HasOwnProp("realTime") && this.realTime != "")
+			elapseSecs := DateDiff(A_Now, this.realTime, "Seconds")
+		else
+			elapseSecs := (A_TickCount - this.scanStartTime) // 1000
+
 		h := elapseSecs // 3600
 		m := Mod(elapseSecs // 60, 60)
 		s := Mod(elapseSecs, 60)
@@ -1522,10 +1576,14 @@
 	Export() {
 		if (this.logs.Length >= 2)
 			this.DrawGraph()
+		
+		lastSnap := (this.logs.Length > 0) ? this.logs[this.logs.Length] : unset
 		this.logs := []
+
+		if IsSet(lastSnap)
+			this.logs.Push(lastSnap)
 		this.previousBuffs := Map()
 		this.currentBuffs := Map()
 		this.confirmedPassives := []
-		this.scanStartTime := A_TickCount
 	}
 }
