@@ -12,7 +12,7 @@ class Detection {
 		return { found: false , x: 0, y: 0 }
 	}
 
-	ReadDigits(pBitmap, x1, y1, x2, y2, numType := "auto", name := "") {
+	ReadDigits(pBitmap, x1, y1, x2, y2, numType := "auto") {
 		if (numType = "passive")
 			return this._ReadPassive(pBitmap, x1, y1, x2, y2)
 
