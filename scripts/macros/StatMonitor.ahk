@@ -19,7 +19,7 @@
 		try {
 			for objItem in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_OperatingSystem")
 				this.os_ver := Trim(StrReplace(StrReplace(StrReplace(StrReplace(objItem.Caption, "Microsoft"), "Майкрософт"), "مايكروسوفت"), "微软"))
-      }
+		}
 
 		this.buff_groups := Map(
 			"boost_red", "boost"
@@ -311,6 +311,9 @@
 		snapshot["bag"] := current_bag
 		snapshot["raw_honey"] := raw_honey
 		snapshot["honey"] := current_honey
+		snapshot["offset"] := this.HasOwnProp("spentHoney") ? this.spentHoney : 0
+		snapshot["honey_sec"] := 0
+		snapshot["honey_sec_smoothed"] := 0
 		snapshot["buffs"] := this.currentBuffs.Clone()
 
 		this.logs.Push(snapshot)
@@ -338,9 +341,47 @@
 	}
 
 	GenerateData() {
+		/**
+		 * CONFIGURATION
+		 * simulate_glitch - simulates OCR bugs to test the graph's ability to handle them
+		 * input - false = off / 0-100 (float) = chance to simulate a glitch every scan
+		 * 
+		 * simulate_spending - this simulates spending, this is to see if it doesn't mistake it as a "glitch" from OCR
+		 * input - false = off / any number (int, float) = how much honey to simulate spending every 10 minutes or so
+		 * 
+		 * massive_gains - simulate you in a (hypothetical) boosting scenario where you make 200t from a scorch
+		 * input - false = off / any number (int, float) = how much honey to simulate on a boost scenario
+		 * 
+		 * no_mercy - fuck it, we ball
+		 * input - bool True or False
+		 */
+		simulate_glitch := false
+		glitch_chance := 0.1
+
+		simulate_spending := false
+		spend_frequency := 30 ; minutes
+
+		massive_gains := false
+		gains_frequency := 10 ; minutes
+
+		/*
+		; this basically sets variables to like the worst possible settings you can face while playing normally, and more
+		cutting randomly to 0 on honey
+		cutting off like some digits from either the left or right of the number
+		not even logging that time because roblox was closed for some reason
+		and anything else that's on the code. there is way too much to account for
+		*/
+		no_mercy := false
+
+		if (no_mercy) {
+			glitch_chance := 20
+			spend_frequency := 1
+			gains_frequency := 5
+		}
+
 		this.logs := []
-		starTime := this.scanStartTime := A_TickCount
-		this.realTime := 0
+		startTime := this.scanStartTime := A_TickCount
+		this.realTime := A_Now
 		this.spentHoney := 0
 
 		onOffList := ["oil", "super_smoothie", "bomb_sync_red", "bomb_sync_blue", "festive_blessing", "beesmas_cheer",
@@ -368,6 +409,7 @@
 
 		startHoney := this.sessionStartHoney := Random(100000000000, 999999999999) * 10
 		honey_values := Map(0, startHoney)
+		last_truth := startHoney
 
 		com := Random(0, 100)
 		mot := Random(0, 100)
@@ -399,26 +441,89 @@
 		bloat := Round(Random(1.0, 6.0), 2)
 		tide := Round(Random(1.0, 1.2), 2)
 
-
+		m_honeyBuffer := []
+		m_max_valid_honey := startHoney
+		m_low_honey_count := 0
+		m_spentHoney := 0
 
 		loop 3600 {
 			tick := A_Index
+
+			gain := (Mod(tick, 100) < 50) ? Random(100000000, 999999999) : Random(1000000000, 10000000000)
+
+			if (massive_gains) {
+				boost_window := 45
+				if (Mod(tick, gains_frequency * 60) < boost_window) {
+					gain *= 100 ; if 10b, make it 1t
+				}
+			}
+
+			current_honey_truth := last_truth + gain
+
+			if (simulate_spending && Mod(tick, spend_frequency * 60) = 0) {
+				spentPercent := Random(40, 70) / 100
+				spentAmount := Integer(current_honey_truth * spentPercent)
+				current_honey_truth -= spentAmount ; this should be figured by the filter
+			}
+
+			last_truth := current_honey_truth
+			raw_honey := current_honey_truth
+			if (simulate_glitch && Random(0.0, 100.0) <= glitch_chance) {
+				chaosType := Random(1, 3)
+				if chaosType = 1 ; no OCR detection
+					raw_honey := 0
+				else if chaosType = 2 ; cut off some digits
+					raw_honey := Integer(raw_honey / Random(5, 10))
+				else if chaosType = 3 ; misdetections of "higher than expected"
+					raw_honey := raw_honey * Random(2, 5)
+			}
+
+			if (raw_honey > 0 ) {
+				m_honeyBuffer.Push(raw_honey)
+					if (m_honeyBuffer.Length > 3)
+						m_honeyBuffer.RemoveAt(1)
+			}
+
+			filtered_honey := 0
+			for val in m_honeyBuffer {
+				if (val > filtered_honey)
+					filtered_honey := val
+			}
+
+			if (filtered_honey > m_max_valid_honey) {
+				m_max_valid_honey := filtered_honey
+				m_low_honey_count := 0
+			} else if (filtered_honey < m_max_valid_honey && filtered_honey > 0) {
+				m_low_honey_count++
+				if (m_low_honey_count >= 4) {
+					m_spentHoney += (m_max_valid_honey - filtered_honey)
+					m_max_valid_honey := filtered_honey
+					m_low_honey_count := 0
+				} else {
+					filtered_honey := m_max_valid_honey
+				}
+			}
+
 			snapshot := Map()
-			snapshot["time"] := starTime + (tick * 1000)
+			snapshot["time"] := startTime + (tick * 1000)
+			snapshot["raw_honey"] := raw_honey
+			snapshot["honey"] := filtered_honey
 			snapshot["bag"] := Round(Mod(tick, 60) * (100/60), 2)
-			snapshot["honey"] := honey_values[tick-1] + ((Mod(tick, 100) < 50) ? Random(100000000, 999999999) : Random(1000000000, 10000000000))
 			honey_values[tick] := snapshot["honey"]
+			snapshot["offset"] := m_spentHoney
+			snapshot["honey_sec"] := 0
+			snapshot["honey_sec_smoothed"] := 0
 
 			buffs := Map()
 
-			for i, buffName in onOffList {
+			for i, buffName in genOnOff {
 				cycleLength := 40 + Mod(i * 13, 60) 
 				uptime := cycleLength * 0.6
 				offset := i * 7
 				buffs[buffName] := Mod(tick + offset, cycleLength) < uptime ? 1 : 0
 			}
 
-			for i, buffName in digitList {
+			for i, buffName in genDigit {
 				waveSpeed := 10 + Mod(i * 3, 30)
 				offset := i * 5
 				sineValue := Sin((tick + offset) / waveSpeed)
@@ -457,38 +562,93 @@
 			return
 
 		for index, snap in this.logs {
-			if (index >= 5 && index < this.logs.Length) {
-				prevH := this.logs[index-1]["honey"]
-				currH := snap["honey"]
+			; we do this because the first logs aren't really accurate (starts at 0 sometimes)
+			if index <= 5
+				continue
+			prev_honey := this.logs[index - 1]["honey"]
+			curr_honey := snap["honey"]
 
-				nextIdx := index + 1
-				nextH := this.logs[nextIdx]["honey"]
-				while (nextH == currH && nextIdx < this.logs.Length) {
-					nextIdx++
-					nextH := this.logs[nextIdx]["honey"]
+			is_drop := curr_honey < prev_honey
+			is_spike := curr_honey > prev_honey * 1.5
+
+			; calculating the future honey to verify that it's a bug and not a "honey spent" scenario.
+			; same with spikes with an immediate drop
+			if (is_drop || is_spike) {
+				future_honey := []
+				loop 5 {
+					idx := index + A_Index
+					if (idx > this.logs.Length)
+						break
+					future_honey.Push(this.logs[idx]["honey"])
 				}
-				if (currH > prevH && currH > nextH && (currH - nextH) > (currH * 0.01))
-					snap["honey"] := prevH
-				else if (currH < prevH && currH < nextH && (prevH - currH) > (prevH * 0.01))
-					snap["honey"] := prevH
+				if (future_honey.Length > 0) {
+					max_future := 0
+					min_future := future_honey[1]
+
+					for val in future_honey {
+						if (val > max_future)
+							max_future := val
+						if (val < min_future)
+							min_future := val
+					}
+
+					if (is_drop && max_future > (prev_honey * 0.9))
+						snap["honey"] := prev_honey
+					else if (is_spike && min_future < (curr_honey * 0.5))
+						snap["honey"] := prev_honey
+				}
 			}
 		}
 
+		; for honey per second, do some filtering again (just in case, you never know). this is stage 1.
 		for index, snap in this.logs {
 			if (index = 1) {
 				snap["honey_sec"] := 0
-			} else {
-				prevSnap := this.logs[index - 1]
-				timeDiff := (snap["time"] - prevSnap["time"]) / 1000
-				honeyDiff := snap["honey"] - prevSnap["honey"]
-				if (timeDiff > 0) {
-					if (honeyDiff > 0)
-						snap["honey_sec"] := honeyDiff / timeDiff
-					else
-						snap["honey_sec"] := prevSnap.Has("honey_sec") ? prevSnap["honey_sec"] : 0
-				} else
-					snap["honey_sec"] := 0
+				snap["raw_honey_sec"] := 0
+				continue
 			}
+			prevSnap := this.logs[index - 1]
+
+			currentTotal := snap["honey"] + (snap.Has("offset") ? snap["offset"] : 0)
+			prevTotal := prevSnap["honey"] + (prevSnap.Has("offset") ? prevSnap["offset"] : 0)
+			timeDiff := (snap["time"] - prevSnap["time"]) / 1000
+
+			if (timeDiff > 0) {
+				honeyDiff := currentTotal - prevTotal
+				snap["raw_honey_sec"] := honeyDiff / timeDiff
+			} else {
+				snap["raw_honey_sec"] := 0
+			}
+		}
+
+		; stage 2, filtering out (peaks) if any were missed.
+		for index, snap in this.logs {
+			if (index <= 5) {
+				snap["honey_sec"] := snap["raw_honey_sec"]
+				continue
+			}
+			curr_rate := snap["raw_honey_sec"]
+			prev_rate := this.logs[index - 1]["honey_sec"]
+
+			if (curr_rate > prev_rate * 5 && prev_rate > 0) {
+				future_rate_sum := 0
+				future_count := 0
+				loop 5 {
+					idx := index + A_Index
+					if (idx > this.logs.Length)
+						break
+					future_rate_sum += this.logs[idx]["raw_honey_sec"]
+					future_count++
+				}
+				if (future_count > 0) {
+					avg_future_rate := future_rate_sum / future_count
+					if (avg_future_rate > curr_rate * 0.5)
+						snap["honey_sec"] := curr_rate
+					else
+						snap["honey_sec"] := prev_rate
+				}
+			} else
+				snap["honey_sec"] := curr_rate
 		}
 
 		peakHoney := 10
@@ -1018,26 +1178,38 @@
 		Gdip_TextToGraphics(pGraphic, "+" this.FormatNumber(sessionHoney), "s20 Bold Right cFF41FF80 x" leftPad " y" currentY, "Segoe UI", rightW)
 		currentY += rowSpacing
 
+		totalSpent := lastSnap.Has("offset") ? lastSnap["offset"] : 0
+		if (totalSpent > 0) {
+			Gdip_TextToGraphics(pGraphic, "Honey Spent:", "s20 Bold cFFFF0000 x" leftPad " y" currentY, "Segoe UI")
+			Gdip_TextToGraphics(pGraphic, "-" this.FormatNumber(totalSpent), "s20 Bold Right cFFFF0000 x" leftPad " y" currentY, "Segoe UI", rightW)
+			currentY += rowSpacing
+		}
+
 		Gdip_TextToGraphics(pGraphic, "Session Time:", "s20 Bold cFF56A4E4 x" leftPad " y" currentY, "Segoe UI")
 		Gdip_TextToGraphics(pGraphic, timeStr, "s20 Bold Right cFF56A4E4 x" leftPad " y" currentY, "Segoe UI", rightW)
 		currentY += rowSpacing
 
-		Gdip_TextToGraphics(pGraphic, "Elapse Honey", "s20 Bold cffa3a3a3 x" leftPad " y" currentY, "Segoe UI")
+		Gdip_TextToGraphics(pGraphic, "Elapse Honey Gains", "s20 Bold cffa3a3a3 x" leftPad " y" currentY, "Segoe UI")
 		currentY += 30
 
 		graphBg := Gdip_BrushCreateSolid(0x66000000)
 		Gdip_FillRoundedRectangle(pGraphic, graphBg, leftPad, currentY, rightW, graphHeight, 10)
 		Gdip_DeleteBrush(graphBg)
 		if (this.logs.Length > 1) {
-			baseHoney := (this.sessionStartHoney > 0) ? this.sessionStartHoney : this.logs[1]["honey"]
+			baseHoney := (this.sessionStartHoney > 0) ? this.sessionStartHoney : this.logs[2]["honey"]
 
 			maxGain := 0
+			A_Clipboard := JSON.stringify(this.logs)
 			for index, entry in this.logs {
-				gain := entry["honey"] - baseHoney
+				offset := entry.Has("offset") ? entry["offset"] : 0
+				gain := (entry["honey"] + offset) - baseHoney
+
 				if (gain < 0)
 					gain := 0
 				if (gain > maxGain)
 					maxGain := gain
+				;sleep 1
+				;tooltip "base:" baseHoney "`nhoney:" entry["honey"] "`nraw:" entry["raw_honey"] "`noffset:" offset "`ngain:" gain "`nmax Gain: " maxGain "`nidx:" index
 			}
 			if (maxGain = 0)
 				maxGain := 1
@@ -1047,7 +1219,7 @@
 
 			levels := [1.0, .75, .5, .25, 0.0]
 			for i, percent in levels {
-				val := baseHoney + (maxGain * percent)
+				val := maxGain * percent
 				textVal := this.FormatNumber(val)
 				labelY := (currentY + padding) + ((1 - percent) * (graphHeight - (padding * 2))) - 10
 				Gdip_TextToGraphics(pGraphic, textVal, "s14 Bold Right cFFAAAAAA x" labelX " y" labelY, "Segoe UI", labelW)
@@ -1062,9 +1234,17 @@
 			polyPoints := []
 
 			polyPoints.Push([gX, bottomY])
+			lastValidGain := 0
 			for index, entry in this.logs {
 				x := gX + ((index-1) / (this.logs.Length-1) * gW)
-				gain := entry["honey"] - baseHoney
+				offset := entry.Has("offset") ? entry["offset"] : 0
+				gain := (entry["honey"] + offset) - baseHoney
+
+				if (gain < 0 || (gain < lastValidGain && (lastValidGain - gain) > (maxGain * 0.1)))
+					gain := lastValidGain
+				else
+					lastValidGain := gain
+
 				y := bottomY - ((gain / maxGain) * gH)
 				if (y < currentY + padding)
 					y := currentY + padding
@@ -1108,7 +1288,7 @@
 		maxVal := forcedMax
 		if (maxVal = 0) {
 			for index, snap in this.logs {
-				val := isBuff ? (snap["buffs"].Has(dataKey) ? snap["buffs"][dataKey] : 0) : snap[dataKey]
+				val := isBuff ? (snap["buffs"].Has(dataKey) ? snap["buffs"][dataKey] : 0) : (snap.Has(dataKey) ? snap[dataKey] : 0)
 				if (val > maxVal)
 					maxVal := val
 			}
@@ -1121,7 +1301,7 @@
 		points.Push([rect.x, rect.y + rect.h])
 		
 		for index, snap in this.logs {
-			val := isBuff ? (snap["buffs"].Has(dataKey) ? snap["buffs"][dataKey] : 0) : snap[dataKey]
+			val := isBuff ? (snap["buffs"].Has(dataKey) ? snap["buffs"][dataKey] : 0) : (snap.Has(dataKey) ? snap[dataKey] : 0)
 			if (val < 0)
 				val := 0
 			if (val > maxVal)
