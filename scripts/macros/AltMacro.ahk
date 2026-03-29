@@ -36,6 +36,7 @@
 		this.SprinklerLocation := Config.Get("Alt", "SprinklerLocation", "Center")
 		this.SprinklerDistance := Config.Get("Alt", "SprinklerDistance", 1)
 		this.ClaimHiveEnabled := Config.Get("Alt", "ClaimHive", 1)
+		this.CocoCatch := Config.Get("Alt", "CocoCatch", 0)
 	}
 
 	Toggle() {
@@ -90,8 +91,13 @@
 
 			this.Gather(this.Pattern, fieldName, A_Index)
 
-			while ((GetKeyState("F14") && (A_Index <= 3600)) || (A_Index = 1)) {
-				if !this.IsRunning || this.IsDead() = true || this.Reconnect() {
+			while (A_Index <= 3600) {
+				if (KeyWait("F14", "T0.05 L") = 1) {
+					click "up"
+					break
+				}
+
+				if !this.IsRunning || this.isDead() = true || this.Reconnect() {
 					click "up"
 					break 2
 				}
@@ -105,14 +111,23 @@
 					} else
 						inactiveHoney := 0
 				}
-				sleep 50
 			}
 			click "up"
 
-			if (this.FieldDriftComp)
-				FieldDriftCompensation()
+			if (this.FieldDriftComp && State.CurrentWalk.pid) {
+				DetectHiddenWindows true
+				if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid) {
+					PostMessage(0x5000, 3, 0, , "ahk_pid " State.CurrentWalk.pid)
+					DetectHiddenWindows false
+					
+					if (KeyWait("F14", "D T2 L") = 1)
+						KeyWait "F14", "T120 L"
+				} else
+					DetectHiddenWindows false
+			}
 		}
 		this.Cleanup()
+		msgbox "hi"
 		sleep 500
 	}
 
@@ -138,14 +153,14 @@
 		
 		if (moveY != 0) {
 			key := (moveY > 0) ? FwdKey : BackKey
-			RunPath(walk(Abs(moveY), key))
+			RunPath('walk(' Abs(moveY) ', "' key '")')
 			KeyWait "F14", "D T5 L"
 			KeyWait "F14", "T15 L"
 			EndPath()
 		}
 		if (moveX != 0) {
 			key := (moveX > 0) ? RightKey : LeftKey
-			RunPath(walk(Abs(moveX), key))
+			RunPath('walk(' Abs(moveX) ', "' key '")')
 			KeyWait "F14", "D T5 L"
 			KeyWait "F14", "T15 L"
 			EndPath()
@@ -294,14 +309,16 @@
 		DetectHiddenWindows true
 		pathRunning := WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
 		if ((index = 1) || !pathRunning) {
-			RunPath(patterns[patternName], "pattern", PatternVars(field))
-		} else {
-			Send "{F13}"
-		}
+			RunPath(patterns[patternName], "pattern")
+			if (this.CocoCatch && State.currentWalk.pid) {
+				Run('"' A_AhkPath '" "' A_WorkingDir '\Patterns\CocoScanner.ahk" ' State.currentWalk.pid, , "Hide", &cocoPID)
+				State.currentWalk.cocoPID := cocoPID
+			}
+		} else if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
+			PostMessage(0x5000, 2, 0, , "ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
 
 		DetectHiddenWindows false
-		if (KeyWait("F14", "D T5 L") = 0)
-			EndPath()
+		KeyWait "F14", "D T5 L"
 	}
 
 	GotoField(fieldName) {
@@ -314,7 +331,7 @@
 			return
 		}
 
-		RunPath(paths["gtf"][field], , PathVars())
+		RunPath(paths["gtf"][field])
 		KeyWait "F14", "D T5 L"
 		KeyWait "F14", "T120 L"
 		EndPath()
@@ -398,21 +415,14 @@
 		MouseMove windowX + 350, windowY + State.offsetY + 100
 		send "{" ZoomOut " 8}"
 
-		movement :=
-		(
-			'Send "{' RightKey ' down}"
-			Walk(4)
-			Send "{' FwdKey ' down}"
-			Walk(20)
-			Send "{' RightKey ' up}{' FwdKey ' up}"'
-		)
+		movement := 'walk(4, "' RightKey '")`nwalk(20, "' RightKey '", "' FwdKey '")'
 		RunPath(movement)
 		KeyWait "F14", "D T5 L"
 		KeyWait "F14", "T120 L"
 		EndPath()
 
 		slots := Map()
-		move := walk(9.2, LeftKey)
+		move := 'walk(9.2, "' LeftKey '")'
 		Loop this.HiveSlot {
 			if (A_Index > 1) {
 				RunPath(move)
@@ -432,7 +442,7 @@
 				break
 			} else {
 				if ((slot := ObjMinIndex(slots)) > 0) {
-					movement := walk((this.HiveSlot - slot) * 9.2, RightKey)
+					movement := 'walk(' (this.HiveSlot - slot) * 9.2 ', "' RightKey '")'
 					RunPath(movement)
 					KeyWait "F14", "D T5 L"
 					KeyWait "F14", "T120 L"
@@ -477,12 +487,10 @@
 	spawnMoveTo(moves) {
 		script := ""
 		for k in moves {
-			dirs := (Type(k.dir) = "Array") ? k.dir : [k.dir]
-			for dir in dirs
-				script .= 'Send "{' %dir "Key"% ' down}"`n'
-			script .= "move(" k.dist ")" "`n"
-			for dir in dirs
-				script .= 'Send "{' %dir "Key"% ' up}"`n'
+			if (Type(k.dir) = "Array")
+				script .= 'walk(' k.dist ', "' %k.dir[1] "Key"% '", "' %k.dir[2] "Key"% '")`n'
+			else
+				script .= 'walk(' k.dist ', "' %k.dir "Key"% '")`n'
 		}
 		return script
 	}

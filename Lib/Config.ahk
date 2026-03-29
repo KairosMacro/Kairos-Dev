@@ -40,6 +40,7 @@
 			, "ClaimHive", 1
 			, "IgnoreInactiveHoney", 0
 			, "UseTool", 1
+			, "CocoCatch", 0
 		)
 		, "BoostBar", Map(
 			"SlotActive1", 0, "SlotTimer1", 100, "SlotMode1", "Timer"

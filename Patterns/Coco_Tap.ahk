@@ -63,7 +63,7 @@ locateCoco() {
 
 gotoCoco() {
 	start := A_TickCount
-   pwm := 50
+	pwm := 50
 	GetRobloxClientPos()
 	if !(pos := locateCoco()) {
 		rotate()
@@ -88,37 +88,37 @@ gotoCoco() {
 		vecX := pos.x - centerX
 		vecY := pos.y - centerY
 
-      if (Abs(vecX) < deadX && Abs(vecY) < deadY)
-         break
-      
-      maxDist := Max(Abs(vecX), Abs(vecY))
-      dutyX := Abs(vecX) / maxDist
-      dutyY := Abs(vecY) / maxDist
+		if (Abs(vecX) < deadX && Abs(vecY) < deadY)
+			break
+		
+		maxDist := Max(Abs(vecX), Abs(vecY))
+		dutyX := Abs(vecX) / maxDist
+		dutyY := Abs(vecY) / maxDist
 
-      targetX := (vecX > 0) ? RightKey : LeftKey
-      targetY := (vecY > 0) ? BackKey : FwdKey
+		targetX := (vecX > 0) ? RightKey : LeftKey
+		targetY := (vecY > 0) ? BackKey : FwdKey
 
-      cycle := Mod(A_TickCOunt, pwm)
+		cycle := Mod(A_TickCOunt, pwm)
 
-      shouldHoldX := (cycle < (pwm * dutyX)) && (Abs(vecX) > deadX)
-      shouldHoldY := (cycle < (pwm * dutyY)) && (Abs(vecY) > deadY)
+		shouldHoldX := (cycle < (pwm * dutyX)) && (Abs(vecX) > deadX)
+		shouldHoldY := (cycle < (pwm * dutyY)) && (Abs(vecY) > deadY)
 
-      for key, state in [[targetX, shouldHoldX], [targetY, shouldHoldY]] {
-         if (state[2] && !heldKeys[state[1]]) {
-            send "{" state[1] " down}"
-            heldKeys[state[1]] := true
-         } else if (!state[2] && heldKeys[state[1]]) {
-            send "{" state[1] " up}"
-            heldKeys[state[1]] := false
-         }
-      }
+		for key, state in [[targetX, shouldHoldX], [targetY, shouldHoldY]] {
+			if (state[2] && !heldKeys[state[1]]) {
+				send "{" state[1] " down}"
+				heldKeys[state[1]] := true
+			} else if (!state[2] && heldKeys[state[1]]) {
+				send "{" state[1] " up}"
+				heldKeys[state[1]] := false
+			}
+		}
 
-      for k, v in heldKeys {
-         if (v && k != targetX && k != targetY) {
-            send "{" k " up}"
-            heldKeys[k] := false
-         }
-      }
+		for k, v in heldKeys {
+			if (v && k != targetX && k != targetY) {
+				send "{" k " up}"
+				heldKeys[k] := false
+			}
+		}
 	}
 	Send "{" FwdKey " up}{" BackKey " up}{" LeftKey " up}{" RightKey " up}"
 }

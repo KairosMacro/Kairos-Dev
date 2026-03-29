@@ -205,6 +205,9 @@
 			this.Gui.Add("Text", "x40 y165", "Use Tool")
 			this.Gui.Add("CheckBox", "x20 y162 w20 h20 vAlt_UseTool Checked" Config.Get("Alt", "UseTool", 0)).OnEvent("Click", this.SaveConfig.Bind(this))
 
+			this.Gui.Add("Text", "x130 y165", "Coco Catch")
+			this.Gui.Add("CheckBox", "x110 y162 w20 h20 vAlt_CocoCatch Checked" Config.Get("Alt", "CocoCatch", 0)).OnEvent("Click", this.SaveConfig.Bind(this))
+
 			this.Gui.Add("Text", "x20 y185", "Priv Server:")
 			this.Gui.Add("Edit", "x95 y183 w110 h20 vAlt_PrivServer", Config.Get("Alt", "PrivServer", "")).OnEvent("Change", this.SaveConfig.Bind(this))
 
@@ -862,7 +865,7 @@
 
 			DetectHiddenWindows true
 			if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
-				send "{F16}"
+				PostMessage(0x5000, 1, 0, , "ahk_pid " State.CurrentWalk.pid)
 			DetectHiddenWindows false
 		} else {
 			this.Gui.Hide()
@@ -876,7 +879,7 @@
 
 			DetectHiddenWindows true
 			if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
-				send "{F14}"
+				PostMessage(0x5000, 0, 0, , "ahk_pid " State.CurrentWalk.pid)
 			DetectHiddenWindows false
 
 		}
