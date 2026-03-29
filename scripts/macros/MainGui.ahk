@@ -49,6 +49,7 @@
 		accountList := ["Main", "Alt"]
 		this.Gui.Add("Text", "x215 y" footerY+5 " -Wrap", "Account Type:")
 		this.Gui.Add("DropDownList", "x290 y" footerY+1 " w67 -Wrap vMain_AccountType Choose" ObjIndexOf(accountList, accountType), ["Main", "Alt"]).OnEvent("Change", this.SaveConfig.Bind(this))
+		this.Gui.Add("DropDownList", "x360 y" footerY+1 " w67 -Wrap vMain_SubAccountType Choose" ObjIndexOf(["Manual", "Macro"], "Manual"), ["Manual", "Macro"])
 
 		; presets/profiles for settings
 		if (accountType = "Main")
@@ -179,10 +180,12 @@
 			this.Gui.SetFont("s10 w400")
 
 			this.Gui.Add("Text", "x20 y48", "MoveSpeed:")
-			this.Gui.Add("Edit", "x105 y42 w60 h20 vAlt_Movespeed", Config.Get("Alt", "Movespeed", 29)).OnEvent("Change", this.SaveConfig.Bind(this))
+			editCtrl := this.Gui.Add("Edit", "x105 y42 w60 h20 vAlt_Movespeed", Config.Get("Alt", "Movespeed", 29))
+			editCtrl.OnEvent("Change", this.EnforceFloat.Bind(this))
+			editCtrl.OnEvent("Change", this.SaveConfig.Bind(this))
 
 			this.Gui.Add("Text", "x20 y70", "Hive Slot:")
-			this.Gui.Add("Edit", "x105 y68 w60 h20 vAlt_HiveSlot", Config.Get("Alt", "HiveSlot", 1)).OnEvent("Change", this.SaveConfig.Bind(this))
+			this.Gui.Add("Edit", "x105 y68 w60 h20 Number vAlt_HiveSlot", Config.Get("Alt", "HiveSlot", 1)).OnEvent("Change", this.SaveConfig.Bind(this))
 
 			this.Gui.Add("Text", "x20 y95", "Alt Number:")
 			this.Gui.Add("Edit", "x105 y92 w40 h20 Number vAlt_AltNumber", Config.Get("Alt", "AltNumber", 1)).OnEvent("Change", this.SaveConfig.Bind(this))
@@ -655,6 +658,18 @@
 				Comms.UpdateSettings()
 		}
 		this.RefreshFeature(FeatureName)
+	}
+
+	EnforceFloat(GuiCtrl, *) {
+		clean := RegExReplace(GuiCtrl.Value, "[^\d.]")
+		clean := RegExReplace(clean, "^([^.]*\.)|\.", "$1")
+
+		if (GuiCtrl.Value != clean) {
+			pos := SendMessage(0x00B0, 0, 0, GuiCtrl)
+			start := pos & 0xFFFF
+			GuiCtrl.Value := clean
+			SendMessage(0x00B1, start-1, start-1, GuiCtrl)
+		}
 	}
 
 	SaveConfig(GuiCtrl, *) {

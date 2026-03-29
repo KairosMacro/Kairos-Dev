@@ -19,7 +19,7 @@
 		try {
 			for objItem in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_OperatingSystem")
 				this.os_ver := Trim(StrReplace(StrReplace(StrReplace(StrReplace(objItem.Caption, "Microsoft"), "Майкрософт"), "مايكروسوفت"), "微软"))
-		}
+      }
 
 		this.buff_groups := Map(
 			"boost_red", "boost"
@@ -265,59 +265,15 @@
 		if (!this.isRunning)
 			return
 		this.DetectBuffs()
-		current_bag := this.DetectBag()
-		raw_honey := this.DetectHoney()
-
-		if (!this.HasOwnProp("honeyBuffer"))
-			this.honeyBuffer := []
-
-		if (raw_honey > 0) {
-			this.honeyBuffer.Push(raw_honey)
-			if (this.honeyBuffer.Length > 3)
-				this.honeyBuffer.RemoveAt(1)
-		}
-
-		current_honey := 0
-		for val in this.honeyBuffer {
-			if (val > current_honey)
-				current_honey := val
-		}
-
-		if (!this.HasOwnProp("max_valid_honey")) {
-			this.max_valid_honey := current_honey
-			this.low_honey_count := 0
-		}
-
-		if (current_honey > this.max_valid_honey) {
-			this.max_valid_honey := current_honey
-			this.low_honey_count := 0
-		} else if (current_honey < this.max_valid_honey && current_honey > 0) {
-			this.low_honey_count++
-			if (this.low_honey_count >= 4) {
-				if (!this.HasOwnProp("spentHoney"))
-					this.spentHoney := 0
-				this.spentHoney += (this.max_valid_honey - current_honey)
-				this.max_valid_honey := current_honey
-				this.low_honey_count := 0
-			} else {
-				current_honey := this.max_valid_honey
-			}
-		}
-		if (this.sessionStartHoney = 0 && current_honey > 0)
-			this.sessionStartHoney := current_honey
 
 		snapshot := Map()
 		snapshot["time"] := A_TickCount
-		snapshot["bag"] := current_bag
-		snapshot["raw_honey"] := raw_honey
-		snapshot["honey"] := current_honey
-		snapshot["offset"] := this.HasOwnProp("spentHoney") ? this.spentHoney : 0
-		snapshot["honey_sec"] := 0
-		snapshot["honey_sec_smoothed"] := 0
+		snapshot["bag"] := this.DetectBag()
+		snapshot["raw_honey"] := this.DetectHoney()
 		snapshot["buffs"] := this.currentBuffs.Clone()
 
 		this.logs.Push(snapshot)
-		if (this.logs.Length >= 3600) { ; 1 hour limit, it'll probably be better if it exports and starts at 0
+		if (this.logs.Length >= 3600) {
 			this.Export()
 		}
 	}
@@ -341,36 +297,16 @@
 	}
 
 	GenerateData() {
-		/**
-		 * CONFIGURATION
-		 * simulate_glitch - simulates OCR bugs to test the graph's ability to handle them
-		 * input - false = off / 0-100 (float) = chance to simulate a glitch every scan
-		 * 
-		 * simulate_spending - this simulates spending, this is to see if it doesn't mistake it as a "glitch" from OCR
-		 * input - false = off / any number (int, float) = how much honey to simulate spending every 10 minutes or so
-		 * 
-		 * massive_gains - simulate you in a (hypothetical) boosting scenario where you make 200t from a scorch
-		 * input - false = off / any number (int, float) = how much honey to simulate on a boost scenario
-		 * 
-		 * no_mercy - fuck it, we ball
-		 * input - bool True or False
-		 */
-		simulate_glitch := false
+		simulate_glitch := true
 		glitch_chance := 0.1
 
-		simulate_spending := false
+		simulate_spending := true
 		spend_frequency := 30 ; minutes
 
-		massive_gains := false
+		massive_gains := true
 		gains_frequency := 10 ; minutes
 
-		/*
-		; this basically sets variables to like the worst possible settings you can face while playing normally, and more
-		cutting randomly to 0 on honey
-		cutting off like some digits from either the left or right of the number
-		not even logging that time because roblox was closed for some reason
-		and anything else that's on the code. there is way too much to account for
-		*/
+
 		no_mercy := false
 
 		if (no_mercy) {
@@ -382,7 +318,6 @@
 		this.logs := []
 		startTime := this.scanStartTime := A_TickCount
 		this.realTime := A_Now
-		this.spentHoney := 0
 
 		onOffList := ["oil", "super_smoothie", "bomb_sync_red", "bomb_sync_blue", "festive_blessing", "beesmas_cheer",
 					"tabby_blessing", "clouds", "baby_love", "festive_mark", "flame_fuel", "guiding_star", "stinger", "enzyme",
@@ -408,27 +343,14 @@
 		}
 
 		startHoney := this.sessionStartHoney := Random(100000000000, 999999999999) * 10
-		honey_values := Map(0, startHoney)
 		last_truth := startHoney
+		mega_error := 0
 
 		com := Random(0, 100)
 		mot := Random(0, 100)
 		sat := Random(0, 100)
 		ref := Random(0, 100)
 		inv := Random(0, 100)
-
-				this.wall_render_order := [
-			"balloon_blessing"
-			, "puffshroom_blessing"
-			, "sticker_stack"
-			, "robo_party"
-			, "mondo"
-			, "clock"
-			, "festive_nymph"
-			, "cool_breeze"
-			, "bubble_bloat"
-			, "tide_blessing"
-		]
 
 		stack := Random(1, 290)
 		blessing := Random(1, 100)
@@ -440,11 +362,6 @@
 		nymph := Random(1, 100)
 		bloat := Round(Random(1.0, 6.0), 2)
 		tide := Round(Random(1.0, 1.2), 2)
-
-		m_honeyBuffer := []
-		m_max_valid_honey := startHoney
-		m_low_honey_count := 0
-		m_spentHoney := 0
 
 		loop 3600 {
 			tick := A_Index
@@ -463,56 +380,29 @@
 			if (simulate_spending && Mod(tick, spend_frequency * 60) = 0) {
 				spentPercent := Random(40, 70) / 100
 				spentAmount := Integer(current_honey_truth * spentPercent)
-				current_honey_truth -= spentAmount ; this should be figured by the filter
+				current_honey_truth -= spentAmount
 			}
 
 			last_truth := current_honey_truth
 			raw_honey := current_honey_truth
-			if (simulate_glitch && Random(0.0, 100.0) <= glitch_chance) {
-				chaosType := Random(1, 3)
-				if chaosType = 1 ; no OCR detection
+
+			if (simulate_glitch) {
+				if (tick = 500)
+					mega_error := 30
+
+				if (mega_error > 0) {
 					raw_honey := 0
-				else if chaosType = 2 ; cut off some digits
-					raw_honey := Integer(raw_honey / Random(5, 10))
-				else if chaosType = 3 ; misdetections of "higher than expected"
-					raw_honey := raw_honey * Random(2, 5)
-			}
-
-			if (raw_honey > 0 ) {
-				m_honeyBuffer.Push(raw_honey)
-					if (m_honeyBuffer.Length > 3)
-						m_honeyBuffer.RemoveAt(1)
-			}
-
-			filtered_honey := 0
-			for val in m_honeyBuffer {
-				if (val > filtered_honey)
-					filtered_honey := val
-			}
-
-			if (filtered_honey > m_max_valid_honey) {
-				m_max_valid_honey := filtered_honey
-				m_low_honey_count := 0
-			} else if (filtered_honey < m_max_valid_honey && filtered_honey > 0) {
-				m_low_honey_count++
-				if (m_low_honey_count >= 4) {
-					m_spentHoney += (m_max_valid_honey - filtered_honey)
-					m_max_valid_honey := filtered_honey
-					m_low_honey_count := 0
-				} else {
-					filtered_honey := m_max_valid_honey
+					mega_error--
+				} else if (Random(0.0, 100.0) <= glitch_chance) {
+					chaosType := Random(1, 3)
+					if (chaosType = 1)
+						raw_honey := 0
+					else if (chaosType = 2)
+						raw_honey := Integer(raw_honey / Random(5, 10))
+					else if (chaosType = 3)
+						raw_honey := raw_honey * Random(2, 5)
 				}
 			}
-
-			snapshot := Map()
-			snapshot["time"] := startTime + (tick * 1000)
-			snapshot["raw_honey"] := raw_honey
-			snapshot["honey"] := filtered_honey
-			snapshot["bag"] := Round(Mod(tick, 60) * (100/60), 2)
-			honey_values[tick] := snapshot["honey"]
-			snapshot["offset"] := m_spentHoney
-			snapshot["honey_sec"] := 0
-			snapshot["honey_sec_smoothed"] := 0
 
 			buffs := Map()
 
@@ -551,56 +441,86 @@
 			buffs["bubble_bloat"] := bloat
 			buffs["tide_blessing"] := tide
 
-			snapshot["buffs"] := buffs
+			snapshot := Map()
+         snapshot["time"] := startTime + (tick * 1000)
+         snapshot["raw_honey"] := raw_honey
+         snapshot["bag"] := Round(Mod(tick, 60) * (100/60), 2)
+         snapshot["buffs"] := buffs
 			this.logs.Push(snapshot)
 		}
 	}
 
 ; this will graph out based off the time, so the "res" of the graph might vary.
 	DrawGraph(path?) {
-		if (this.logs.Length < 2)
+		if (this.logs.Length <= 5)
 			return
 
+		; Stage 0: Generating the "honey" values, to later get filtered.
+		for i, snap in this.logs {
+			if (i > 5)
+				break
+			if (!snap.Has("honey"))
+				snap["honey"] := snap["raw_honey"]
+		}
+
+		; Stage 1: Past/Present/Future filtering.
+		; the main OCR filter, checks if a data point is "bugged" by seeing if there's a 
+		; significant difference between past and future data.
 		for index, snap in this.logs {
-			; we do this because the first logs aren't really accurate (starts at 0 sometimes)
 			if index <= 5
 				continue
-			prev_honey := this.logs[index - 1]["honey"]
-			curr_honey := snap["honey"]
+			
+			past_honey := this.logs[index-1]["honey"]
+			present_raw := snap["raw_honey"]
 
-			is_drop := curr_honey < prev_honey
-			is_spike := curr_honey > prev_honey * 1.5
+			is_drop := present_raw < past_honey
+			is_spike := present_raw > past_honey * 1.5
 
-			; calculating the future honey to verify that it's a bug and not a "honey spent" scenario.
-			; same with spikes with an immediate drop
 			if (is_drop || is_spike) {
-				future_honey := []
-				loop 5 {
+				future_max := 0
+				future_min := present_raw
+				future_count := 0
+
+				loop 120 {
 					idx := index + A_Index
 					if (idx > this.logs.Length)
 						break
-					future_honey.Push(this.logs[idx]["honey"])
+					f_val := this.logs[idx]["raw_honey"]
+					if (f_val > future_max)
+						future_max := f_val
+					if (f_val < future_min)
+						future_min := f_val
+					future_count++
 				}
-				if (future_honey.Length > 0) {
-					max_future := 0
-					min_future := future_honey[1]
 
-					for val in future_honey {
-						if (val > max_future)
-							max_future := val
-						if (val < min_future)
-							min_future := val
-					}
-
-					if (is_drop && max_future > (prev_honey * 0.9))
-						snap["honey"] := prev_honey
-					else if (is_spike && min_future < (curr_honey * 0.5))
-						snap["honey"] := prev_honey
+				is_glitch := false
+				if (is_drop && (future_max > (past_honey * 0.9) || future_count < 10))
+					is_glitch := true
+				else if (is_spike && (future_min < (past_honey * 1.2) || future_count < 10))
+					is_glitch := true
+				
+				if (is_glitch) {
+					snap["honey"] := past_honey
+					continue
 				}
 			}
+			snap["honey"] := present_raw
 		}
 
-		; for honey per second, do some filtering again (just in case, you never know). this is stage 1.
+		; Stage 1.5: Spend Calculator
+		; Since we filtered out bugs, it's safer to say "we spent honey here"
+		recalculated_spend := 0
+		for index, snap in this.logs {
+			if (index > 10) {
+				diff := snap["honey"] - this.logs[index - 1]["honey"]
+				if (diff < 0)
+					recalculated_spend += Abs(diff)
+			}
+			snap["offset"] := recalculated_spend
+		}
+
+		; Stage 2: Calculate honey/sec
+		; just simply does the math to say how much honey we gained per second...
 		for index, snap in this.logs {
 			if (index = 1) {
 				snap["honey_sec"] := 0
@@ -608,51 +528,61 @@
 				continue
 			}
 			prevSnap := this.logs[index - 1]
-
+			
 			currentTotal := snap["honey"] + (snap.Has("offset") ? snap["offset"] : 0)
 			prevTotal := prevSnap["honey"] + (prevSnap.Has("offset") ? prevSnap["offset"] : 0)
 			timeDiff := (snap["time"] - prevSnap["time"]) / 1000
 
-			if (timeDiff > 0) {
-				honeyDiff := currentTotal - prevTotal
-				snap["raw_honey_sec"] := honeyDiff / timeDiff
-			} else {
+			if (timeDiff > 0)
+				snap["raw_honey_sec"] := (currentTotal - prevTotal) / timeDiff
+			else
 				snap["raw_honey_sec"] := 0
-			}
 		}
 
-		; stage 2, filtering out (peaks) if any were missed.
+		; Stage 3: Smoothing honey/sec
+		; Filters out more sus data by comparing 5 seconds to see if it's actually
+		; being upkept to say "yes, this is really 200t/s"
 		for index, snap in this.logs {
 			if (index <= 5) {
 				snap["honey_sec"] := snap["raw_honey_sec"]
 				continue
 			}
-			curr_rate := snap["raw_honey_sec"]
-			prev_rate := this.logs[index - 1]["honey_sec"]
+			past_rate := this.logs[index - 1]["honey_sec"]
+			present_rate := snap["raw_honey_sec"]
 
-			if (curr_rate > prev_rate * 5 && prev_rate > 0) {
-				future_rate_sum := 0
+			if (present_rate > past_rate * 5 && past_rate > 0) {
+				future_sum := 0
 				future_count := 0
+
 				loop 5 {
 					idx := index + A_Index
 					if (idx > this.logs.Length)
 						break
-					future_rate_sum += this.logs[idx]["raw_honey_sec"]
+					future_sum += this.logs[idx]["raw_honey_sec"]
 					future_count++
 				}
 				if (future_count > 0) {
-					avg_future_rate := future_rate_sum / future_count
-					if (avg_future_rate > curr_rate * 0.5)
-						snap["honey_sec"] := curr_rate
-					else
-						snap["honey_sec"] := prev_rate
+					future_avg := future_sum / future_count
+					if (future_avg < present_rate * 0.5) {
+						snap["honey_sec"] := past_rate
+						continue
+					}
 				}
-			} else
-				snap["honey_sec"] := curr_rate
+			}
+			snap["honey_sec"] := present_rate
 		}
 
-		peakHoney := 10
+		; Stage 4: Calculate max gain and peak honey
+		; just for UI reasons to scale the graph.
+		maxGain := 0
+		peakHoney := 0
+		baseHoney := (this.sessionStartHoney > 0) ? this.sessionStartHoney : this.logs[2]["honey"]
+
 		for index, snap in this.logs {
+			currentGain := (snap["honey"] + snap["offset"]) - baseHoney
+			if (currentGain > maxGain)
+				maxGain := currentGain
+			
 			sum := 0
 			count := 0
 			loop 10 {
@@ -663,11 +593,10 @@
 				}
 			}
 			snap["honey_sec_smoothed"] := count > 0 ? sum / count : snap["honey_sec"]
-
 			if (snap["honey_sec_smoothed"] > peakHoney)
 				peakHoney := snap["honey_sec_smoothed"]
 		}
-		
+
 		canvasW := 800
 		canvasH := 600
 		padding := 10
