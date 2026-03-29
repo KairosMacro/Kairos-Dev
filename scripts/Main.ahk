@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 #SingleInstance Force
 #MaxThreads 255
 #Warn VarUnset, Off
@@ -80,6 +80,7 @@ GetRobloxClientPos()
 #Include "MagnifyingGlass.ahk"
 #Include "Communicator.ahk"
 #Include "StatMonitor.ahk"
+#Include "ActivityLog.ahk"
 
 class State {
 	static IsPaused := false
@@ -171,6 +172,7 @@ Cleanup(*) {
 	try Mag.Cleanup()
 	try Comms.Cleanup()
 	try Stats.Cleanup()
+	try ActivityLog.Close()
 	try FrameCache.Clear()
 	Gdip_Shutdown(pToken)
 }
