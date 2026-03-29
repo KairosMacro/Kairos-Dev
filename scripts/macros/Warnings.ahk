@@ -1,4 +1,4 @@
-﻿class Warnings {
+class Warnings {
 	IsRunning := false
 	IsActive := false
 
@@ -12,7 +12,7 @@
 		, "Gummy Star", { conf: "Gummy", key: "gummystar", max: 75 }
 		, "Pop Star", { conf: "Pop", key: "popstar", max: 30 }
 		, "Scorching Star", { conf: "Scorch", key: "scorch", max: 30 }
-		, "Star Shower", { conf: "Shower", key: "shower", max: 25 }
+		, "Star Shower", { conf: "Shower", key: "shower", max: 40 }
 		, "Gummy Morph", { conf: "Morph", key: "gummymorph", max: 30 }
 		, "Gummyballer", { conf: "Baller", key: "gummyballer", max: 1000 }
 		, "Coconut Combo", { conf: "Combo", key: "combo", max: 40 }
@@ -30,6 +30,7 @@
 	Toggle() {
 		this.IsRunning ^= 1
 		this.IsActive := this.IsRunning && Config.Get("Main", "WarnsEnabled", 0)
+		ActivityLog.Add("Warnings " (this.IsActive ? "enabled" : "disabled"))
 
 		if Config.Get("Main", "WarnsEnabled", 0)
 			this.Fancy.Show("Warns: " (this.IsActive ? "ON" : "OFF"))
@@ -57,20 +58,28 @@
 			}
 
 			threshold := Config.Get("Warns", prefix "_Threshold", 25)
+			reverse := Config.Get("Warns", prefix "_Reverse", 0)
 			isTriggered := false
 			ratio := 1.0
 
 			if (profile.HasProp("mult")) {
 				currentVal := Round(profile.mult * currentVal)
-				if (currentVal <= threshold) {
+				if (!reverse && currentVal <= threshold) {
 					isTriggered := true
 					ratio := currentVal / threshold
+				} else if (reverse && currentVal >= threshold) {
+					isTriggered := true
+					denominator := Max(1, (profile.max * profile.mult) - threshold)
+					ratio := Max(0, Min(1, ((profile.max * profile.mult) - currentVal) / denominator))
 				}
 			} else {
-				if (currentVal >= threshold) {
+				if (!reverse && currentVal >= threshold) {
 					isTriggered := true
 					denominator := Max(1, profile.max - threshold)
 					ratio := Max(0, Min(1, (profile.max - currentVal) / denominator))
+				} else if (reverse && currentVal <= threshold) {
+					isTriggered := true
+					ratio := (threshold > 0) ? currentVal / threshold : 0
 				}
 			}
 			if (isTriggered)
@@ -88,6 +97,7 @@
 
 		if (playOnce) {
 			if (!this.HasPlayed[warnName]) {
+				ActivityLog.Add("Warning: " warnName " (" Round(ratio * 100) "%)")
 				this.PlaySound(soundPath, vol)
 				this.HasPlayed[warnName] := true
 			}
@@ -97,6 +107,7 @@
 
 			if (A_TickCount - this.LastPlayed[warnName] > delay) {
 				this.LastPlayed[warnName] := A_TickCount
+				ActivityLog.Add("Warning: " warnName " (" Round(ratio * 100) "%)")
 				this.PlaySound(soundPath, vol)
 			}
 		}
