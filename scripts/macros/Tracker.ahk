@@ -1,9 +1,10 @@
-﻿class Tracker {
+class Tracker {
 	IsRunning := false
 	IsActive := false
 
 	OffsetX := 0
 	OffsetY := 0
+	TrackerColors := 0
 	EditMode := false
 	cooldowns := Map(
 		"scorch", { last_not_found: 0, cooldown: 60000, duration: 45000 }
@@ -23,6 +24,7 @@
 	Toggle(*) {
 		this.IsRunning ^= 1
 		this.IsActive := this.IsRunning && Config.Get("Main", "TrackerEnabled", 0)
+		ActivityLog.Add("Tracker " (this.IsActive ? "enabled" : "disabled"))
 		SetTimer(() => this.Fancy.Hide(), this.IsActive ? 0 : -100)
 	}
 
@@ -54,6 +56,8 @@
 				val := (val = -1) ? -1 : this.FormatTime(Round((val / 100) * 1200))
 			
 			msgSuffix := ""
+			isCooldown := false
+			isActive := false
 			if (val = -1) {
 				if this.cooldowns.Has(i) {
 					cooldown := this.cooldowns[i]
@@ -61,10 +65,13 @@
 						msgSuffix := ": N/A"
 					else {
 						elapse := QPC() - cooldown.last_not_found
-						if (elapse <= cooldown.duration)
+						if (elapse <= cooldown.duration) {
 							msgSuffix := ": Active: " Round((cooldown.duration - (QPC() - cooldown.last_not_found)) / 1000) "s"
-						else
+							isActive := true
+						} else {
 							msgSuffix := ": CD: " Round((cooldown.cooldown - (QPC() - cooldown.last_not_found)) / 1000) "s"
+							isCooldown := true
+						}
 					}
 				} else
 					msgSuffix := ": N/A"
@@ -73,7 +80,12 @@
 					this.cooldowns[i].last_not_found := QPC()
 				msgSuffix := ": " val
 			}
-			msg.Push([bitmaps["icon"][i], msgSuffix])
+			if (isCooldown && this.TrackerColors)
+				msg.Push([bitmaps["icon"][i], {text: msgSuffix, color: "FFFF4444"}])
+			else if (isActive && this.TrackerColors)
+				msg.Push([bitmaps["icon"][i], {text: msgSuffix, color: "FF44FF44"}])
+			else
+				msg.Push([bitmaps["icon"][i], msgSuffix])
 		}
 		this.Fancy.Show(msg, (win.x + win.w // 2) + this.OffsetX, win.y + win.h // 2 + this.OffsetY)
 	}
@@ -107,5 +119,6 @@
 		this.OffsetX := Config.Get("Tracker", "OffsetX", 0)
 		this.OffsetY := Config.Get("Tracker", "OffsetY", 0)
 		this.Fancy.Zoom := Config.Get("Tracker", "Zoom", 1)
+		this.TrackerColors := Config.Get("Tracker", "TrackerColors", 0)
 	}
 }
