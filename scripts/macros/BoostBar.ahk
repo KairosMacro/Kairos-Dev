@@ -1,4 +1,4 @@
-﻿class Conditions {
+class Conditions {
 	BuffState := Map(
 		"Timer", 0
 		, "scorch", 0
@@ -208,6 +208,11 @@ class BoostBar {
 	IsEnabled := false
 	IsActive := false
 
+	OffsetX := 0
+	OffsetY := 0
+	Zoom := 1.0
+	_manualPos := false
+
 	SlotW := 68
 	SlotH := 36
 	Gap := 7
@@ -222,22 +227,33 @@ class BoostBar {
 	BrushRunning := 0
 
 	stats := Conditions()
-	ConfigCache := { enabled: 0, showWhenActive: 1, slotActive: [], slotTimer: [], slotModes: [], slotModeStr: [] }
+	ConfigCache := { enabled: 0, showWhenActive: 1, slotActive: [], slotTimer: [], slotModes: [], slotModeStr: [], slotLimitEnabled: [], slotLimit: [], slotCount: [] }
 	SpamFn := 0
 
 	__New() {
 		this.RefreshConfig()
+		this.ApplyZoom()
 		this.InitBrushes()
 		this.CreateUI()
 
 		OnMessage(0x201, this.OnClick.Bind(this))
 		OnMessage(0x204, this.OnRightClick.Bind(this))
+		OnMessage(0x0232, this.OnDragEnd.Bind(this))
+
+		this._zoomInFn := this.ZoomIn.Bind(this)
+		this._zoomOutFn := this.ZoomOut.Bind(this)
+		Hotkey("~^WheelUp", this._zoomInFn)
+		Hotkey("~^WheelDown", this._zoomOutFn)
 
 		Scheduler.Add("BoostBar.FollowWindow", this.FollowWindow.Bind(this), 50)
 		this.SpamFn := this.SpamLoop.Bind(this)
 	}
 
 	Cleanup() {
+		try {
+			Hotkey("~^WheelUp", "Off")
+			Hotkey("~^WheelDown", "Off")
+		}
 		Scheduler.Remove("BoostBar.FollowWindow")
 		Scheduler.Remove("BoostBar.SearchBuffs")
 		Scheduler.Remove("BoostBar.SpamLoop")
@@ -246,6 +262,80 @@ class BoostBar {
 		DeleteObject(this.hbm)
 		DeleteDC(this.hdc)
 		Gdip_DeleteGraphics(this.G)
+	}
+
+	ApplyZoom() {
+		z := this.Zoom
+		this.SlotW := Round(68 * z)
+		this.SlotH := Round(36 * z)
+		this.Gap := Round(7 * z)
+		this.TotalW := (this.SlotW * 7) + (this.Gap * 6) + Round(4 * z)
+		this.TotalH := this.SlotH
+
+		if !this.HasOwnProp("hdc") || !this.hdc
+			return
+
+		SelectObject(this.hdc, this.obm)
+		DeleteObject(this.hbm)
+		this.hbm := CreateDIBSection(this.TotalW, this.TotalH)
+		this.obm := SelectObject(this.hdc, this.hbm)
+		try Gdip_DeleteGraphics(this.G)
+		this.G := Gdip_GraphicsFromHDC(this.hdc)
+		Gdip_SetSmoothingMode(this.G, 4)
+	}
+
+	OnDragEnd(wParam, lParam, msg, hwnd) {
+		if !this._manualPos
+			return
+
+		win := WindowTracker.Get()
+		if (IsObject(win) && win.ok) {
+			try {
+				WinGetPos(&guiX, &guiY, , , "ahk_id " this.Gui.hwnd)
+				baseX := win.x + (win.w // 2) - (this.TotalW // 2)
+				baseY := win.y + win.h - 182
+				this.OffsetX := guiX - baseX
+				this.OffsetY := guiY - baseY
+				Config.Set("BoostBar", "OffsetX", this.OffsetX)
+				Config.Set("BoostBar", "OffsetY", this.OffsetY)
+				Config.WriteIni()
+			}
+		}
+		this._manualPos := false
+	}
+
+	IsCursorOverBar() {
+		if !this.ConfigCache.enabled
+			return false
+		try {
+			CoordMode("Mouse", "Screen")
+			MouseGetPos(&mx, &my)
+			WinGetPos(&bx, &by, &bw, &bh, "ahk_id " this.Gui.hwnd)
+			return (mx >= bx && mx <= bx + bw && my >= by && my <= by + bh)
+		}
+		return false
+	}
+
+	ZoomIn(*) {
+		if !this.IsCursorOverBar()
+			return
+		this.Zoom := Min(2.5, this.Zoom * 1.10)
+		this.ApplyZoom()
+		this.Draw()
+		this.FollowWindow()
+		Config.Set("BoostBar", "Zoom", this.Zoom)
+		Config.WriteIni()
+	}
+
+	ZoomOut(*) {
+		if !this.IsCursorOverBar()
+			return
+		this.Zoom := Max(0.6, this.Zoom / 1.10)
+		this.ApplyZoom()
+		this.Draw()
+		this.FollowWindow()
+		Config.Set("BoostBar", "Zoom", this.Zoom)
+		Config.WriteIni()
 	}
 
 	CreateUI(*) {
@@ -265,7 +355,18 @@ class BoostBar {
 		cache := this.ConfigCache
 		Gdip_GraphicsClear(this.G)
 
-		Gdip_FillRoundedRectangle(this.G, this.BrushBack, 0, 0, this.TotalW, this.TotalH, 5)
+		z := this.Zoom
+		pad := Round(2 * z)
+		topH := Round(16 * z)
+		botH := Round(14 * z)
+		topGap := Round(18 * z)
+		radius := Round(5 * z)
+		radiusSm := Round(3 * z)
+		fontTop := Max(6, Round(9 * z))
+		fontBot := Max(6, Round(10 * z))
+		runnerH := Max(1, Round(2 * z))
+
+		Gdip_FillRoundedRectangle(this.G, this.BrushBack, 0, 0, this.TotalW, this.TotalH, radius)
 
 		loop 7 {
 			idx := A_Index
@@ -274,8 +375,8 @@ class BoostBar {
 			activeModes := cache.slotModes[idx]
 			timerVal := cache.slotTimer[idx]
 
-			x := 2 + (idx - 1) * (this.SlotW + this.Gap)
-			y := 2
+			x := pad + (idx - 1) * (this.SlotW + this.Gap)
+			y := pad
 
 			if !(isSlotActive) {
 				btnColor := this.BrushOff
@@ -293,10 +394,22 @@ class BoostBar {
 				}
 			}
 
-			Gdip_FillRoundedRectangle(this.G, btnColor, x, y, this.SlotW, 16, 3)
+			Gdip_FillRoundedRectangle(this.G, btnColor, x, y, this.SlotW, topH, radiusSm)
 
-			Options := "x" x " y" y + 1 " w" this.SlotW " h16 Center vCenter cFFFFFFFF s9 Bold"
+			Options := "x" x " y" y + Round(1 * z) " w" this.SlotW " h" topH " Center vCenter cFFFFFFFF s" fontTop " Bold"
 			Gdip_TextToGraphics(this.G, displayText, Options, "Segoe UI")
+
+			Gdip_FillRoundedRectangle(this.G, this.BrushTimer, x, y + topGap, this.SlotW, botH, radiusSm)
+			Options := "x" x " y" y + topGap " w" this.SlotW " h" botH " Center vCenter cFFFFFFFF s" fontBot
+			Gdip_TextToGraphics(this.G, String(timerVal), Options, "Segoe UI")
+		}
+
+		if (this.IsRunning && !State.IsPaused) {
+			Gdip_FillRectangle(this.G, this.BrushRunning, 0, this.TotalH - runnerH, this.TotalW, runnerH)
+		}
+
+		UpdateLayeredWindow(this.Gui.Hwnd, this.hdc, , , this.TotalW, this.TotalH)
+	}
 
 			Gdip_FillRoundedRectangle(this.G, this.BrushTimer, x, y + 18, this.SlotW, 14, 3)
 			Options := "x" x " y" y + 18 " w" this.SlotW " h14 Center vCenter cFFFFFFFF s10"
@@ -314,6 +427,12 @@ class BoostBar {
 		if (hwnd != this.Gui.hwnd)
 			return
 
+		if GetKeyState("Ctrl", "P") {
+			this._manualPos := true
+			PostMessage(0xA1, 2,,, "ahk_id " hwnd)
+			return 0
+		}
+
 		x := lParam & 0xFFFF
 		y := lParam >> 16
 		this.HandleClick(x, y, "Left")
@@ -329,18 +448,23 @@ class BoostBar {
 	}
 
 	HandleClick(x, y, clickType) {
+		z := this.Zoom
+		pad := Round(2 * z)
+		topGap := Round(18 * z)
+		botEnd := Round(34 * z)
+
 		loop 7 {
-			slotX := 2 + (A_Index - 1) * (this.SlotW + this.Gap)
+			slotX := pad + (A_Index - 1) * (this.SlotW + this.Gap)
 			if (x >= slotX && x <= slotX + this.SlotW) {
-				if (y <= 18) {
+				if (y <= topGap) {
 					if (clickType = "Right") {
 						this.OpenModeMenu(A_Index)
 					} else {
 						try WinActivate("ahk_id " WinExist("Roblox ahk_exe RobloxPlayerBeta.exe"))
 						this.ToggleSlot(A_Index)
 					}
-				} else if (y > 18 && y < 34) {
-					this.OpenEdit(A_Index, slotX, 20)
+				} else if (y > topGap && y < botEnd) {
+					this.OpenEdit(A_Index, slotX, Round(20 * z))
 				}
 				return
 			}
@@ -397,14 +521,15 @@ class BoostBar {
 	}
 
 	OpenEdit(idx, x, y) {
+		z := this.Zoom
 		tempGui := Gui("-Caption +Owner" this.Gui.hwnd)
-		tempGui.SetFont("s10", "Segoe UI")
+		tempGui.SetFont("s" Round(10 * z), "Segoe UI")
 		WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " this.Gui.hwnd)
 		screenX := wx + x
 		screenY := wy + y
 		currentVal := Config.Get("BoostBar", "SlotTimer" idx, 0)
 
-		ed := tempGui.Add("Edit", "w" this.SlotW " h18 Center Number", currentVal)
+		ed := tempGui.Add("Edit", "w" this.SlotW " h" Round(18 * z) " Center Number", currentVal)
 
 		SubmitEdit(*) {
 			Config.Set("BoostBar", "SlotTimer" idx, ed.Value)
@@ -429,10 +554,13 @@ class BoostBar {
 			win := WindowTracker.Get()
 			if IsObject(win) && win.ok {
 				wx := win.x, wy := win.y, ww := win.w, wh := win.h
-				targetX := wx + (ww // 2) - 261
-				targetY := wy + wh - 182
+				targetX := wx + (ww // 2) - (this.TotalW // 2) + this.OffsetX
+				targetY := wy + wh - 182 + this.OffsetY
 				show := this.ConfigCache.enabled && (!this.IsRunning || State.IsPaused ||(this.IsRunning && this.ConfigCache.showWhenActive))
-				(show ? this.Gui.Show("NA x" targetX " y" targetY " w" this.TotalW " h" this.TotalH) : this.Gui.Hide())
+				if (this._manualPos)
+					(show ? this.Gui.Show("NA") : this.Gui.Hide())
+				else
+					(show ? this.Gui.Show("NA x" targetX " y" targetY " w" this.TotalW " h" this.TotalH) : this.Gui.Hide())
 			} else {
 				this.Gui.Hide()
 			}
@@ -444,6 +572,7 @@ class BoostBar {
 		this.IsRunning ^= 1
 		this.IsEnabled := this.ConfigCache.enabled
 		this.IsActive := this.IsRunning && this.IsEnabled
+		ActivityLog.Add("BoostBar " (this.IsActive ? "activated" : "deactivated"))
 		this.stats.BuffState["Timer"] := (this.IsActive && !Config.Get("Main", "AltMacroEnabled", 0)) ? 1 : 0
 		this.Draw()
 		if (this.IsEnabled) {
@@ -489,8 +618,17 @@ class BoostBar {
 						}
 					}
 					if (shouldFire) {
+						if (cache.slotLimitEnabled[idx] && cache.slotLimit[idx] > 0 && cache.slotCount[idx] >= cache.slotLimit[idx])
+							continue
 						Send idx
 						lastFire[idx] := now
+						if (cache.slotLimitEnabled[idx] && cache.slotLimit[idx] > 0) {
+							cache.slotCount[idx] += 1
+							Config.Set("BoostBar", "SlotCount" idx, cache.slotCount[idx])
+							Config.WriteIni()
+							try Main.Gui["BoostBar_CountDisplay" idx].Value := cache.slotCount[idx] "/" cache.slotLimit[idx]
+							this.Draw()
+						}
 					}
 				}
 			} else {
@@ -509,6 +647,10 @@ class BoostBar {
 		cache.slotModes := []
 		cache.slotModeStr := []
 
+		cache.slotLimitEnabled := []
+		cache.slotLimit := []
+		cache.slotCount := []
+
 		loop 7 {
 			idx := A_Index
 			cache.slotActive.Push(Config.Get("BoostBar", "SlotActive" idx, 0))
@@ -516,6 +658,17 @@ class BoostBar {
 			modeStr := Config.Get("BoostBar", "SlotMode" idx, "Timer")
 			cache.slotModeStr.Push(modeStr)
 			cache.slotModes.Push(modeStr = "" ? [] : StrSplit(modeStr, "|"))
+			cache.slotLimitEnabled.Push(Config.Get("BoostBar", "SlotLimitEnabled" idx, 0))
+			cache.slotLimit.Push(Config.Get("BoostBar", "SlotLimit" idx, 0))
+			cache.slotCount.Push(Config.Get("BoostBar", "SlotCount" idx, 0))
+		}
+
+		this.OffsetX := Config.Get("BoostBar", "OffsetX", 0)
+		this.OffsetY := Config.Get("BoostBar", "OffsetY", 0)
+		newZoom := Config.Get("BoostBar", "Zoom", 1.0)
+		if (newZoom != this.Zoom) {
+			this.Zoom := newZoom
+			this.ApplyZoom()
 		}
 	}
 
