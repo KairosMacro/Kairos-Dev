@@ -1,4 +1,4 @@
-﻿class MainGui {
+class MainGui {
 	Selectors := Map()
 	Gui := unset
 	FeatureList := ["Alt Macro", "Tracker", "Warns", "Boost Bar", "Stat Monitor", "Key Alignment", "Magnifier"]
@@ -146,9 +146,13 @@
 		this.Gui.Add("GroupBox", "x5 y25 w70 h165 -Wrap", "")
 		this.Gui.Add("GroupBox", "x75 y25 w70 h165 -Wrap", "")
 		this.Gui.Add("GroupBox", "x145 y25 w85 h165 -Wrap", "")
+		this.Gui.Add("GroupBox", "x230 y25 w260 h165 -Wrap", "")
 		this.Gui.Add("Text", "x20 y25", "Active")
 		this.Gui.Add("Text", "x87 y25", "Timers")
 		this.Gui.Add("Text", "x165 y25", "Modes")
+		this.Gui.Add("Text", "x245 y25", "Limit")
+		this.Gui.Add("Text", "x330 y25", "Count")
+		this.Gui.Add("Text", "x385 y25", "Reset")
 		this.Gui.SetFont("s10 cDefault Norm")
 
 		loop 7 {
@@ -164,6 +168,15 @@
 
 			btn := this.Gui.Add("Button", "x150 y" yPos - 3 " w70 h21 vBoostBar_Config" i, display)
 			btn.OnEvent("Click", this.OpenModeSelector.Bind(this, i, btn))
+
+			this.Gui.Add("CheckBox", "x235 y" yPos - 2 " w20 h20 vBoostBar_SlotLimitEnabled" i " Checked" Config.Get("BoostBar", "SlotLimitEnabled" i, 0)).OnEvent("Click", this.SaveConfig.Bind(this))
+			this.Gui.Add("Edit", "x255 y" yPos - 3 " w40 h20 Number vBoostBar_SlotLimit" i, Config.Get("BoostBar", "SlotLimit" i, 0)).OnEvent("Change", this.SaveConfig.Bind(this))
+
+			countVal := Config.Get("BoostBar", "SlotCount" i, 0)
+			limitVal := Config.Get("BoostBar", "SlotLimit" i, 0)
+			this.Gui.Add("Text", "x305 y" yPos " w50 h20 -Wrap vBoostBar_CountDisplay" i, countVal "/" limitVal)
+
+			this.Gui.Add("Button", "x360 y" yPos - 3 " w50 h20 vBoostBar_ResetCount" i, "Reset").OnEvent("Click", this.ResetSlotCount.Bind(this, i))
 		}
 
 		this.Gui.Add("Text", "x" tabWidth - 110 " y30", "Show when active")
@@ -356,6 +369,28 @@
 		dispRebind := this.Gui.Add("Text", "x110 y161 w60 " col, Config.Get("KeyAlignment", "RebindHotkey", "^+k"))
 		btnRebind := this.Gui.Add("Button", "x170 y157 w60", "Rebind")
 		btnRebind.OnEvent("Click", this.CaptureHotkey.Bind(this, "KeyAlignment", "RebindHotkey", dispRebind))
+
+		this.Gui.SetFont("w700")
+		this.Gui.Add("GroupBox", "x250 y25 w230 h70")
+		this.Gui.Add("Text", "x260 y27", "Reset Placement")
+		this.Gui.SetFont("s10 cDefault Norm")
+		this.Gui.Add("Button", "x260 y48 w100 h20", "Reset Boost Bar").OnEvent("Click", this.ResetBoostBarPlacement.Bind(this))
+		this.Gui.Add("Button", "x370 y48 w100 h20", "Reset Tracker").OnEvent("Click", this.ResetTrackerPlacement.Bind(this))
+		this.Gui.Add("Button", "x260 y72 w210 h20", "Reset Both").OnEvent("Click", this.ResetAllPlacements.Bind(this))
+
+		this.Gui.SetFont("w700")
+		this.Gui.Add("GroupBox", "x250 y100 w230 h55")
+		this.Gui.Add("Text", "x260 y102", "Share Settings")
+		this.Gui.SetFont("s10 cDefault Norm")
+		this.Gui.Add("Button", "x260 y123 w100 h25", "Export Code").OnEvent("Click", this.ExportSettingsCode.Bind(this))
+		this.Gui.Add("Button", "x370 y123 w100 h25", "Import Code").OnEvent("Click", this.ImportSettingsCode.Bind(this))
+
+		this.Gui.SetFont("w700")
+		this.Gui.Add("GroupBox", "x250 y160 w230 h65")
+		this.Gui.Add("Text", "x260 y162", "Display")
+		this.Gui.SetFont("s10 cDefault Norm")
+		this.Gui.Add("CheckBox", "x260 y180 vTracker_TrackerColors Checked" Config.Get("Tracker", "TrackerColors", 0), "Tracker Colors").OnEvent("Click", this.ToggleTrackerColors.Bind(this))
+		this.Gui.Add("CheckBox", "x260 y200 vMain_AlwaysOnTop Checked" Config.Get("Main", "AlwaysOnTop", 0), "Always On Top").OnEvent("Click", this.ToggleAlwaysOnTop.Bind(this))
 
 		; --- Dark Mode & Other Stuff ---
 		this.UpdateUI()
@@ -561,6 +596,7 @@
 		SaveLocal(*) {
 			Config.Set("Warns", warnKey "_Volume", WarnGui["Volume"].Value)
 			Config.Set("Warns", warnKey "_PlayOnce", WarnGui["PlayOnce"].Value)
+			Config.Set("Warns", warnKey "_Reverse", WarnGui["Reverse"].Value)
 			Config.WriteIni()
 			this.RefreshFeature("WarnsEnabled")
 		}
@@ -592,6 +628,9 @@
 
 		WarnGui.Add("CheckBox", "x15 y40 w20 h20 vPlayOnce Checked" Config.Get("Warns", warnKey "_PlayOnce", 0)).OnEvent("Click", SaveLocal)
 		WarnGui.Add("Text", "x35 y43 w60 c" col, "Play Once")
+
+		WarnGui.Add("CheckBox", "x120 y40 w20 h20 vReverse Checked" Config.Get("Warns", warnKey "_Reverse", 0)).OnEvent("Click", SaveLocal)
+		WarnGui.Add("Text", "x140 y43 w80 c" col, "Reverse")
 
 		WarnGui.Add("Text", "x15 y70 w50 c" col, "Sound:")
 		WarnGui.Add("Button", "x60 y67 w60 h22", "Browse").OnEvent("Click", BrowseSound)
@@ -708,6 +747,18 @@
 		if (Section = "BoostBar")
 			if IsSet(Boost) && Boost
 				Boost.Draw()
+
+		if (Section = "BoostBar") {
+			if (Key ~= "SlotLimit\d+|SlotLimitEnabled\d+") {
+				loop 7 {
+					countVal := Config.Get("BoostBar", "SlotCount" A_Index, 0)
+					limitVal := Config.Get("BoostBar", "SlotLimit" A_Index, 0)
+					try this.Gui["BoostBar_CountDisplay" A_Index].Value := countVal "/" limitVal
+				}
+			}
+			if IsSet(Boost) && Boost
+				Boost.Draw()
+		}
 	}
 
 	LoadPreset(*) {
@@ -755,6 +806,86 @@
 				Config.SetPreset("config")
 				Reload
 		}
+	}
+
+	ResetSlotCount(idx, *) {
+		Config.Set("BoostBar", "SlotCount" idx, 0)
+		Config.WriteIni()
+		this.Gui["BoostBar_CountDisplay" idx].Value := "0/" Config.Get("BoostBar", "SlotLimit" idx, 0)
+		if IsSet(Boost) && Boost {
+			Boost.RefreshConfig()
+			Boost.Draw()
+		}
+	}
+
+	ResetBoostBarPlacement(*) {
+		Config.Set("BoostBar", "OffsetX", 0)
+		Config.Set("BoostBar", "OffsetY", 0)
+		Config.Set("BoostBar", "Zoom", 1)
+		Config.WriteIni()
+		if IsSet(Boost) && Boost {
+			Boost.RefreshConfig()
+			Boost.ApplyZoom()
+			Boost.Draw()
+		}
+		ToolTip("Boost Bar placement reset")
+		SetTimer(ToolTip, -1000)
+	}
+
+	ResetTrackerPlacement(*) {
+		Config.Set("Tracker", "OffsetX", 0)
+		Config.Set("Tracker", "OffsetY", 0)
+		Config.Set("Tracker", "Zoom", 1)
+		Config.WriteIni()
+		if IsSet(Track) && Track
+			Track.RefreshConfig()
+		ToolTip("Tracker placement reset")
+		SetTimer(ToolTip, -1000)
+	}
+
+	ResetAllPlacements(*) {
+		this.ResetBoostBarPlacement()
+		this.ResetTrackerPlacement()
+		ToolTip("All placements reset")
+		SetTimer(ToolTip, -1000)
+	}
+
+	ExportSettingsCode(*) {
+		code := Config.ExportCode()
+		A_Clipboard := code
+		ToolTip("Settings code copied to clipboard!")
+		SetTimer(ToolTip, -2000)
+	}
+
+	ImportSettingsCode(*) {
+		code := A_Clipboard
+		if (code = "") {
+			ToolTip("Clipboard is empty!")
+			SetTimer(ToolTip, -2000)
+			return
+		}
+		result := Config.ImportCode(code)
+		if result {
+			ToolTip("Settings imported! Reloading...")
+			SetTimer((*) => Reload(), -500)
+		} else {
+			ToolTip("Invalid settings code!")
+			SetTimer(ToolTip, -2000)
+		}
+	}
+
+	ToggleAlwaysOnTop(GuiCtrl, *) {
+		val := GuiCtrl.Value
+		Config.Set("Main", "AlwaysOnTop", val)
+		Config.WriteIni()
+		this.Gui.Opt(val ? "+AlwaysOnTop" : "-AlwaysOnTop")
+	}
+
+	ToggleTrackerColors(GuiCtrl, *) {
+		Config.Set("Tracker", "TrackerColors", GuiCtrl.Value)
+		Config.WriteIni()
+		if IsSet(Track) && Track
+			Track.RefreshConfig()
 	}
 
 	RefreshFeature(FeatureName) {
@@ -809,6 +940,7 @@
 			return
 
 		this.ran++
+		ActivityLog.Add("Macro started")
 		State.offsetY := GetYOffset(, &fail)
 		try {
 		if fail
@@ -828,7 +960,8 @@
 			Warns.Toggle()
 			Aligner.Toggle()
 			Mag.Toggle()
-			Stats.Toggle()
+			if IsSet(Stats)
+				Stats.Toggle()
 		} else if (accountType = "Alt") {
 			Alt.Toggle()
 		}
@@ -839,6 +972,7 @@
 		if this.ran != 1
 			return
 		State.IsPaused ^= 1
+		ActivityLog.Add(State.IsPaused ? "Macro paused" : "Macro resumed")
 
 		if (State.IsPaused) {
 			this.Gui.Show("")
@@ -884,6 +1018,7 @@
 	}
 
 	stop(*) {
+		ActivityLog.Add("Macro stopped")
 		if (this.ran && IsSet(Stats) && Stats)
 			Stats.Export()
 		Reload
@@ -894,6 +1029,7 @@
 			Hotkey(Config.Get("Main", "StartHotkey", "F1"), (*) => this.start())
 			Hotkey(Config.Get("Main", "PauseHotkey", "F2"), (*) => this.pause())
 			Hotkey(Config.Get("Main", "StopHotkey", "F3"), (*) => this.stop())
+			Hotkey("^+F7", (*) => ActivityLog.Toggle())
 		}
 	}
 }
