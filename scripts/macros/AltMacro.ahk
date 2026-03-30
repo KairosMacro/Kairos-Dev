@@ -127,7 +127,6 @@
 			}
 		}
 		this.Cleanup()
-		msgbox "hi"
 		sleep 500
 	}
 
