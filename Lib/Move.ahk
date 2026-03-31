@@ -468,16 +468,29 @@
 		dead_x := win.w * 0.035
 		dead_y := win.h * 0.035
 
-		start := A_TickCount
 		last_seen := A_TickCount
 		scan_step := 0
 		scan_count := 0
 		scan_last := 0
 		net_rot := 0
+		pwm := 50
 
 		SetTimer(SpamKeys, 10)
 
-		while (A_TickCount - last_seen < 15000 && A_TickCount - start < 45000) {
+		while (A_TickCount - last_seen < 15000) {
+			if (!this.is_running)
+				break
+			if (this.is_paused) {
+				this.ReleaseAllKeys()
+				SetTimer(SpamKeys, 0)
+				while (this.is_paused && this.is_running)
+					sleep 10
+				if (!this.is_running)
+					break
+				SetTimer(SpamKeys, 10)
+				last_seen := A_TickCount
+				scan_last := A_TickCount
+			}
 			current_coco := this.pending_coconut
 			if (!current_coco) {
 				this.UpdateHeldKeys([])
@@ -501,15 +514,25 @@
 
 			vec_x := current_coco.x - center_x
 			vec_y := current_coco.y - center_y
-			raw_x := ""
-			raw_y := ""
 
-			if (Abs(vec_x) > dead_x)
-				raw_x := (vec_x > 0) ? RightKey : LeftKey
-			if (Abs(vec_y) > dead_y)
-				raw_y := (vec_y > 0) ? BackKey : FwdKey
+			if (Abs(vec_x) < dead_x && Abs(vec_y) < dead_y) {
+				this.UpdateHeldKeys([])
+				continue
+			}
 
-			final_keys := this.TranslateDir(raw_x, raw_y, net_rot)
+			max_dist := Max(Abs(vec_x), Abs(vec_y))
+			duty_x := Abs(vec_x) / max_dist
+			duty_y := Abs(vec_y) / max_dist
+			target_x := (vec_x > 0) ? RightKey : LeftKey
+			target_y := (vec_y > 0) ? BackKey : FwdKey
+			cycle := Mod(A_TickCount, pwm)
+			should_hold_x := (cycle < (pwm * duty_x)) && (Abs(vec_x) > dead_x)
+			should_hold_y := (cycle < (pwm * duty_y)) && (Abs(vec_y) > dead_y)
+			final_keys := []
+			if (should_hold_x)
+				final_keys.Push(target_x)
+			if (should_hold_y)
+				final_keys.Push(target_y)
 			this.UpdateHeldKeys(final_keys)
 		}
 		SetTimer(SpamKeys, 0)
@@ -519,50 +542,9 @@
 			Send "{" RotRight " " Abs(net_rot) "}"
 		else if (net_rot < 0)
 			Send "{" RotLeft " " Abs(net_rot) "}"
-		
 		SpamKeys() {
 			send "{" RotUp "}{" ZoomOut "}"
 		}
-	}
-
-	TranslateDir(x_key, y_key, rot_offset) {
-		if (x_key = "" && y_key = "")
-			return []
-		
-		idx := 0
-		if (y_key = FwdKey && x_key = LeftKey)
-			idx := 8
-		else if (y_key = FwdKey && x_key = RightKey)
-			idx := 2
-		else if (y_key = BackKey && x_key = LeftKey)
-			idx := 6
-		else if (y_key = BackKey && x_key = RightKey)
-			idx := 4
-		else if (y_key = FwdKey)
-			idx := 1
-		else if (y_key = BackKey)
-			idx := 5
-		else if (x_key = LeftKey)
-			idx := 7
-		else if (x_key = RightKey)
-			idx := 3
-		
-		new_idx := idx + rot_offset
-		while (new_idx > 8)
-			new_idx -= 8
-		while (new_idx < 1)
-			new_idx += 8
-		cycle := [
-			[FwdKey],
-			[FwdKey, RightKey],
-			[RightKey],
-			[RightKey, BackKey],
-			[BackKey],
-			[BackKey, LeftKey],
-			[LeftKey],
-			[LeftKey, FwdKey]
-		]
-		return cycle[new_idx]
 	}
 
 	UpdateHeldKeys(target_arr) {
