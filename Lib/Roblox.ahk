@@ -9,11 +9,11 @@ class Roblox {
 	static StartTracker(intervalMs := 50) {
 		this.interval := intervalMs
 		this.Update()
-		Scheduler.Add("Roblox.Update", ObjBindMethod(this, "Update"), intervalMs)
+		SetTimer(ObjBindMethod(this, "Update"), intervalMs)
 	}
 
 	static StopTracker() {
-		Scheduler.RemoveAt("Roblox.Update")
+		SetTimer(ObjBindMethod(this, "Update"), 0)
 	}
 
 	static Get() {
@@ -21,9 +21,9 @@ class Roblox {
 	}
 
 	static Update(*) {
-		hwnd := GetRobloxHWND()
+		hwnd := this.GetHWND()
 		if !hwnd {
-			this.state := { hwnd: 0, x: 0, y: 0, w: 0, h: 0, offsetY: this.state.offsetY, of: false, ts: A_TickCount }
+			this.state := { hwnd: 0, x: 0, y: 0, w: 0, h: 0, offsetY: this.state.offsetY, ok: false, ts: A_TickCount }
 			return
 		}
 		this.state.hwnd := hwnd
@@ -72,7 +72,7 @@ class Roblox {
 		} else if WinExist("ahk_id " hwnd) {
 			if !IsSet(noFocus)
 				this.Activate()
-			this.GetClientPos()
+			this.GetClientPos(hwnd)
 			pBMScreen := Gdip_BitmapFromScreen(this.state.x + this.state.w // 2 "|" this.state.y "|60|100")
 			loop 20 {
 				if ((Gdip_ImageSearch(pBMScreen, bitmaps["toppollen"], &pos, , , , , 5) = 1) && (Gdip_ImageSearch(pBMScreen, bitmaps["toppollenfill"], , x := SubStr(pos, 1, (comma := InStr(pos, ",")) - 1), y := SubStr(pos, comma + 1), x + 41, y + 10, 5) = 0)) {

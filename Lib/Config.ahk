@@ -23,25 +23,26 @@
 			, "AccountType", "Main"
 		)
 		, "Alt", Map(
-			"Movespeed", 29
-			, "HiveSlot", 1
-			, "FieldDriftComp", 1
-			, "AltNumber", 1
-			, "DefaultField", "pepper"
-			, "Pattern", "GeneralBooster"
-			, "PatternSize", 1
-			, "PatternWidth", 1
-			, "RotationAmount", 0
-			, "RotationDirection", "Right"
-			, "ShiftLock", 0
-			, "SprinklerLocation", "Center"
-			, "SprinklerDistance", 1
-			, "PrivServer", ""
-			, "ClaimHive", 1
-			, "IgnoreInactiveHoney", 0
-			, "UseTool", 1
-			, "CocoCatch", 0
-		)
+         "Movespeed", 29
+         , "HiveSlot", 1
+         , "FieldDriftComp", 1
+         , "AltNumber", 1
+         , "DefaultField", "pepper"
+         , "Pattern", "GeneralBooster"
+         , "PatternSize", 1
+         , "PatternWidth", 1
+         , "RotLR_Amount", 0
+         , "RotLR_Dir", "Right"
+         , "CameraPitch", 4
+         , "ShiftLock", 0
+         , "SprinklerLocation", "Center"
+         , "SprinklerDistance", 1
+         , "PrivServer", ""
+         , "ClaimHive", 1
+         , "IgnoreInactiveHoney", 0
+         , "UseTool", 1
+         , "CocoCatch", 0
+      )
 		, "BoostBar", Map(
 			"SlotActive1", 0, "SlotTimer1", 100, "SlotMode1", "Timer"
 			, "SlotActive2", 0, "SlotTimer2", 100, "SlotMode2", "Timer"

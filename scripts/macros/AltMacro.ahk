@@ -30,8 +30,11 @@
 
 		this.PatternSize := Config.Get("Alt", "PatternSize", 5)
 		this.PatternWidth := Config.Get("Alt", "PatternWidth", 5)
-		this.RotationAmount := Config.Get("Alt", "RotationAmount", 0)
-		this.RotationDirection := Config.Get("Alt", "RotationDirection", "right")
+
+		this.RotLR_Amount := Config.Get("Alt", "RotLR_Amount", 0)
+		this.RotLR_Dir := Config.Get("Alt", "RotLR_Dir", "Right")
+		this.CameraPitch := Config.Get("Alt", "CameraPitch", 4)
+
 		this.ShiftLock := Config.Get("Alt", "ShiftLock", 0)
 		this.SprinklerLocation := Config.Get("Alt", "SprinklerLocation", "Center")
 		this.SprinklerDistance := Config.Get("Alt", "SprinklerDistance", 1)
@@ -68,6 +71,7 @@
 		;	this.GuideCycle()
 		;	return
 		;}
+
 		if !(this.Reconnect())
 			this.Reset()
 		fieldName := this.DefaultField
@@ -75,7 +79,7 @@
 		this.PlaceSprinkler()
 		this.Rotation()
 		this.EnableShift(1)
-		sleep 500
+		sleep 100
 		if (IsSet(Boost) && Boost)
 			Boost.stats.BuffState["Timer"] := 1
 
@@ -117,13 +121,11 @@
 			if (this.FieldDriftComp && State.CurrentWalk.pid) {
 				DetectHiddenWindows true
 				if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid) {
-					PostMessage(0x5000, 3, 0, , "ahk_pid " State.CurrentWalk.pid)
-					DetectHiddenWindows false
-					
-					if (KeyWait("F14", "D T2 L") = 1)
-						KeyWait "F14", "T120 L"
-				} else
-					DetectHiddenWindows false
+					PostMessage(0x5000, 3, 0, , "ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
+					if (KeyWait("F15", "D T1 L") = 1)
+						KeyWait "F15", "T120 L"
+				}
+				DetectHiddenWindows false
 			}
 		}
 		this.Cleanup()
@@ -152,17 +154,11 @@
 		
 		if (moveY != 0) {
 			key := (moveY > 0) ? FwdKey : BackKey
-			RunPath('walk(' Abs(moveY) ', "' key '")')
-			KeyWait "F14", "D T5 L"
-			KeyWait "F14", "T15 L"
-			EndPath()
+			Path.Execute('walk(' Abs(moveY) ', "' key '")', "sprinkler_y", 15)
 		}
 		if (moveX != 0) {
 			key := (moveX > 0) ? RightKey : LeftKey
-			RunPath('walk(' Abs(moveX) ', "' key '")')
-			KeyWait "F14", "D T5 L"
-			KeyWait "F14", "T15 L"
-			EndPath()
+			Path.Execute('walk(' Abs(moveX) ', "' key '")', "sprinkler_x", 15)
 		}
 		sleep 100
 		send "{" SC_1 "}"
@@ -170,11 +166,22 @@
 	}
 
 	Rotation() {
-		amt := this.RotationAmount
-		if (amt > 0 && amt <= 4) {
-			key := (this.RotationDirection = "Left") ? RotLeft : RotRight
-			send "{" key " " amt "}"
-			sleep 300
+		lr_amt := this.RotLR_Amount
+		if (lr_amt > 0 && lr_amt <= 8) {
+			lr_key := (this.RotLR_Dir = "Left") ? RotLeft : RotRight
+			send "{" lr_key " " lr_amt "}"
+			sleep 100
+		}
+		targetPitch := this.CameraPitch
+		currentPitch := 4
+		diff := targetPitch - currentPitch
+
+		if (diff > 0) {
+			send "{" RotDown " " diff "}"
+			sleep 100
+		} else if (diff < 0) {
+			send "{" RotUp " " Abs(diff) "}"
+			sleep 100
 		}
 	}
 
@@ -204,7 +211,7 @@
 			return 0
 		
 		click "up"
-		EndPath()
+		Path.End()
 		; possibly add join user for public server ?
 		link := Config.Get("Alt", "PrivServer", "")
 
@@ -308,9 +315,9 @@
 		DetectHiddenWindows true
 		pathRunning := WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
 		if ((index = 1) || !pathRunning) {
-			RunPath(patterns[patternName], "pattern")
+			Path.Run(patterns[patternName], "pattern")
 			if (this.CocoCatch && State.currentWalk.pid) {
-				Run('"' A_AhkPath '" "' A_WorkingDir '\Patterns\CocoScanner.ahk" ' State.currentWalk.pid, , "Hide", &cocoPID)
+				Run('"' A_AhkPath '" "' A_WorkingDir '\scripts\macros\background\CocoScanner.ahk" ' State.currentWalk.pid, , "Hide", &cocoPID)
 				State.currentWalk.cocoPID := cocoPID
 			}
 		} else if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
@@ -330,16 +337,13 @@
 			return
 		}
 
-		RunPath(paths["gtf"][field])
-		KeyWait "F14", "D T5 L"
-		KeyWait "F14", "T120 L"
-		EndPath()
+		Path.Execute(paths["gtf"][field], "goto_" field)
 		sleep 100
 	}
 
 	Cleanup() {
 		Critical
-		EndPath()
+		Path.End()
 		Click "up"
 		Send "{" LeftKey " up}{" RightKey " up}{" FwdKey " up}{" BackKey " up}{" SC_Space " up}{F14 up}{" SC_E " up}"
 	}
@@ -383,10 +387,7 @@
 
 			if system = 1 {
 				movement := this.spawnMoveTo(this.slotMove[this.HiveSlot])
-				RunPath(movement)
-				KeyWait "F14", "D T5 L"
-				KeyWait "F14", "T120 L"
-				EndPath()
+				Path.Execute(movement, "claim_hive")
 				sleep 500
 
 				pBMScreen := GetImg()
@@ -415,19 +416,13 @@
 		send "{" ZoomOut " 8}"
 
 		movement := 'walk(4, "' RightKey '")`nwalk(20, "' RightKey '", "' FwdKey '")'
-		RunPath(movement)
-		KeyWait "F14", "D T5 L"
-		KeyWait "F14", "T120 L"
-		EndPath()
+		Path.Execute(movement, "claim_hive")
 
 		slots := Map()
 		move := 'walk(9.2, "' LeftKey '")'
 		Loop this.HiveSlot {
 			if (A_Index > 1) {
-				RunPath(move)
-				KeyWait "F14", "D T5 L"
-				KeyWait "F14", "T120 L"
-				EndPath()
+				Path.Execute(move, "claim_hive")
 			}
 
 			sleep 500
@@ -442,10 +437,7 @@
 			} else {
 				if ((slot := ObjMinIndex(slots)) > 0) {
 					movement := 'walk(' (this.HiveSlot - slot) * 9.2 ', "' RightKey '")'
-					RunPath(movement)
-					KeyWait "F14", "D T5 L"
-					KeyWait "F14", "T120 L"
-					EndPath()
+					Path.Execute(movement, "claim_hive")
 
 					sleep 500
 					pBMScreen := GetImg()
@@ -456,11 +448,7 @@
 					Gdip_DisposeImage(pBMScreen)
 				} else {
 					Loop (6 - this.HiveSlot) {
-						RunPath(move)
-						KeyWait "F14", "D T5 L"
-						KeyWait "F14", "T120 L"
-						EndPath()
-
+						Path.Execute(move, "claim_hive")
 						sleep 500
 						pBMScreen := GetImg()
 						if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {

@@ -22,7 +22,8 @@ if (A_ScreenDPI != 96) {
 	ExitApp
 }
 
-#Include "%A_ScriptDir%\..\Lib"
+; I know that this is weird, but it fixes the "indexing" for the AHK v2.0 extension
+#Include "..\Lib"
 #Include "Config.ahk"
 #Include "Gdip_All.ahk"
 #Include "Gdip_ImageSearch.ahk"
@@ -46,7 +47,7 @@ if !(pToken := Gdip_Startup())
 	throw Error("GDI+ failed to start, exiting script.")
 
 (bitmaps := Map()).CaseSense := false
-#Include "%A_ScriptDir%\..\Assets\Bitmaps"
+#Include "..\Assets\Bitmaps"
 #Include "Movement.ahk"
 #Include "Buffs.ahk"
 #Include "Boosts.ahk"
@@ -70,7 +71,7 @@ version := "0.3.0"
 
 GetRobloxClientPos()
 
-#Include "%A_ScriptDir%\..\scripts\macros"
+#Include "..\..\scripts\macros\"
 #Include "MainGui.ahk"
 #Include "Tracker.ahk"
 #Include "Warnings.ahk"
@@ -108,6 +109,7 @@ class State {
 }
 
 WindowTracker.Start(50)
+Roblox.StartTracker(50)
 Scheduler.Start()
 
 Scanner := ScannerEngine()

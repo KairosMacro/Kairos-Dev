@@ -244,10 +244,16 @@
 			this.Gui.Add("Edit", "x" Group2 + 147 " y125 w40 h24 Number vAlt_SprinklerDistance", Config.Get("Alt", "SprinklerDistance", 1)).OnEvent("Change", this.SaveConfig.Bind(this))
 			this.Gui.Add("UpDown", "Range0-10", Config.Get("Alt", "SprinklerDistance", 1))
 
-			this.Gui.Add("Text", "x" Group2 + 5 " y155", "Rotation:")
-			this.Gui.Add("Edit", "x" Group2 + 60 " y153 w40 Number vAlt_RotationAmount", Config.Get("Alt", "RotationAmount", 0)).OnEvent("Change", this.SaveConfig.Bind(this))
-			this.Gui.Add("UpDown", "Range0-8", Config.Get("Alt", "RotationAmount", 0))
-			this.Gui.Add("DropDownList", "x" Group2 + 102 " y153 w60 vAlt_RotationDirection Choose" ObjIndexOf(["Right", "Left"], Config.Get("Alt", "RotationDirection", "Right")), ["Right", "Left"]).OnEvent("Change", this.SaveConfig.Bind(this))
+			this.Gui.Add("Text", "x" Group2 + 5 " y155", "Rot Left/Right:")
+			this.Gui.Add("Edit", "x" Group2 + 90 " y153 w40 Number vAlt_RotLR_Amount", Config.Get("Alt", "RotLR_Amount", 0)).OnEvent("Change", this.SaveConfig.Bind(this))
+			this.Gui.Add("UpDown", "Range0-8", Config.Get("Alt", "RotLR_Amount", 0))
+			this.Gui.Add("DropDownList", "x" Group2 + 132 " y153 w60 vAlt_RotLR_Dir Choose" ObjIndexOf(["Right", "Left"], Config.Get("Alt", "RotLR_Dir", "Right")), ["Right", "Left"]).OnEvent("Change", this.SaveConfig.Bind(this))
+
+			this.Gui.Add("Text", "x" Group2 + 5 " y180", "Pitch (0-11):")
+			this.Gui.Add("Edit", "x" Group2 + 80 " y178 w40 Number vAlt_CameraPitch", Config.Get("Alt", "CameraPitch", 4)).OnEvent("Change", this.SaveConfig.Bind(this))
+			this.Gui.Add("UpDown", "Range0-11", Config.Get("Alt", "CameraPitch", 4))
+
+
 
 
 			/*
@@ -607,7 +613,7 @@
 	}
 
 	CopyFieldSettings(*) {
-		settings := Config.Get("Alt", "DefaultField") "|" Config.Get("Alt", "Pattern") "|" Config.Get("Alt", "PatternSize") "|" Config.Get("Alt", "PatternWidth") "|" Config.Get("Alt", "SprinklerLocation") "|" Config.Get("Alt", "SprinklerDistance") "|" Config.Get("Alt", "RotationAmount") "|" Config.Get("Alt", "RotationDirection")
+		settings := Config.Get("Alt", "DefaultField") "|" Config.Get("Alt", "Pattern") "|" Config.Get("Alt", "PatternSize") "|" Config.Get("Alt", "PatternWidth") "|" Config.Get("Alt", "SprinklerLocation") "|" Config.Get("Alt", "SprinklerDistance") "|" Config.Get("Alt", "RotLR_Amount") "|" Config.Get("Alt", "RotLR_Dir") "|" Config.Get("Alt", "RotUD_Amount") "|" Config.Get("Alt", "RotUD_Dir")
 		A_Clipboard := settings
 		ToolTip("Settings copied to clipboard")
 		SetTimer(ToolTip, -500)
@@ -628,8 +634,10 @@
 			Config.Set("Alt", "PatternWidth", data[4])
 			Config.Set("Alt", "SprinklerLocation", data[5])
 			Config.Set("Alt", "SprinklerDistance", data[6])
-			Config.Set("Alt", "RotationAmount", data[7])
-			Config.Set("Alt", "RotationDirection", data[8])
+			Config.Set("Alt", "RotLR_Amount", data[7])
+			Config.Set("Alt", "RotLR_Dir", data[8])
+			Config.Set("Alt", "RotUD_Amount", data[9])
+			Config.Set("Alt", "RotUD_Dir", data[10])
 			Config.WriteIni()
 
 			this.Gui["Alt_DefaultField"].Text := data[1]
@@ -638,8 +646,10 @@
 			this.Gui["Alt_PatternWidth"].Value := data[4]
 			this.Gui["Alt_SprinklerLocation"].Text := data[5]
 			this.Gui["Alt_SprinklerDistance"].Value := data[6]
-			this.Gui["Alt_RotationAmount"].Value := data[7]
-			this.Gui["Alt_RotationDirection"].Text := data[8]
+			this.Gui["Alt_RotLR_Amount"].Value := data[7]
+			this.Gui["Alt_RotLR_Dir"].Text := data[8]
+			this.Gui["Alt_RotUD_Amount"].Value := data[9]
+			this.Gui["Alt_RotUD_Dir"].Text := data[10]
 			ToolTip("Settings pasted from clipboard")
 			SetTimer(ToolTip, -500)
 		} catch {
@@ -835,7 +845,7 @@
 		} else if (accountType = "Alt") {
 			Alt.Toggle()
 		}
-		this.Gui.Show("Hide")
+		this.Gui.Show("Minimize")
 	}
 
 	pause(*) {
@@ -844,7 +854,7 @@
 		State.IsPaused ^= 1
 
 		if (State.IsPaused) {
-			this.Gui.Show("")
+			this.Gui.Show("Restore")
 			this.Gui.Title := "Kairos (Paused)"
 			this.Gui["PauseButton"].Text := "Resume (" Config.Get("Main", "PauseHotkey", "F2") ")"
 
@@ -865,10 +875,10 @@
 
 			DetectHiddenWindows true
 			if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
-				PostMessage(0x5000, 1, 0, , "ahk_pid " State.CurrentWalk.pid)
+				PostMessage(0x5000, 1, 0, , "ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
 			DetectHiddenWindows false
 		} else {
-			this.Gui.Hide()
+			this.Gui.Show("Minimize")
 			this.Gui.Title := "Kairos"
 			this.Gui["PauseButton"].Text := "Pause (" Config.Get("Main", "PauseHotkey", "F2") ")"
 
@@ -879,7 +889,7 @@
 
 			DetectHiddenWindows true
 			if WinExist("ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
-				PostMessage(0x5000, 0, 0, , "ahk_pid " State.CurrentWalk.pid)
+				PostMessage(0x5000, 0, 0, , "ahk_class AutoHotkey ahk_pid " State.CurrentWalk.pid)
 			DetectHiddenWindows false
 
 		}

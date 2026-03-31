@@ -303,9 +303,12 @@
 		held_y := ""
 		miss := 0
 		start := A_TickCount
+		send "{F15 Down}"
 
-		if !this.LocateSprinkler()
+		if !this.LocateSprinkler() {
+			send "{F15 Up}"
 			return
+		}
 
 		while (A_TickCount - start < 7000) { ; 7 second limit for sprinkler...
 			if (this.LocateSprinkler(&x, &y) = 0) {
@@ -343,6 +346,7 @@
 			if (held_x = "" && held_y = "")
 				break
 		}
+		send "{F15 Up}"
 		this.ReleaseAllKeys()
 	}
 
@@ -441,7 +445,6 @@
 		if (found) {
 			x := best_x
 			y := best_y
-			tooltip "Located sprinkler: " name " at " x "," y, win.x + x + 10, win.y + y + 13
 			last_pos := {x: x, y: y}
 			return 1
 		} else {

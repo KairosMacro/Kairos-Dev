@@ -70,10 +70,12 @@
 				list := Type(newState) = "Map" ? newState : newState.OwnProps()
 				for name, isActive in list {
 					if (Boost.stats.BuffState.Has(name))
-						Boost.stats.BuffState[name] := isActive
+							Boost.stats.BuffState[name] := isActive
 				}
 			}
 		} else if (msg["action"] = "start") {
+			if (nowUnix() - msg["timestamp"] > 15)
+				return
 			if (IsSet(Main) && IsObject(Main)) {
 				Main.start()
 			}

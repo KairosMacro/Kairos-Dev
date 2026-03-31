@@ -1,8 +1,0 @@
-﻿walk(3, LeftKey)
-walk(3, FwdKey)
-walk(3, RightKey)
-walk(3, BackKey)
-walk(3, RightKey)
-walk(3, FwdKey)
-walk(3, LeftKey)
-walk(3, BackKey)
