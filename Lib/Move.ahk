@@ -469,6 +469,7 @@
 		dead_y := win.h * 0.035
 
 		start := A_TickCount
+		last_seen := A_TickCount
 		scan_step := 0
 		scan_count := 0
 		scan_last := 0
@@ -476,7 +477,7 @@
 
 		SetTimer(SpamKeys, 10)
 
-		while (A_TickCount - start < 10000) {
+		while (A_TickCount - last_seen < 15000 && A_TickCount - start < 45000) {
 			current_coco := this.pending_coconut
 			if (!current_coco) {
 				this.UpdateHeldKeys([])
@@ -494,6 +495,7 @@
 				}
 				continue
 			}
+			last_seen := A_TickCount
 			scan_last := A_TickCount + 275
 			scan_step := 0
 
