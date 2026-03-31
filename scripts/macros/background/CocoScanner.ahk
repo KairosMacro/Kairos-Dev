@@ -78,7 +78,6 @@ locateCoco(hwnd) {
 			finalX := relX + foundX
 			finalY := relY + foundY
 			lastPos := {x: finalX, y: finalY}
-			tooltip "Local Coco Found", windowX + finalX, windowY + finalY
 			return {x: finalX, y: finalY}
 		}
 		
@@ -97,7 +96,6 @@ locateCoco(hwnd) {
 		Gdip_UnlockBits(pBMAll, &aBitmap)
 		Gdip_DisposeImage(pBMAll)
 		lastPos := {x: foundX, y: foundY}
-		tooltip "Global Coco Found", windowX + foundX, windowY + foundY
 		return {x: foundX, y: foundY}
 	}
 	
