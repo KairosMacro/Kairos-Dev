@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" class="box-border">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>KAIROS GUI</title>
+	<link rel="icon" type="image/x-icon" href="../Assets/Images/Kairos.ico">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/custom.css">
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#121212] text-gray-300 w-screen h-screen flex flex-col overflow-hidden select-none">
+	
+	<div class="shrink-0 flex w-full h-6 bg-black items-center justify-between border-b border-white/5">
+		<div class="pl-3 text-[10px] tracking-widest text-gray-600 w-full h-full flex items-center" onmousedown="drag()">
+			KAIROS
+		</div>
+		<div class="flex h-full">
+			<div class="px-3 flex items-center hover:bg-white/10 cursor-pointer text-sm" onclick="minimizeWindow()">—</div>
+			<div class="px-3 flex items-center hover:bg-red-600 cursor-pointer text-sm" onclick="closeWindow()">✕</div>
+		</div>
+	</div>
+
+	<div class="shrink-0 flex justify-between items-center bg-[#181818] p-2 border-b border-white/5 shadow-md">
+		<div class="flex items-center gap-3">
+			<div class="w-10 h-10 flex items-center justify-center overflow-hidden rounded-full border border-white/10 shadow-lg">
+				<img src="../Assets/Images/Kairos.png" alt="Kairos Logo" class="w-full h-full object-cover">
+			</div>
+			<div class="flex flex-col">
+				<h1 class="text-2xl font-normal text-white leading-none tracking-tight">Kairos</h1>
+				<span class="text-[9px] text-gray-500 uppercase tracking-[0.2em] mt-1">Orchestrated Perfection</span>
+			</div>
+		</div>
+		
+		<div class="flex items-center gap-3 text-xs font-mono text-gray-400">
+			<div class="flex items-center gap-2 mr-1 border-r border-white/10 pr-3">
+				<select id="AccountType" data-section="Main" class="config-sync bg-black/40 border border-white/10 rounded px-1.5 py-0.5 text-white outline-none cursor-pointer focus:border-[#504099] transition">
+					<option value="Main">Main</option>
+					<option value="Alt">Alt</option>
+				</select>
+				<select id="SubAccountType" data-section="Main" class="config-sync bg-black/40 border border-white/10 rounded px-1.5 py-0.5 text-white outline-none cursor-pointer focus:border-[#504099] transition">
+					<option value="Manual">Manual</option>
+					<option value="Macro">Macro</option>
+				</select>
+			</div>
+
+			<span>Start: <span id="lbl_StartHotkey" class="text-white">F1</span></span>
+			<span>Pause: <span id="lbl_PauseHotkey" class="text-white">F2</span></span>
+			<span>Stop: <span id="lbl_StopHotkey" class="text-white">F3</span></span>
+			
+			<div class="flex gap-2 ml-1 border-l border-white/10 pl-3">
+				<button onclick="openLink('https://github.com/KairosMacro/Kairos')" class="text-gray-500 hover:text-white transition" title="GitHub">
+					<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+				</button>
+				<button onclick="openLink('https://discord.gg/7Z5e66HQuV')" class="text-gray-500 hover:text-[#5865F2] transition" title="Discord">
+					<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="shrink-0 flex px-4 py-1.5 items-center justify-between bg-[#1e1f23] border-b border-white/5 text-[11px]">
+		<div id="toggled_container" class="flex-1 truncate mr-4 text-gray-400 cursor-default">
+			Currently Toggled: <span id="lbl_ActiveFeatures" class="text-white font-medium">None</span>
+		</div>
+		<div class="flex-none flex gap-4 font-medium text-gray-500 uppercase tracking-wider">
+			<div id="Home" class="cursor-pointer hover:text-white transition active" onclick="changeTab(this)">Home</div>
+			<div id="Alt" class="cursor-pointer hover:text-white transition" onclick="changeTab(this)">Alt</div>
+			<div id="Warnings" class="cursor-pointer hover:text-white transition" onclick="changeTab(this)">Warns</div>
+			<div id="BoostBar" class="cursor-pointer hover:text-white transition" onclick="changeTab(this)">Boost Bar</div>
+			<div id="Tracker" class="cursor-pointer hover:text-white transition" onclick="changeTab(this)">Tracker</div>
+			<div id="Settings" class="cursor-pointer hover:text-white transition" onclick="changeTab(this)">Settings</div>
+		</div>
+	</div>
+
+	<div id="tabArea" class="flex-grow p-4 overflow-y-auto overflow-x-hidden">
+		
+		<div id="HomeTab" class="fade-in flex gap-6 h-full">
+			<div class="w-[40%] flex flex-col gap-3">
+				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Profile Manager</h2>
+				<div class="flex flex-col gap-4 bg-white/5 p-4 rounded-lg border border-white/5 shadow-sm">
+					<div class="flex items-center justify-between">
+						<span class="text-sm text-gray-300">Presets:</span>
+						<select id="PresetDDL" class="bg-black/60 border border-white/10 rounded px-2 py-1 w-28 outline-none text-sm text-white cursor-pointer focus:border-[#504099] transition"></select>
+					</div>
+					<div class="grid grid-cols-3 gap-2">
+						<button onclick="ahkAction('LoadPreset')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs py-1.5 rounded transition shadow-sm">Load</button>
+						<button onclick="ahkAction('SavePreset')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs py-1.5 rounded transition shadow-sm">Save</button>
+						<button onclick="ahkAction('NewPreset')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs py-1.5 rounded transition shadow-sm">New</button>
+					</div>
+					<button onclick="ahkAction('DeletePreset')" class="bg-red-900/20 hover:bg-red-600/80 text-red-300 hover:text-white border border-red-900/40 text-xs py-1.5 rounded transition w-full mt-1">Delete Profile</button>
+				</div>
+			</div>
+
+			<div class="w-[60%] flex flex-col gap-3">
+				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Enable Features</h2>
+				<div class="grid grid-cols-2 gap-3">
+					<label id="wrap_AltMacroEnabled" class="flex items-center gap-3 bg-white/5 p-2.5 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+						<input type="checkbox" id="AltMacroEnabled" data-section="Main" class="config-sync">
+						<span class="text-sm font-medium text-gray-200">Alt Macro</span>
+					</label>
+					<label id="wrap_TrackerEnabled" class="flex items-center gap-3 bg-white/5 p-2.5 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+						<input type="checkbox" id="TrackerEnabled" data-section="Main" class="config-sync">
+						<span class="text-sm font-medium text-gray-200">Tracker</span>
+					</label>
+					<label id="wrap_WarnsEnabled" class="flex items-center gap-3 bg-white/5 p-2.5 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+						<input type="checkbox" id="WarnsEnabled" data-section="Main" class="config-sync">
+						<span class="text-sm font-medium text-gray-200">Warns</span>
+					</label>
+					<label id="wrap_BoostBarEnabled" class="flex items-center gap-3 bg-white/5 p-2.5 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+						<input type="checkbox" id="BoostBarEnabled" data-section="Main" class="config-sync">
+						<span class="text-sm font-medium text-gray-200">Boost Bar</span>
+					</label>
+					<label id="wrap_StatMonitorEnabled" class="flex items-center gap-3 bg-white/5 p-2.5 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+						<input type="checkbox" id="StatMonitorEnabled" data-section="Main" class="config-sync">
+						<span class="text-sm font-medium text-gray-200">Stat Monitor</span>
+					</label>
+					<label id="wrap_KeyAlignmentEnabled" class="flex items-center gap-3 bg-white/5 p-2.5 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+						<input type="checkbox" id="KeyAlignmentEnabled" data-section="Main" class="config-sync">
+						<span class="text-sm font-medium text-gray-200">Key Alignment</span>
+					</label>
+					<label id="wrap_MagnifierEnabled" class="flex items-center gap-3 bg-white/5 p-2.5 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+						<input type="checkbox" id="MagnifierEnabled" data-section="Main" class="config-sync">
+						<span class="text-sm font-medium text-gray-200">Magnifier</span>
+					</label>
+				</div>
+			</div>
+		</div>
+
+		<div id="AltTab" class="hidden fade-in gap-6">
+			
+			<div class="flex-1 flex flex-col gap-3">
+				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Alt Settings</h2>
+				
+				<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+					<span class="text-sm text-gray-300">MoveSpeed:</span>
+					<input type="number" id="Movespeed" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-20 text-center outline-none focus:border-[#504099] transition">
+				</div>
+				<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+					<span class="text-sm text-gray-300">Hive Slot:</span>
+					<input type="number" id="HiveSlot" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-20 text-center outline-none focus:border-[#504099] transition">
+				</div>
+				<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+					<span class="text-sm text-gray-300">Alt Number:</span>
+					<input type="number" id="AltNumber" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-20 text-center outline-none focus:border-[#504099] transition">
+				</div>
+				
+				<div class="grid grid-cols-2 gap-3 mt-1">
+					<label class="flex items-center gap-2"><input type="checkbox" id="ShiftLock" data-section="Alt" class="config-sync"> <span class="text-xs text-gray-300">Shift Lock</span></label>
+					<label class="flex items-center gap-2"><input type="checkbox" id="FieldDriftComp" data-section="Alt" class="config-sync"> <span class="text-xs text-gray-300">Drift Comp</span></label>
+					<label class="flex items-center gap-2"><input type="checkbox" id="ClaimHive" data-section="Alt" class="config-sync"> <span class="text-xs text-gray-300">Claim Hive</span></label>
+					<label class="flex items-center gap-2"><input type="checkbox" id="IgnoreInactiveHoney" data-section="Alt" class="config-sync"> <span class="text-xs text-gray-300">Ignore Inactive</span></label>
+					<label class="flex items-center gap-2"><input type="checkbox" id="UseTool" data-section="Alt" class="config-sync"> <span class="text-xs text-gray-300">Use Tool</span></label>
+					<label class="flex items-center gap-2"><input type="checkbox" id="CocoCatch" data-section="Alt" class="config-sync"> <span class="text-xs text-gray-300">Coco Catch</span></label>
+				</div>
+
+				<div class="flex flex-col gap-1 mt-1 bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+					<span class="text-[10px] text-gray-500 uppercase tracking-wider">Priv Server Link:</span>
+					<input type="text" id="PrivServer" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1.5 w-full text-xs outline-none focus:border-[#504099] transition" placeholder="https://roblox.com/...">
+				</div>
+			</div>
+
+			<div class="flex-1 flex flex-col gap-3">
+				<div class="flex justify-between items-end border-b border-white/10 pb-2">
+					<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Field Settings</h2>
+					<div class="flex gap-2">
+						<button onclick="ahkAction('CopyFieldSettings')" class="text-[10px] uppercase tracking-wider bg-[#313865] hover:bg-[#504099] px-2 py-1 rounded transition shadow-sm text-white">Copy</button>
+						<button onclick="ahkAction('PasteFieldSettings')" class="text-[10px] uppercase tracking-wider bg-[#313865] hover:bg-[#504099] px-2 py-1 rounded transition shadow-sm text-white">Paste</button>
+					</div>
+				</div>
+
+				<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+					<span class="text-sm text-gray-300">Field:</span>
+					<select id="DefaultField" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-36 outline-none text-sm text-white cursor-pointer focus:border-[#504099] transition">
+						<option value="sunflower">Sunflower</option>
+						<option value="dandelion">Dandelion</option>
+						<option value="mushroom">Mushroom</option>
+						<option value="blueflower">Blue Flower</option>
+						<option value="clover">Clover</option>
+						<option value="spider">Spider</option>
+						<option value="bamboo">Bamboo</option>
+						<option value="strawberry">Strawberry</option>
+						<option value="pineapple">Pineapple</option>
+						<option value="stump">Stump</option>
+						<option value="cactus">Cactus</option>
+						<option value="pumpkin">Pumpkin</option>
+						<option value="pinetree">Pine Tree</option>
+						<option value="rose">Rose</option>
+						<option value="mountaintop">Mountain Top</option>
+						<option value="coconut">Coconut</option>
+						<option value="pepper">Pepper</option>
+					</select>
+				</div>
+
+				<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+					<span class="text-sm text-gray-300">Pattern:</span>
+					<select id="Pattern" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-36 outline-none text-sm text-white cursor-pointer focus:border-[#504099] transition"></select>
+				</div>
+
+				<div class="flex gap-2">
+					<div class="flex-1 flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+						<span class="text-xs text-gray-400">Size:</span>
+						<input type="number" id="PatternSize" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-12 text-center text-xs outline-none focus:border-[#504099] transition">
+					</div>
+					<div class="flex-1 flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+						<span class="text-xs text-gray-400">Width:</span>
+						<input type="number" id="PatternWidth" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-12 text-center text-xs outline-none focus:border-[#504099] transition">
+					</div>
+				</div>
+
+				<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+					<span class="text-sm text-gray-300">Sprinkler:</span>
+					<div class="flex gap-2">
+						<select id="SprinklerLocation" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-24 outline-none text-[11px] text-white cursor-pointer focus:border-[#504099] transition">
+							<option value="Center">Center</option>
+							<option value="Upper Left">Upper Left</option>
+							<option value="Left">Left</option>
+							<option value="Lower Left">Lower Left</option>
+							<option value="Lower">Lower</option>
+							<option value="Lower Right">Lower Right</option>
+							<option value="Right">Right</option>
+							<option value="Upper Right">Upper Right</option>
+							<option value="Upper">Upper</option>
+						</select>
+						<input type="number" id="SprinklerDistance" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-10 text-center text-xs outline-none focus:border-[#504099] transition">
+					</div>
+				</div>
+
+				<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+					<span class="text-sm text-gray-300">Rotate:</span>
+					<div class="flex flex-col gap-1">
+						<div class="flex gap-1 justify-end">
+							<input type="number" id="RotLR_Amount" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-1 py-0.5 w-10 text-center text-[10px] outline-none">
+							<select id="RotLR_Dir" data-section="Alt" class="config-sync bg-black/60 border border-white/10 rounded px-1 py-0.5 w-14 outline-none text-[10px] text-white cursor-pointer">
+								<option value="Right">Right</option><option value="Left">Left</option>
+							</select>
+						</div>
+					</div>
+				</div>
+
+				<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm">
+					<span class="text-sm text-gray-300">Camera Pitch:</span>
+					<div class="flex items-center gap-2">
+						<span class="text-[10px] text-gray-500">(0=Top, 11=Butt)</span>
+						<input type="number" id="CameraPitch" data-section="Alt" min="0" max="11" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1 w-16 text-center text-xs outline-none focus:border-[#504099] transition">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="WarningsTab" class="hidden fade-in flex-col gap-3 max-w-xl">
+			<div class="grid grid-cols-12 gap-4 px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">
+				<div class="col-span-5">Warning Event</div>
+				<div class="col-span-4 text-center">Threshold</div>
+				<div class="col-span-3 text-center">Action</div>
+			</div>
+			<div id="WarningsContainer" class="flex flex-col"></div>
+		</div>
+
+		<div id="BoostBarTab" class="hidden fade-in gap-8 max-w-3xl">
+			<div class="w-1/3 flex flex-col gap-4">
+				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Activate Slots</h2>
+				<div id="BoostBarSlotsContainer" class="flex flex-col gap-2"></div>
+			</div>
+			<div class="w-2/3 flex flex-col gap-6">
+				<div>
+					<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2 mb-4">Communication</h2>
+					<div class="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-lg border border-white/5">
+						<label class="flex items-center gap-3"><input type="checkbox" id="BoostBar_CommsEnabled" data-section="BoostBar" class="config-sync"><span class="text-sm text-gray-200">Enable Comm Sync</span></label>
+						<div class="flex items-center justify-between text-sm bg-black/40 p-2 rounded border border-white/10">
+							<span class="text-gray-400">Style:</span>
+							<select id="BoostBar_CommsStyle" data-section="BoostBar" class="config-sync bg-transparent border-none outline-none text-white focus:text-[#504099]">
+								<option value="Dweet">Dweet</option>
+								<option value="Local">Local</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div>
+					<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2 mb-4">Trigger Modes</h2>
+					<div class="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-lg border border-white/5">
+						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_Timer" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">Timer</span></label>
+						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_ReGlitter" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">Re-Glitter</span></label>
+						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_OnScorch" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">On Scorch</span></label>
+						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_ReSmoothie" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">Re-Smoothie</span></label>
+						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_OnPopStar" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">On Pop Star</span></label>
+						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_OnGummyballer" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">On Gummyballer</span></label>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="TrackerTab" class="hidden fade-in flex-col gap-4">
+			<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Tracker Passives</h2>
+			<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="Precision" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Precision</span></label>
+				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="SuperSmoothie" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Super Smoothie</span></label>
+				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="CoconutCombo" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Coconut Combo</span></label>
+				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="Scorch" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Scorch</span></label>
+				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="PopStar" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Pop Star</span></label>
+			</div>
+		</div>
+
+		<div id="SettingsTab" class="hidden fade-in flex-col gap-6">
+			<div class="flex flex-col gap-4 max-w-sm">
+				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Macro Keybinds</h2>
+				
+				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+					<span class="text-sm font-medium text-gray-300 ml-2">Start Macro:</span>
+					<div class="flex gap-2">
+						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_StartHotkey_Settings">F1</div>
+						<button onclick="ahkAction('CaptureHotkey|Main|StartHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+					</div>
+				</div>
+				
+				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+					<span class="text-sm font-medium text-gray-300 ml-2">Pause Macro:</span>
+					<div class="flex gap-2">
+						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_PauseHotkey_Settings">F2</div>
+						<button onclick="ahkAction('CaptureHotkey|Main|PauseHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+					</div>
+				</div>
+
+				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+					<span class="text-sm font-medium text-gray-300 ml-2">Stop Macro:</span>
+					<div class="flex gap-2">
+						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_StopHotkey_Settings">F3</div>
+						<button onclick="ahkAction('CaptureHotkey|Main|StopHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+					</div>
+				</div>
+
+				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2 mt-2">Alignment Keybinds</h2>
+
+				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+					<span class="text-sm font-medium text-gray-300 ml-2">Align Key:</span>
+					<div class="flex gap-2">
+						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_AlignmentKey_Settings">e</div>
+						<button onclick="ahkAction('CaptureHotkey|KeyAlignment|AlignmentKey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+					</div>
+				</div>
+
+				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+					<span class="text-sm font-medium text-gray-300 ml-2">Rebind Align:</span>
+					<div class="flex gap-2">
+						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_RebindHotkey_Settings">^+k</div>
+						<button onclick="ahkAction('CaptureHotkey|KeyAlignment|RebindHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<script src="js/bridge.js"></script>
+</body>
+</html>

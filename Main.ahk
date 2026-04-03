@@ -34,7 +34,6 @@ if (A_ScreenDPI != 96) {
 #Include "Scheduler.ahk"
 
 #Include "..\..\Lib\UI"
-#Include "DarkMode.ahk"
 #Include "Tooltip.ahk"
 
 #Include "..\..\Lib\Utils"
@@ -47,6 +46,7 @@ if (A_ScreenDPI != 96) {
 #Include "OCR.ahk"
 #Include "Utility.ahk"
 #Include "WindowTracker.ahk"
+#Include "WebView2\WebViewToo.ahk"
 
 
 if !(pToken := Gdip_Startup())

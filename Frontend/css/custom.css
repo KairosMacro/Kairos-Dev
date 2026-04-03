@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+body {
+	font-family: 'Roboto', sans-serif;
+}
+
+.active {
+	border-bottom: 2px solid#3b82f6;
+	color: white;
+}
+
+.fade-in {
+	animation: fadeIn 0.3s ease-in;
+}
+
+input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 1.1rem;
+	height: 1.1rem;
+	background-color: rgba(0, 0, 0, 0.5);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	border-radius: 0.25rem;
+	cursor: pointer;
+	position: relative;
+	transition: all 0.2 ease;
+}
+
+input[type="checkbox"]:checked {
+	background-color: #504099;
+	border-color: #504099;
+}
+
+input[type="checkbox"]:checked::after {
+	content: '';
+	position: absolute;
+	left: 5px;
+	top: 2px;
+	width: 4px;
+	height: 9px;
+	border: solid white;
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg);
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+::-webkit-scrollbar {
+	width: 6px;
+}
+::-webkit-scrollbar-track {
+	background: #121212;
+}
+::-webkit-scrollbar-thumb {
+	background: #313865;
+	border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: #504099
+}

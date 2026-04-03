@@ -196,8 +196,9 @@ class WebViewToo {
 		}
 		this.Gui.NACCALCSIZE := (OnMessage(WM_NCCALSIZE := 0x0083, WM_NCCALCSIZE_HANDLER))
 		WM_NCCALCSIZE_HANDLER(wParam, lParam, Msg, Hwnd) {
-			if (Hwnd = this.Gui.Hwnd) {
-				return 0
+			try {
+				if (this.HasOwnProp("Gui") && this.Gui && Hwnd = this.Gui.Hwnd)
+						return 0
 			}
 		}
 		DllCall("Dwmapi.dll\DwmSetWindowAttribute", "Ptr", this.Gui.Hwnd, "UInt", DWMWA_WINDOW_CORNER_PREFERENCE := 33, "Ptr*", pvAttribute := 2, "UInt", 4) ;May not work or even cause errors on Win10
