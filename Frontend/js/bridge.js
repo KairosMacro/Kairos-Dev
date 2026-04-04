@@ -291,6 +291,8 @@ function hideModals() {
 	document.getElementById('ModalOverlay').classList.replace('flex', 'hidden');
 	document.getElementById('DeleteProfileModal').classList.replace('flex', 'hidden');
 	document.getElementById('NewProfileModal').classList.replace('flex', 'hidden');
+	const logModal = document.getElementById('MessageLogModal');
+	if(logModal) logModal.classList.replace('flex', 'hidden');
 }
 
 function submitNewProfile() {
@@ -433,13 +435,20 @@ function setCommsUI(state, username = "") {
 	}
 }
 
-function flashCommsConnected() {
-	const status = document.getElementById('BoostBarCommsStatus');
-	if (status) {
-		status.classList.remove('hidden');
-		setTimeout(() => {
-			status.classList.add('hidden');
-		}, 1000);
+function addMessageLog(sender, channel, action) {
+	const container = document.getElementById('MessageLogContainer');
+	if (!container) return;
+
+	if (container.innerHTML.includes("Waiting for messages")) {
+		container.innerHTML = '';
+	}
+	const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+	const logEntry = document.createElement('div');
+	logEntry.className = "flex gap-2 text-gray-300 border-b border-white/5 pb-1 shrink-0";
+	logEntry.innerHTML = `<span class="text-gray-500">[${time}]</span> <span class="text-[#974EC2] font-bold">${sender}</span> <span class="text-gray-400">${channel}:</span> <span class="text-white">${action}</span>`;
+	container.prepend(logEntry);
+	if (container.childElementCount > 20) {
+		container.removeChild(container.lastChild);
 	}
 }
 

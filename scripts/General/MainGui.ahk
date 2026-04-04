@@ -128,6 +128,10 @@
 		}
 
 	Exit(*) {
+		if (IsSet(Comms) && Comms.isEnabled) {
+			Comms.Send("System", "Disconnect", Map("name", Comms.displayName))
+			sleep 50
+		}
 		try this.Web.Gui.Hide()
 		try this.Web.Close()
 		sleep 50

@@ -29,14 +29,13 @@
 		CoordMode "Mouse", "Screen"
 		CoordMode "Pixel", "Screen"
 		OnExit(ExitFunc)
-
-		#Include "%A_WorkingDir%\lib\Utils\"
+		#Include "' A_WorkingDir '\Lib\Utils\"
       #Include "Gdip_All.ahk"
       #Include "Gdip_ImageSearch.ahk"
       #Include "Utility.ahk"
       #Include "JSON.ahk"
-
-		#Include "%A_WorkingDir%\lib\core\"
+		
+		#Include "' A_WorkingDir '\Lib\Core\"
       #Include "Roblox.ahk"
       #Include "Move.ahk"
       #Include "Scheduler.ahk"
@@ -50,7 +49,7 @@
 		global bitmaps := Map()
 		bitmaps.CaseSense := false
 		global pToken := Gdip_Startup()
-		#Include "%A_ScriptDir%\Assets\Bitmaps\"
+		#Include "' A_ScriptDir '\Assets\Bitmaps\"
 		#Include "Offset.ahk"
 		#Include "Movement.ahk"
 		#Include "General.ahk"
@@ -66,20 +65,20 @@
 		MoveSys.coco_enabled := ' Alt.CocoCatch '
 		MoveSys.hive_slot := ' Alt.HiveSlot '
 		MoveSys.is_claimed := ' Alt.ClaimHiveEnabled '
-
+		
 		global field := "' Alt.DefaultField '"
 		global fieldWidth := ' State.FieldSize[Alt.DefaultField].width '
 		global fieldHeight := ' State.FieldSize[Alt.DefaultField].height '
 		global size := ' Alt.PatternSize '
 		global reps := ' Alt.PatternWidth '
-
+		
 		global AltNumber := ' Alt.AltNumber '
-
+		
 		gotoRamp() => MoveSys.GotoRamp()
 		gotoCannon() => MoveSys.GotoCannon()
 		Reset() => MoveSys.ResetCharacter()
-
-
+		
+		
 		walk(tiles, dir1, dir2?) => MoveSys.Walk(tiles, dir1, dir2?)
 		move(tiles) => MoveSys.Move(tiles)
 		FieldDriftCompensate() => MoveSys.FieldDriftCompensate()
@@ -94,7 +93,7 @@
 				Case "Down": UD += count
 			}
 		}
-
+		
 		' vars '
 		global index := 0
 		OnMessage(0x5000, IPC_Receive_Control)

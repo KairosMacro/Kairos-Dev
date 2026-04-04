@@ -7,7 +7,7 @@
 		this.OnMessage := ""
 
 		this.writeName := token (isServer ? "_S" : "_C")
-		this.readName := token (isServer ? "_S" : "_C")
+		this.readName := token (isServer ? "_C" : "_S")
 
 		this.apiWrite := dweet(this.writeName)
 		this.apiRead := dweet(this.readName)
@@ -31,12 +31,14 @@
 
 	Poll() {
 		try {
-			msg := this.apiRead.RecieveMessage()
+			msg := this.apiRead.ReceiveMessage()
 			if (msg = "" || msg["timestamp"] <= this.lastMessage)
 				return
 			this.lastMessage := msg["timestamp"]
-			if (HasProp(this, "OnMessage") ** this.OnMessage)
-				this.OnMessage(msg)
+			if (HasProp(this, "OnMessage") && this.OnMessage) {
+				callback := this.OnMessage
+				callback(msg)
+			}
 		}
 	}
 }
@@ -48,9 +50,9 @@ class dweet {
 	}
 
 	SendMessage(str) {
-		url := this.baseUrl "/dweet/fore/" this.name "?json=" this.Encode(str)
+		url := this.baseUrl "/dweet/for/" this.name "?json=" this.Encode(str)
 		try {
-			wr := ComObject("WinHttp.WinHttp.WinHttpRequest.5.1")
+			wr := ComObject("WinHttp.WinHttpRequest.5.1")
 			wr.Open("GET", url, false)
 			wr.Send()
 			return wr.ResponseText
@@ -78,6 +80,7 @@ class dweet {
 		msg := data["with"][1]["content"]
 		if (!msg.Has("json"))
 			return ""
+		msg := msg["json"]
 		try
 			msg := JSON.parse(msg)
 		catch

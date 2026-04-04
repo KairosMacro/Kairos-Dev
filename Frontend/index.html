@@ -278,15 +278,17 @@
 						<div class="flex items-center justify-between mt-1">
 							<div class="flex items-center gap-2 bg-black/40 px-2.5 py-1 rounded border border-white/10">
 								<div id="BoostBar_CommsLight" class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.8)] transition-colors duration-300"></div>
-								<span id="BoostBar_CommsText" class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Comms: Disabled</span>
+								<span id="BoostBar_CommsText" class="text-[9px] text-gray-400 uppercase tracking-widest font-bold whitespace-nowrap truncate max-w-[120px]">Comms: Disabled</span>
 							</div>
 
 							<div class="flex items-center gap-2 text-[10px] bg-black/40 px-2 py-0.5 rounded border border-white/10">
-								<span id="BoostBarCommsPulse" class="hidden text-[#974EC2] font-bold uppercase tracking-widest drop-shadow-md pr-2 border-r border-white/10 mr-1">● Received</span>
+								<button onclick="document.getElementById('MessageLogModal').classList.replace('hidden', 'flex'); document.getElementById('ModalOverlay').classList.replace('hidden', 'flex');" class="text-[#974EC2] hover:text-white font-bold uppercase tracking-widest drop-shadow-md pr-2 border-r border-white/10 mr-1 transition cursor-pointer">
+									Logs ⏷
+								</button>
+								
 								<span class="text-gray-400 uppercase tracking-wider">Style:</span>
 								<select id="BoostBar_CommsStyle" data-section="BoostBar" class="config-sync bg-transparent border-none outline-none text-white focus:text-[#504099] cursor-pointer">
 									<option value="Dweet">Dweet</option>
-									<option value="Local">Local</option>
 								</select>
 							</div>
 						</div>
@@ -448,6 +450,21 @@
 			<div class="flex justify-end gap-2 mt-2">
 				<button onclick="hideModals()" class="bg-white/5 hover:bg-white/10 text-gray-300 text-xs px-4 py-2 rounded transition">Cancel</button>
 				<button onclick="submitNewProfile()" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-4 py-2 rounded transition shadow-sm">Create</button>
+			</div>
+		</div>
+
+		<div id="MessageLogModal" class="hidden flex-col gap-3 bg-[#181818] border border-white/10 rounded-lg p-4 w-96 shadow-2xl">
+			<div class="flex justify-between items-center border-b border-white/10 pb-2">
+				<h3 class="text-white font-bold text-sm tracking-wider uppercase">Message Logs</h3>
+				<button onclick="hideModals()" class="text-gray-500 hover:text-red-400 transition">✕</button>
+			</div>
+			
+			<div id="MessageLogContainer" class="flex flex-col gap-1.5 h-64 overflow-y-auto pr-1 text-[10px] font-mono select-text">
+				<div class="text-gray-500 text-center mt-10">Waiting for messages...</div>
+			</div>
+			
+			<div class="flex justify-end mt-1 border-t border-white/5 pt-2">
+				<button onclick="document.getElementById('MessageLogContainer').innerHTML = '';" class="bg-white/5 hover:bg-white/10 text-gray-400 text-xs px-3 py-1.5 rounded transition">Clear Logs</button>
 			</div>
 		</div>
 
