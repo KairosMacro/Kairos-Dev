@@ -83,14 +83,12 @@
 				<div class="flex flex-col gap-4 bg-white/5 p-4 rounded-lg border border-white/5 shadow-sm">
 					<div class="flex items-center justify-between">
 						<span class="text-sm text-gray-300">Presets:</span>
-						<select id="PresetDDL" class="bg-black/60 border border-white/10 rounded px-2 py-1 w-28 outline-none text-sm text-white cursor-pointer focus:border-[#504099] transition"></select>
+						<select id="PresetDDL" onchange="ahkAction('LoadPreset|' + this.value)" class="bg-black/60 border border-white/10 rounded px-2 py-1 w-28 outline-none text-sm text-white cursor-pointer focus:border-[#504099] transition"></select>
 					</div>
-					<div class="grid grid-cols-3 gap-2">
-						<button onclick="ahkAction('LoadPreset')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs py-1.5 rounded transition shadow-sm">Load</button>
-						<button onclick="ahkAction('SavePreset')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs py-1.5 rounded transition shadow-sm">Save</button>
-						<button onclick="ahkAction('NewPreset')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs py-1.5 rounded transition shadow-sm">New</button>
+					<div class="grid grid-cols-2 gap-2 mt-1">
+						<button onclick="showNewProfileModal()" class="bg-[#313865] hover:bg-[#504099] text-white text-xs py-1.5 rounded transition shadow-sm">New</button>
+						<button onclick="showDeleteProfileModal()" class="bg-red-900/20 hover:bg-red-600/80 text-red-300 hover:text-white border border-red-900/40 text-xs py-1.5 rounded transition shadow-sm">Delete</button>
 					</div>
-					<button onclick="ahkAction('DeletePreset')" class="bg-red-900/20 hover:bg-red-600/80 text-red-300 hover:text-white border border-red-900/40 text-xs py-1.5 rounded transition w-full mt-1">Delete Profile</button>
 				</div>
 			</div>
 
@@ -250,8 +248,8 @@
 			</div>
 		</div>
 
-		<div id="WarningsTab" class="hidden fade-in flex-col gap-3 max-w-xl">
-			<div class="grid grid-cols-12 gap-4 px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">
+		<div id="WarningsTab" class="hidden fade-in flex-col gap-2 max-w-xl">
+			<div class="grid grid-cols-12 gap-2 px-2.5 text-[9px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-1.5">
 				<div class="col-span-5">Warning Event</div>
 				<div class="col-span-4 text-center">Threshold</div>
 				<div class="col-span-3 text-center">Action</div>
@@ -259,98 +257,209 @@
 			<div id="WarningsContainer" class="flex flex-col"></div>
 		</div>
 
-		<div id="BoostBarTab" class="hidden fade-in gap-8 max-w-3xl">
-			<div class="w-1/3 flex flex-col gap-4">
-				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Activate Slots</h2>
-				<div id="BoostBarSlotsContainer" class="flex flex-col gap-2"></div>
+		<div id="BoostBarTab" class="hidden fade-in gap-4 w-full max-w-4xl">
+			
+			<div class="w-[35%] flex flex-col gap-1">
+				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-1">Activate Slots</h2>
+				<div id="BoostBarSlotsContainer" class="flex flex-col gap-1">
+					</div>
 			</div>
-			<div class="w-2/3 flex flex-col gap-6">
-				<div>
-					<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2 mb-4">Communication</h2>
-					<div class="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-lg border border-white/5">
-						<label class="flex items-center gap-3"><input type="checkbox" id="BoostBar_CommsEnabled" data-section="BoostBar" class="config-sync"><span class="text-sm text-gray-200">Enable Comm Sync</span></label>
-						<div class="flex items-center justify-between text-sm bg-black/40 p-2 rounded border border-white/10">
-							<span class="text-gray-400">Style:</span>
-							<select id="BoostBar_CommsStyle" data-section="BoostBar" class="config-sync bg-transparent border-none outline-none text-white focus:text-[#504099]">
-								<option value="Dweet">Dweet</option>
-								<option value="Local">Local</option>
-							</select>
+			
+			<div class="w-[65%] flex flex-col gap-2">
+				
+				<div class="flex flex-col gap-1">
+					<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-1">Global Settings</h2>
+					<div class="bg-white/5 p-2 rounded-lg border border-white/5 flex flex-col gap-2 shadow-sm">
+						<label class="flex items-center gap-2 cursor-pointer">
+							<input type="checkbox" id="ShowWhenActive" data-section="BoostBar" class="config-sync">
+							<span class="text-xs text-gray-200">Hide UI when active</span>
+						</label>
+						<div class="h-px w-full bg-white/10"></div>
+						<div class="flex items-center justify-between mt-1">
+							<div class="flex items-center gap-2 bg-black/40 px-2.5 py-1 rounded border border-white/10">
+								<div id="BoostBar_CommsLight" class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.8)] transition-colors duration-300"></div>
+								<span id="BoostBar_CommsText" class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Comms: Disabled</span>
+							</div>
+
+							<div class="flex items-center gap-2 text-[10px] bg-black/40 px-2 py-0.5 rounded border border-white/10">
+								<span id="BoostBarCommsPulse" class="hidden text-[#974EC2] font-bold uppercase tracking-widest drop-shadow-md pr-2 border-r border-white/10 mr-1">● Received</span>
+								<span class="text-gray-400 uppercase tracking-wider">Style:</span>
+								<select id="BoostBar_CommsStyle" data-section="BoostBar" class="config-sync bg-transparent border-none outline-none text-white focus:text-[#504099] cursor-pointer">
+									<option value="Dweet">Dweet</option>
+									<option value="Local">Local</option>
+								</select>
+							</div>
 						</div>
 					</div>
 				</div>
-				<div>
-					<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2 mb-4">Trigger Modes</h2>
-					<div class="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-lg border border-white/5">
-						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_Timer" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">Timer</span></label>
-						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_ReGlitter" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">Re-Glitter</span></label>
-						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_OnScorch" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">On Scorch</span></label>
-						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_ReSmoothie" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">Re-Smoothie</span></label>
-						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_OnPopStar" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">On Pop Star</span></label>
-						<label class="flex items-center gap-3"><input type="checkbox" id="Mode_OnGummyballer" data-section="BoostBarModes" class="config-sync"><span class="text-sm text-gray-200">On Gummyballer</span></label>
-					</div>
-				</div>
-			</div>
-		</div>
 
-		<div id="TrackerTab" class="hidden fade-in flex-col gap-4">
-			<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Tracker Passives</h2>
-			<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="Precision" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Precision</span></label>
-				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="SuperSmoothie" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Super Smoothie</span></label>
-				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="CoconutCombo" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Coconut Combo</span></label>
-				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="Scorch" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Scorch</span></label>
-				<label class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition"><input type="checkbox" id="PopStar" data-section="Tracker" class="config-sync"> <span class="text-sm text-gray-200">Pop Star</span></label>
-			</div>
-		</div>
-
-		<div id="SettingsTab" class="hidden fade-in flex-col gap-6">
-			<div class="flex flex-col gap-4 max-w-sm">
-				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Macro Keybinds</h2>
-				
-				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
-					<span class="text-sm font-medium text-gray-300 ml-2">Start Macro:</span>
-					<div class="flex gap-2">
-						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_StartHotkey_Settings">F1</div>
-						<button onclick="ahkAction('CaptureHotkey|Main|StartHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+				<div class="flex flex-col gap-1 mt-0.5">
+					<div class="flex justify-between items-end border-b border-white/10 pb-1">
+						<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Trigger Modes</h2>
+						<span id="lbl_SelectedSlotModes" class="text-[10px] uppercase tracking-wider text-[#974EC2] font-bold drop-shadow-md">Editing Slot 1</span>
 					</div>
+					
+					<div class="grid grid-cols-2 gap-2 bg-white/5 p-2 rounded-lg border border-white/5 shadow-sm" id="BoostBarModesContainer">
+						</div>
 				</div>
 				
-				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
-					<span class="text-sm font-medium text-gray-300 ml-2">Pause Macro:</span>
-					<div class="flex gap-2">
-						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_PauseHotkey_Settings">F2</div>
-						<button onclick="ahkAction('CaptureHotkey|Main|PauseHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
-					</div>
-				</div>
-
-				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
-					<span class="text-sm font-medium text-gray-300 ml-2">Stop Macro:</span>
-					<div class="flex gap-2">
-						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_StopHotkey_Settings">F3</div>
-						<button onclick="ahkAction('CaptureHotkey|Main|StopHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
-					</div>
-				</div>
-
-				<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2 mt-2">Alignment Keybinds</h2>
-
-				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
-					<span class="text-sm font-medium text-gray-300 ml-2">Align Key:</span>
-					<div class="flex gap-2">
-						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_AlignmentKey_Settings">e</div>
-						<button onclick="ahkAction('CaptureHotkey|KeyAlignment|AlignmentKey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
-					</div>
-				</div>
-
-				<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
-					<span class="text-sm font-medium text-gray-300 ml-2">Rebind Align:</span>
-					<div class="flex gap-2">
-						<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_RebindHotkey_Settings">^+k</div>
-						<button onclick="ahkAction('CaptureHotkey|KeyAlignment|RebindHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
-					</div>
-				</div>
 			</div>
 		</div>
 
+		<div id="TrackerTab" class="hidden fade-in flex-col">
+			<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-1.5">Tracker Passives</h2>
+			
+			<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">
+				<label class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+					<input type="checkbox" id="Precision" data-section="Tracker" class="config-sync"> 
+					<span class="text-xs font-medium text-gray-200">Precision</span>
+				</label>
+				<label class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+					<input type="checkbox" id="SuperSmoothie" data-section="Tracker" class="config-sync"> 
+					<span class="text-xs font-medium text-gray-200">Super Smoothie</span>
+				</label>
+				<label class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+					<input type="checkbox" id="CoconutCombo" data-section="Tracker" class="config-sync"> 
+					<span class="text-xs font-medium text-gray-200">Coconut Combo</span>
+				</label>
+
+				<label class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+					<input type="checkbox" id="Scorch" data-section="Tracker" class="config-sync"> 
+					<span class="text-xs font-medium text-gray-200">Scorch</span>
+				</label>
+				<label class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+					<input type="checkbox" id="XFlame" data-section="Tracker" class="config-sync"> 
+					<span class="text-xs font-medium text-gray-200">X-Flame</span>
+				</label>
+				<label class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+					<input type="checkbox" id="GummyStar" data-section="Tracker" class="config-sync"> 
+					<span class="text-xs font-medium text-gray-200">Gummy Star</span>
+				</label>
+
+				<label class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+					<input type="checkbox" id="GummyMorph" data-section="Tracker" class="config-sync"> 
+					<span class="text-xs font-medium text-gray-200">Gummy Morph</span>
+				</label>
+				<label class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+					<input type="checkbox" id="GummyBaller" data-section="Tracker" class="config-sync"> 
+					<span class="text-xs font-medium text-gray-200">Gummyballer</span>
+				</label>
+				<label class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition shadow-sm">
+					<input type="checkbox" id="PopStar" data-section="Tracker" class="config-sync"> 
+					<span class="text-xs font-medium text-gray-200">Pop Star</span>
+				</label>
+			</div>
+		</div>
+
+		<div id="SettingsTab" class="hidden fade-in gap-6 w-full max-w-4xl">
+			
+			<div class="flex-1 flex flex-col gap-4">
+				<div class="flex flex-col gap-3">
+					<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-1.5">Macro Keybinds</h2>
+					
+					<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+						<span class="text-sm font-medium text-gray-300 ml-2">Start Macro:</span>
+						<div class="flex gap-2">
+							<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_StartHotkey_Settings">F1</div>
+							<button onclick="ahkAction('CaptureHotkey|Main|StartHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+						</div>
+					</div>
+					
+					<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+						<span class="text-sm font-medium text-gray-300 ml-2">Pause Macro:</span>
+						<div class="flex gap-2">
+							<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_PauseHotkey_Settings">F2</div>
+							<button onclick="ahkAction('CaptureHotkey|Main|PauseHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+						</div>
+					</div>
+
+					<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+						<span class="text-sm font-medium text-gray-300 ml-2">Stop Macro:</span>
+						<div class="flex gap-2">
+							<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_StopHotkey_Settings">F3</div>
+							<button onclick="ahkAction('CaptureHotkey|Main|StopHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+						</div>
+					</div>
+				</div>
+
+				<div class="flex flex-col gap-3 mt-1">
+					<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-1.5">Alignment Keybinds</h2>
+
+					<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+						<span class="text-sm font-medium text-gray-300 ml-2">Align Key:</span>
+						<div class="flex gap-2">
+							<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_AlignmentKey_Settings">e</div>
+							<button onclick="ahkAction('CaptureHotkey|KeyAlignment|AlignmentKey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+						</div>
+					</div>
+
+					<div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+						<span class="text-sm font-medium text-gray-300 ml-2">Rebind Align:</span>
+						<div class="flex gap-2">
+							<div class="bg-black/60 border border-white/10 rounded px-4 py-1 text-sm text-[#974EC2] min-w-[60px] text-center" id="lbl_RebindHotkey_Settings">^+k</div>
+							<button onclick="ahkAction('CaptureHotkey|KeyAlignment|RebindHotkey')" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-3 py-1 rounded transition shadow-sm">Rebind</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="flex-1 flex flex-col gap-3">
+				<div class="flex items-end justify-between border-b border-white/10 pb-1.5">
+					<h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Communicator</h2>
+					<span id="lbl_CommsRole" class="text-[10px] uppercase tracking-wider text-[#974EC2] font-bold drop-shadow-md">Role: Server</span>
+				</div>
+				
+				<div class="bg-white/5 p-3 rounded-lg border border-white/5 flex flex-col gap-3 shadow-sm">
+					<label class="flex items-center gap-3 cursor-pointer">
+						<input type="checkbox" id="CommunicationEnabled" data-section="Communicator" class="config-sync">
+						<span class="text-sm font-medium text-gray-200">Enable Communication</span>
+					</label>
+					
+					<div class="flex flex-col gap-1.5 mt-1">
+						<span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Display Name:</span>
+						<input type="text" id="DisplayName" data-section="Communicator" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1.5 w-full text-xs text-white outline-none focus:border-[#504099] transition" placeholder="e.g. Kairos_Main">
+					</div>
+
+					<div class="flex flex-col gap-1.5">
+						<span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Channel Token:</span>
+						<input type="text" id="DweetName" data-section="Communicator" class="config-sync bg-black/60 border border-white/10 rounded px-2 py-1.5 w-full text-[11px] text-gray-400 outline-none focus:border-[#504099] transition" readonly>
+					</div>
+					
+					<div class="grid grid-cols-3 gap-2 mt-1">
+						<button onclick="copyChannel(this)" class="bg-white/10 hover:bg-white/20 text-gray-300 text-[10px] uppercase tracking-wider py-1.5 rounded transition shadow-sm">Copy</button>
+						<button onclick="pasteChannel(this)" class="bg-white/10 hover:bg-white/20 text-gray-300 text-[10px] uppercase tracking-wider py-1.5 rounded transition shadow-sm">Paste</button>
+						<button onclick="generateChannel()" class="bg-[#313865] hover:bg-[#504099] text-white text-[10px] uppercase tracking-wider py-1.5 rounded transition shadow-sm">Generate</button>
+					</div>
+					<p class="text-[9px] text-gray-500 leading-relaxed mt-1 text-center">
+						Both macros must share the exact same Channel Token to connect.
+					</p>
+				</div>
+			</div>
+			
+		</div>
+
+	</div>
+
+	<div id="ModalOverlay" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 fade-in backdrop-blur-sm">
+		
+		<div id="NewProfileModal" class="hidden flex-col gap-4 bg-[#181818] border border-white/10 rounded-lg p-5 w-72 shadow-2xl">
+			<h3 class="text-white font-bold text-sm tracking-wider uppercase">Create New Profile</h3>
+			<input type="text" id="NewProfileInput" placeholder="Profile Name..." class="bg-black/60 border border-white/10 rounded px-3 py-2 text-sm text-white outline-none focus:border-[#504099] transition w-full">
+			<div class="flex justify-end gap-2 mt-2">
+				<button onclick="hideModals()" class="bg-white/5 hover:bg-white/10 text-gray-300 text-xs px-4 py-2 rounded transition">Cancel</button>
+				<button onclick="submitNewProfile()" class="bg-[#313865] hover:bg-[#504099] text-white text-xs px-4 py-2 rounded transition shadow-sm">Create</button>
+			</div>
+		</div>
+
+		<div id="DeleteProfileModal" class="hidden flex-col gap-4 bg-[#181818] border border-white/10 rounded-lg p-5 w-72 shadow-2xl">
+			<h3 class="text-red-400 font-bold text-sm tracking-wider uppercase">Delete Profile?</h3>
+			<p class="text-sm text-gray-300 leading-relaxed">Are you sure you want to delete '<span id="DeleteProfileName" class="text-white font-bold"></span>'?<br><br>This cannot be undone.</p>
+			<div class="flex justify-end gap-2 mt-2">
+				<button onclick="hideModals()" class="bg-white/5 hover:bg-white/10 text-gray-300 text-xs px-4 py-2 rounded transition">Cancel</button>
+				<button onclick="submitDeleteProfile()" class="bg-red-900/60 hover:bg-red-600 border border-red-900/50 text-white text-xs px-4 py-2 rounded transition shadow-sm">Delete</button>
+			</div>
+		</div>
+		
 	</div>
 
 	<script src="js/bridge.js"></script>

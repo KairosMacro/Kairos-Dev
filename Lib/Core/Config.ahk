@@ -120,6 +120,7 @@
 		)
 		, "Communicator", Map(
 			"CommunicationEnabled", 0
+			, "DisplayName", "User_" Random(1000, 9999)
 			, "DweetName", "K" Random(10000000, 99999999) "X" Random(10000000, 99999999)
 		)
 		, "StatMonitor", Map(

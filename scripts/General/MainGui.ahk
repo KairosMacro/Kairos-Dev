@@ -14,6 +14,15 @@
 
 		this.Web := WebViewToo(, , , True)
 		this.Web.OnEvent("Close", this.Exit.Bind(this))
+
+		Settings := this.Web.CoreWebView2.Settings
+		Settings.AreDefaultContextMenusEnabled := false
+		Settings.IsZoomControlEnabled := false
+		Settings.IsStatusBarEnabled := false
+		Settings.IsSwipeNavigationEnabled := false
+		Settings.AreBrowserAcceleratorKeysEnabled := false
+		Settings.AreDevToolsEnabled := false
+
 		this.FeatureRefreshers := Map(
 			"BoostBarEnabled", () => (IsSet(Boost) && Boost) ? Boost.RefreshConfig() : 0,
 			"WarnsEnabled", () => (IsSet(Warns) && Warns) ? Warns.RefreshConfig() : 0,
@@ -61,6 +70,15 @@
 		Config.Set(section, key, val)
 		Config.WriteIni()
 		this.RefreshFeature(key)
+
+		if (section = "Communicator") {
+			if IsSet(Comms)
+				Comms.UpdateSettings()
+		}
+		if (section = "BoostBar") {
+			if IsSet(Boost) && Boost
+				Boost.Draw()
+		}
 	}
 
 	HandleAction(actionStr) {
@@ -70,13 +88,13 @@
 		param2 := parts.Length > 2 ? parts[3] : ""
 
 		if (action = "LoadPreset")
-			this.LoadPreset()
+			this.LoadPreset(param1)
 		else if (action = "SavePreset")
 			this.SavePreset()
 		else if (action = "NewPreset")
-			this.NewPreset()
+			this.NewPreset(param1)
 		else if (action = "DeletePreset")
-			this.DeletePreset()
+			this.DeletePreset(param1)
 		else if (action = "BrowseSound")
 			this.BrowseSound(param1)
 		else if (action = "TestSound")
@@ -194,74 +212,11 @@
 				this.RegisterHotkeys()
 			}
 		}
-		jsEnd := "
-		(
-			document.getElementById('lbl_" KeyName "_Settings').innerText = '" finalKey "';
-			if(document.getElementById('lbl_" KeyName "')) {
-				document.getElementById('lbl_" KeyName "').innerText = '" finalKey "';
-			}
-		)"
+		jsEnd := "document.getElementById('lbl_" KeyName "_Settings').innerText = '" finalKey "'; "
+		jsEnd .= "if (document.getElementById('lbl_" KeyName "')) { "
+		jsEnd .= "document.getElementById('lbl_" KeyName "').innerText = '" finalKey "'; }"
+		
 		this.Web.ExecuteScript(jsEnd)
-	}
-
-	OpenModeSelector(index, GuiCtrl*) {
-		static ModeGui := ""
-		GuiClose(*) {
-			if (IsSet(ModeGui) && IsObject(ModeGui))
-				try ModeGui.Destroy(), ModeGui := ""
-		}
-		GuiClose()
-		currentConfig := Config.Get("BoostBar", "SlotMode" index, "Timer")
-
-		ModeGui := Gui("+Owner" this.Gui.Hwnd " +AlwaysOnTop +Border +ToolWindow", "Slot " index)
-		ModeGui.SetFont("s10 cDefault Norm", "Bahnschrift")
-		ModeGui.OnEvent("Close", (*) => GuiClose)
-
-		UpdateConfig(*) {
-			savedList := []
-			for mode, ctrl in CheckBoxes {
-				if (ctrl.Value)
-					savedList.Push(mode)
-			}
-
-			saveString := ""
-			for item in savedList
-				saveString .= (A_Index > 1 ? "|" : "") item
-			Config.Set("BoostBar", "SlotMode" index, saveString)
-			Config.WriteIni()
-
-			count := savedList.Length
-			this.Gui["BoostBar_Config" index].Text := (count = 0) ? "None" : (count > 1 ? "Multiple" : saveString)
-
-			if IsSet(Boost) && Boost
-				Boost.RefreshConfig()
-				Boost.Draw()
-		}
-
-		CheckBoxes := Map()
-		ModeList := []
-		for i in ["Timer", "ReGlitter", "On Scorch", "ReSmoothie", "On Pop Star", "On Baller", "On Shower", "On Gummy"]
-			ModeList.Push(i)
-
-		Columns := 2
-		Margin := 10
-
-		for index, modeName in ModeList {
-			i := A_Index - 1
-			col := Mod(i, Columns)
-			row := Floor(i / Columns)
-			isChecked := InStr("|" currentConfig "|", "|" modeName "|")
-			x := Margin + (col * 100)
-			y := Margin + (row * 25)
-			cb := ModeGui.Add("CheckBox", "x" x " y" y " w20 h20 Checked" isChecked)
-			cb.OnEvent("Click", UpdateConfig.Bind(this))
-			ModeGui.Add("Text", "x" x + 20 " y" y + 3 " w100 h20 c" (Config.Get("Main", "DarkMode", 1) ? "White" : "Black"), modeName)
-			CheckBoxes[modeName] := cb
-		}
-		TotalRows := Ceil(ModeList.Length / Columns)
-		MinWidth := (Margin * 2) + (Columns * 100)
-		MinHeight := (Margin * 2) + (TotalRows * 25)
-		ModeGui.Show("w" MinWidth " h" MinHeight)
 	}
 
 	UpdatePassives(GuiCtrl, *) {
@@ -399,51 +354,45 @@
 				Boost.Draw()
 	}
 
-	LoadPreset(*) {
-		selected := this.Gui["PresetDDL"].Text
-		if !selected
+	LoadPreset(presetName, *) {
+		if !presetName
 			return
-		Config.SetPreset(selected)
-		Reload
+		Config.SetPreset(presetName)
+		this.InitialSync()
 	}
 
 	SavePreset(*) {
 		Config.WriteIni()
-		Tooltip "Preset saved."
-		SetTimer Tooltip, -750
 	}
 
-	NewPreset(*) {
-		presetName := InputBox("Enter a new preset name:", "New Preset", "w200 h100").Value
+	NewPreset(presetName, *) {
 		if (presetName = "")
 			return
 		presetName := RegExReplace(presetName, "[\\/:\*\?`"<>\|]", "")
 
-		if (StrLower(presetName) = "global") {
-			MsgBox("Cannot use 'global' as a preset name.", "Kairos", 48)
+		if (StrLower(presetName) ~= "i)^(config|global)$") {
+			this.Web.ExecuteScript("alert('You cannot use global or config as a profile name.');")
 			return
 		}
 
 		newPath := A_WorkingDir "\settings\" presetName ".ini"
-		try FileCopy(Config.path, newPath, 1)
-		Config.SetPreset(presetName)
-		Reload
-	}
-
-	DeletePreset(*) {
-		selected := this.Gui["PresetDDL"].Text
-		if (selected = "config" || selected = "") {
-			MsgBox("Cannot delete the default config profile.", "Kairos", 48)
+		if FileExist(newPath) {
+			this.Web.ExecuteScript("alert('A profile with this name already exists.');")
 			return
 		}
-		result := MsgBox("Are you sure you want to delete the profile '" selected "'?", "Delete Profile", "YesNo Icon?")
-		if (result = "Yes") {
-			filePath := A_WorkingDir "\settings\" selected ".ini"
-			if FileExist(filePath)
-				FileDelete(filePath)
-				Config.SetPreset("config")
-				Reload
-		}
+		try FileCopy(Config.path, newPath, 0)
+		Config.SetPreset(presetName)
+		this.InitialSync()
+	}
+
+	DeletePreset(presetName, *) {
+		if (presetName ~= "i)^(config|global)$" || presetName = "")
+			return
+		filePath := A_WorkingDir "\settings\" presetName ".ini"
+		if FileExist(filePath)
+			FileDelete(filePath)
+		Config.SetPreset("config")
+		this.InitialSync()
 	}
 
 	RefreshFeature(FeatureName) {
@@ -552,10 +501,8 @@
 	}
 
 	RegisterHotkeys() {
-		try {
-			Hotkey(Config.Get("Main", "StartHotkey", "F1"), (*) => this.start())
-			Hotkey(Config.Get("Main", "PauseHotkey", "F2"), (*) => this.pause())
-			Hotkey(Config.Get("Main", "StopHotkey", "F3"), (*) => this.stop())
-		}
+		try Hotkey(Config.Get("Main", "StartHotkey", "F1"), (*) => this.start(), "On")
+		try Hotkey(Config.Get("Main", "PauseHotkey", "F2"), (*) => this.pause(), "On")
+		try Hotkey(Config.Get("Main", "StopHotkey", "F3"), (*) => this.stop(), "On")
 	}
 }
