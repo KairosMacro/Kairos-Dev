@@ -72,13 +72,13 @@
 		;	return
 		;}
 
-		;if !(this.Reconnect())
-		;	this.Reset()
+		if !(this.Reconnect())
+			this.Reset()
 		fieldName := this.DefaultField
-		;this.GotoField(fieldName)
-		;this.PlaceSprinkler()
-		;this.Rotation()
-		;this.EnableShift(1)
+		this.GotoField(fieldName)
+		this.PlaceSprinkler()
+		this.Rotation()
+		this.EnableShift(1)
 		sleep 100
 		if (IsSet(Boost) && Boost)
 			Boost.stats.BuffState["Timer"] := 1
