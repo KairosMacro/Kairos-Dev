@@ -735,7 +735,7 @@
 		if (!IsSet(path)) {
 			dateFolder := FormatTime(A_Now, "yyyy-MM-dd")
 			timeStr := FormatTime(A_Now, "HH-mm-ss")
-			dirPath := A_ScriptDir "\..\..\graphs\" dateFolder
+			dirPath := A_WorkingDir "\graphs\" dateFolder
 			if !DirExist(dirPath)
 				DirCreate(dirPath)
 			path := dirPath "\graph_" timeStr ".png"
@@ -755,7 +755,7 @@
 			return
 		if (!IsSet(path)) {
 			timeStr := FormatTime(A_Now, "yyyy-MM-dd_HH-mm-ss")
-			path := A_ScriptDir "\export_" timeStr ".txt"
+			path := A_WorkingDir "\graphs\export_" timeStr ".txt"
 		}
 		out := "RAW DATA OF DETECTION `n====================`n"
 		for index, snap in this.logs {
