@@ -48,9 +48,9 @@
 			-->
 			</div>
 
-			<span>Start: <span id="lbl_StartHotkey" class="text-white">F1</span></span>
-			<span>Pause: <span id="lbl_PauseHotkey" class="text-white">F2</span></span>
-			<span>Stop: <span id="lbl_StopHotkey" class="text-white">F3</span></span>
+			<button onclick="window.chrome.webview.hostObjects.ahk.Start()" class="px-2 py-0.5 rounded bg-emerald-600/80 hover:bg-emerald-500 text-white transition cursor-pointer" title="Start Macro">Start (<span id="lbl_StartHotkey" class="text-white">F1</span>)</button>
+			<button onclick="window.chrome.webview.hostObjects.ahk.Pause()" class="px-2 py-0.5 rounded bg-amber-600/80 hover:bg-amber-500 text-white transition cursor-pointer" title="Pause Macro">Pause (<span id="lbl_PauseHotkey" class="text-white">F2</span>)</button>
+			<button onclick="window.chrome.webview.hostObjects.ahk.Stop()" class="px-2 py-0.5 rounded bg-red-600/80 hover:bg-red-500 text-white transition cursor-pointer" title="Stop Macro">Stop (<span id="lbl_StopHotkey" class="text-white">F3</span>)</button>
 			
 			<div class="flex gap-2 ml-1 border-l border-white/10 pl-3">
 				<button onclick="openLink('https://github.com/KairosMacro/Kairos')" class="text-gray-500 hover:text-white transition" title="GitHub">
@@ -90,6 +90,10 @@
 					<div class="grid grid-cols-2 gap-2 mt-1">
 						<button onclick="showNewProfileModal()" class="bg-[#313865] hover:bg-[#504099] text-white text-xs py-1.5 rounded transition shadow-sm">New</button>
 						<button onclick="showDeleteProfileModal()" class="bg-red-900/20 hover:bg-red-600/80 text-red-300 hover:text-white border border-red-900/40 text-xs py-1.5 rounded transition shadow-sm">Delete</button>
+					</div>
+					<div class="grid grid-cols-2 gap-2 mt-1">
+						<button onclick="ahkAction('ExportConfig')" class="bg-emerald-900/30 hover:bg-emerald-600/60 text-emerald-300 hover:text-white border border-emerald-900/40 text-xs py-1.5 rounded transition shadow-sm">Export</button>
+						<button onclick="ahkAction('ImportConfig')" class="bg-amber-900/30 hover:bg-amber-600/60 text-amber-300 hover:text-white border border-amber-900/40 text-xs py-1.5 rounded transition shadow-sm">Import</button>
 					</div>
 				</div>
 			</div>
