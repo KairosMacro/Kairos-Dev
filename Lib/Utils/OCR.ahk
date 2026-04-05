@@ -1,4 +1,4 @@
-﻿/*************************************************************
+/*************************************************************
 * @description: OCR with UWP API
 * @author malcev, teadrinker
 * @url https://www.autohotkey.com/boards/viewtopic.php?t=72674
@@ -95,6 +95,10 @@ ocr(file, lang := "FirstFromAvailableLanguages")
 	IRandomAccessStream := file
 	ComCall(14, BitmapDecoderStatics, "ptr", IRandomAccessStream, "ptr*", &BitmapDecoder:=0)   ; CreateAsync
 	WaitForAsync(&BitmapDecoder)
+	if (!BitmapDecoder) {
+		ObjRelease(IRandomAccessStream)
+		return ""
+	}
 	BitmapFrame := ComObjQuery(BitmapDecoder, IBitmapFrame := "{72A49A1C-8081-438D-91BC-94ECFC8185C6}")
 	ComCall(12, BitmapFrame, "uint*", &width:=0)   ; get_PixelWidth
 	ComCall(13, BitmapFrame, "uint*", &height:=0)   ; get_PixelHeight
@@ -106,8 +110,23 @@ ocr(file, lang := "FirstFromAvailableLanguages")
 	BitmapFrameWithSoftwareBitmap := ComObjQuery(BitmapDecoder, IBitmapFrameWithSoftwareBitmap := "{FE287C9A-420C-4963-87AD-691436E08383}")
 	ComCall(6, BitmapFrameWithSoftwareBitmap, "ptr*", &SoftwareBitmap:=0)   ; GetSoftwareBitmapAsync
 	WaitForAsync(&SoftwareBitmap)
+	if (!SoftwareBitmap) {
+		ObjRelease(IRandomAccessStream)
+		ObjRelease(BitmapDecoder)
+		return ""
+	}
 	ComCall(6, OcrEngine, "ptr", SoftwareBitmap, "ptr*", &OcrResult:=0)   ; RecognizeAsync
 	WaitForAsync(&OcrResult)
+	if (!OcrResult) {
+		Close := ComObjQuery(IRandomAccessStream, IClosable := "{30D5A829-7FA4-4026-83BB-D75BAE4EA99E}")
+		ComCall(6, Close)
+		Close := ComObjQuery(SoftwareBitmap, IClosable := "{30D5A829-7FA4-4026-83BB-D75BAE4EA99E}")
+		ComCall(6, Close)
+		ObjRelease(IRandomAccessStream)
+		ObjRelease(BitmapDecoder)
+		ObjRelease(SoftwareBitmap)
+		return ""
+	}
 	ComCall(6, OcrResult, "ptr*", &LinesList:=0)   ; get_Lines
 	ComCall(7, LinesList, "int*", &count:=0)   ; count
 	loop count
@@ -168,8 +187,9 @@ WaitForAsync(&Object)
 			if (status != 1)
 			{
 				ComCall(8, AsyncInfo, "uint*", &ErrorCode:=0)   ; IAsyncInfo.ErrorCode
-				msgbox "AsyncInfo status error: " ErrorCode
-				ExitApp
+				ObjRelease(Object)
+				Object := 0
+				return
 			}
 			break
 		}
