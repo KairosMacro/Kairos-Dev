@@ -1,4 +1,4 @@
-﻿class Warnings {
+class Warnings {
 	IsRunning := false
 	IsActive := false
 
@@ -16,6 +16,7 @@
 		, "Gummy Morph", { conf: "Morph", key: "gummymorph", max: 30 }
 		, "Gummyballer", { conf: "Baller", key: "gummyballer", max: 1000 }
 		, "Coconut Combo", { conf: "Combo", key: "combo", max: 40 }
+		, "X-Flame", { conf: "XFlame", key: "x-flame", max: 25 }
 	)
 
 	__New() {
@@ -111,6 +112,9 @@
 	}
 
 	RefreshConfig() {
-		; this will have a refresh function at some point
+		this.AudioCache := Map()
+		this.HasPlayed := Map()
+		this.LastPlayed := Map()
+		this.IsActive := this.IsRunning && Config.Get("Main", "WarnsEnabled", 0)
 	}
 }
