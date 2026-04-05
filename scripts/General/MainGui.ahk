@@ -1,4 +1,4 @@
-﻿class MainGui {
+class MainGui {
 	Selectors := Map()
 	FeatureList := ["Alt Macro", "Tracker", "Warns", "Boost Bar", "Stat Monitor", "Key Alignment", "Magnifier"]
 	FwdDown := false
@@ -27,6 +27,18 @@
 			"BoostBarEnabled", () => (IsSet(Boost) && Boost) ? Boost.RefreshConfig() : 0,
 			"WarnsEnabled", () => (IsSet(Warns) && Warns) ? Warns.RefreshConfig() : 0,
 			"TrackerEnabled", () => (IsSet(Track) && Track) ? Track.RefreshConfig() : 0
+		)
+
+		this.TrackerPassiveMap := Map(
+			"Precision", "precise",
+			"SuperSmoothie", "supersmoothie",
+			"CoconutCombo", "combo",
+			"Scorch", "scorch",
+			"XFlame", "x-flame",
+			"GummyStar", "gummystar",
+			"GummyMorph", "gummymorph",
+			"GummyBaller", "gummyballer",
+			"PopStar", "popstar"
 		)
 
 		this.Web.AddHostObjectToScript("drag", { func: (*) => (ControlClick(this.Web.Gui["NCLBUTTONDOWN_Sink"], this.Web.Gui, , "Left", 1), PostMessage(0x00A1, 2, , this.Web.Hwnd)) })
@@ -63,18 +75,37 @@
 		flatSettings["PresetList"] := Config.GetPresets()
 		flatSettings["PresetDDL"] := Config.currentPreset
 		flatSettings["PatternList"] := patternList
+
+		passives := StrSplit(Config.Get("Tracker", "Passives", "scorch"), "|")
+		for htmlId, scannerKey in this.TrackerPassiveMap {
+			found := false
+			for p in passives {
+				if (p = scannerKey) {
+					found := true
+					break
+				}
+			}
+			flatSettings[htmlId] := found ? 1 : 0
+		}
+
 		this.Web.PostWebMessageAsJson(JSON.stringify(flatSettings))
 	}
 
 	ChangeSetting(val, section, key) {
-		if (section = "Tracker" && key ~= "^(Precision|SuperSmoothie|CoconutCombo|Scorch|XFlame|GummyStar|GummyMorph|GummyBaller|PopStar)$") {
-			this.UpdatePassives(key, val)
-			return
-		}
 		Config.Set(section, key, val)
 		Config.WriteIni()
 		this.RefreshFeature(key)
 
+		if (section = "Tracker" && this.TrackerPassiveMap.Has(key)) {
+			passiveStr := ""
+			for htmlId, scannerKey in this.TrackerPassiveMap {
+				if (Config.Get("Tracker", htmlId, 0))
+					passiveStr .= (passiveStr != "" ? "|" : "") scannerKey
+			}
+			Config.Set("Tracker", "Passives", passiveStr)
+			Config.WriteIni()
+			this.RefreshFeature("TrackerEnabled")
+		}
 		if (section = "Communicator") {
 			if IsSet(Comms)
 				Comms.UpdateSettings()
@@ -109,6 +140,10 @@
 			this.CopyFieldSettings()
 		else if (action = "PasteFieldSettings")
 			this.PasteFieldSettings()
+		else if (action = "ExportConfig")
+			this.ExportConfig()
+		else if (action = "ImportConfig")
+			this.ImportConfig()
 	}
 
 	BrowseSound(warnKey, *) {
@@ -131,6 +166,183 @@
 			try this.AudioPlayer.Play(vol)
 		}
 
+	ExportConfig(*) {
+		data := Map()
+		; Start from defaults so every possible key is included
+		for section, keys in Config.Default {
+			sectionMap := Map()
+			for key, val in keys
+				sectionMap[key] := Config.Get(section, key, val)
+			data[section] := sectionMap
+		}
+		; Also include any extra sections/keys in Config.Data not in Default
+		for section, keys in Config.Data {
+			if !data.Has(section)
+				data[section] := Map()
+			for key, val in keys {
+				if !data[section].Has(key)
+					data[section][key] := val
+			}
+		}
+		jsonStr := JSON.stringify(data)
+
+		; AES-256-CBC encrypt
+		plainBuf := Buffer(StrPut(jsonStr, "UTF-8") - 1)
+		StrPut(jsonStr, plainBuf, "UTF-8")
+
+		; SHA-256 hash the secret to get a 32-byte AES key
+		secret := "KairosEncryptionKey-v2-AES256"
+		secretBuf := Buffer(StrPut(secret, "UTF-8") - 1)
+		StrPut(secret, secretBuf, "UTF-8")
+		hAlg := 0
+		DllCall("Bcrypt\BCryptOpenAlgorithmProvider", "Ptr*", &hAlg, "Str", "SHA256", "Ptr", 0, "UInt", 0)
+		hHash := 0, hashLen := 32, hashBuf := Buffer(32)
+		DllCall("Bcrypt\BCryptCreateHash", "Ptr", hAlg, "Ptr*", &hHash, "Ptr", 0, "UInt", 0, "Ptr", secretBuf, "UInt", secretBuf.Size, "UInt", 0)
+		DllCall("Bcrypt\BCryptHashData", "Ptr", hHash, "Ptr", secretBuf, "UInt", secretBuf.Size, "UInt", 0)
+		DllCall("Bcrypt\BCryptFinishHash", "Ptr", hHash, "Ptr", hashBuf, "UInt", 32, "UInt", 0)
+		DllCall("Bcrypt\BCryptDestroyHash", "Ptr", hHash)
+		DllCall("Bcrypt\BCryptCloseAlgorithmProvider", "Ptr", hAlg, "UInt", 0)
+
+		; Generate random 16-byte IV
+		iv := Buffer(16)
+		DllCall("Bcrypt\BCryptGenRandom", "Ptr", 0, "Ptr", iv, "UInt", 16, "UInt", 0x00000002)
+
+		; Open AES provider and set CBC chaining mode
+		hAes := 0
+		DllCall("Bcrypt\BCryptOpenAlgorithmProvider", "Ptr*", &hAes, "Str", "AES", "Ptr", 0, "UInt", 0)
+		chainMode := "ChainingModeCBC"
+		cmBuf := Buffer(StrPut(chainMode, "UTF-16") * 2)
+		StrPut(chainMode, cmBuf, "UTF-16")
+		DllCall("Bcrypt\BCryptSetProperty", "Ptr", hAes, "Str", "ChainingMode", "Ptr", cmBuf, "UInt", cmBuf.Size, "UInt", 0)
+
+		; Generate symmetric key object
+		hKey := 0
+		DllCall("Bcrypt\BCryptGenerateSymmetricKey", "Ptr", hAes, "Ptr*", &hKey, "Ptr", 0, "UInt", 0, "Ptr", hashBuf, "UInt", 32, "UInt", 0)
+
+		; PKCS7 pad plaintext to 16-byte blocks
+		padLen := 16 - Mod(plainBuf.Size, 16)
+		paddedBuf := Buffer(plainBuf.Size + padLen)
+		DllCall("ntdll\RtlCopyMemory", "Ptr", paddedBuf, "Ptr", plainBuf, "UInt", plainBuf.Size)
+		loop padLen
+			NumPut("UChar", padLen, paddedBuf, plainBuf.Size + A_Index - 1)
+
+		; Encrypt — copy IV since BCrypt modifies it in place
+		ivCopy := Buffer(16)
+		DllCall("ntdll\RtlCopyMemory", "Ptr", ivCopy, "Ptr", iv, "UInt", 16)
+		cbCipher := 0
+		DllCall("Bcrypt\BCryptEncrypt", "Ptr", hKey, "Ptr", paddedBuf, "UInt", paddedBuf.Size, "Ptr", 0, "Ptr", ivCopy, "UInt", 16, "Ptr", 0, "UInt", 0, "UInt*", &cbCipher, "UInt", 0)
+		cipherBuf := Buffer(cbCipher)
+		DllCall("ntdll\RtlCopyMemory", "Ptr", ivCopy, "Ptr", iv, "UInt", 16)
+		DllCall("Bcrypt\BCryptEncrypt", "Ptr", hKey, "Ptr", paddedBuf, "UInt", paddedBuf.Size, "Ptr", 0, "Ptr", ivCopy, "UInt", 16, "Ptr", cipherBuf, "UInt", cbCipher, "UInt*", &cbCipher, "UInt", 0)
+
+		DllCall("Bcrypt\BCryptDestroyKey", "Ptr", hKey)
+		DllCall("Bcrypt\BCryptCloseAlgorithmProvider", "Ptr", hAes, "UInt", 0)
+
+		; Prepend IV to ciphertext: [16-byte IV][ciphertext]
+		outBuf := Buffer(16 + cbCipher)
+		DllCall("ntdll\RtlCopyMemory", "Ptr", outBuf, "Ptr", iv, "UInt", 16)
+		DllCall("ntdll\RtlCopyMemory", "Ptr", outBuf.Ptr + 16, "Ptr", cipherBuf, "UInt", cbCipher)
+
+		; Base64 encode the final blob
+		size := 0
+		DllCall("Crypt32\CryptBinaryToStringW", "Ptr", outBuf, "UInt", outBuf.Size, "UInt", 0x40000001, "Ptr", 0, "UInt*", &size)
+		b64 := Buffer(size * 2)
+		DllCall("Crypt32\CryptBinaryToStringW", "Ptr", outBuf, "UInt", outBuf.Size, "UInt", 0x40000001, "Ptr", b64, "UInt*", &size)
+		encoded := StrGet(b64, size, "UTF-16")
+
+		savePath := FileSelect("S16", A_WorkingDir "\settings\" Config.currentPreset ".kairos", "Export Config", "Kairos Config (*.kairos)")
+		if (savePath = "")
+			return
+		if !InStr(savePath, ".kairos")
+			savePath .= ".kairos"
+		f := FileOpen(savePath, "w", "UTF-8")
+		f.Write(encoded)
+		f.Close()
+		this.Web.ExecuteScript("alert('Config exported successfully.');")
+	}
+
+	ImportConfig(*) {
+		filePath := FileSelect(1, A_WorkingDir "\settings\", "Import Config", "Kairos Config (*.kairos)")
+		if (filePath = "")
+			return
+		try {
+			encoded := FileRead(filePath, "UTF-8")
+			encoded := Trim(encoded, " `t`r`n")
+
+			; Base64 decode
+			size := 0
+			DllCall("Crypt32\CryptStringToBinaryW", "Str", encoded, "UInt", 0, "UInt", 0x00000001, "Ptr", 0, "UInt*", &size, "Ptr", 0, "Ptr", 0)
+			bin := Buffer(size)
+			DllCall("Crypt32\CryptStringToBinaryW", "Str", encoded, "UInt", 0, "UInt", 0x00000001, "Ptr", bin, "UInt*", &size, "Ptr", 0, "Ptr", 0)
+
+			if (size < 17) ; Need at least 16-byte IV + 1 block
+				throw Error("File too small")
+
+			; Extract IV (first 16 bytes) and ciphertext (rest)
+			iv := Buffer(16)
+			DllCall("ntdll\RtlCopyMemory", "Ptr", iv, "Ptr", bin, "UInt", 16)
+			cipherLen := size - 16
+			cipherBuf := Buffer(cipherLen)
+			DllCall("ntdll\RtlCopyMemory", "Ptr", cipherBuf, "Ptr", bin.Ptr + 16, "UInt", cipherLen)
+
+			; SHA-256 hash the secret to get the 32-byte AES key
+			secret := "KairosEncryptionKey-v2-AES256"
+			secretBuf := Buffer(StrPut(secret, "UTF-8") - 1)
+			StrPut(secret, secretBuf, "UTF-8")
+			hAlg := 0
+			DllCall("Bcrypt\BCryptOpenAlgorithmProvider", "Ptr*", &hAlg, "Str", "SHA256", "Ptr", 0, "UInt", 0)
+			hHash := 0, hashBuf := Buffer(32)
+			DllCall("Bcrypt\BCryptCreateHash", "Ptr", hAlg, "Ptr*", &hHash, "Ptr", 0, "UInt", 0, "Ptr", secretBuf, "UInt", secretBuf.Size, "UInt", 0)
+			DllCall("Bcrypt\BCryptHashData", "Ptr", hHash, "Ptr", secretBuf, "UInt", secretBuf.Size, "UInt", 0)
+			DllCall("Bcrypt\BCryptFinishHash", "Ptr", hHash, "Ptr", hashBuf, "UInt", 32, "UInt", 0)
+			DllCall("Bcrypt\BCryptDestroyHash", "Ptr", hHash)
+			DllCall("Bcrypt\BCryptCloseAlgorithmProvider", "Ptr", hAlg, "UInt", 0)
+
+			; Open AES provider with CBC mode
+			hAes := 0
+			DllCall("Bcrypt\BCryptOpenAlgorithmProvider", "Ptr*", &hAes, "Str", "AES", "Ptr", 0, "UInt", 0)
+			chainMode := "ChainingModeCBC"
+			cmBuf := Buffer(StrPut(chainMode, "UTF-16") * 2)
+			StrPut(chainMode, cmBuf, "UTF-16")
+			DllCall("Bcrypt\BCryptSetProperty", "Ptr", hAes, "Str", "ChainingMode", "Ptr", cmBuf, "UInt", cmBuf.Size, "UInt", 0)
+
+			; Generate symmetric key object
+			hKey := 0
+			DllCall("Bcrypt\BCryptGenerateSymmetricKey", "Ptr", hAes, "Ptr*", &hKey, "Ptr", 0, "UInt", 0, "Ptr", hashBuf, "UInt", 32, "UInt", 0)
+
+			; Decrypt
+			ivCopy := Buffer(16)
+			DllCall("ntdll\RtlCopyMemory", "Ptr", ivCopy, "Ptr", iv, "UInt", 16)
+			cbPlain := 0
+			DllCall("Bcrypt\BCryptDecrypt", "Ptr", hKey, "Ptr", cipherBuf, "UInt", cipherLen, "Ptr", 0, "Ptr", ivCopy, "UInt", 16, "Ptr", 0, "UInt", 0, "UInt*", &cbPlain, "UInt", 0)
+			plainBuf := Buffer(cbPlain)
+			DllCall("ntdll\RtlCopyMemory", "Ptr", ivCopy, "Ptr", iv, "UInt", 16)
+			DllCall("Bcrypt\BCryptDecrypt", "Ptr", hKey, "Ptr", cipherBuf, "UInt", cipherLen, "Ptr", 0, "Ptr", ivCopy, "UInt", 16, "Ptr", plainBuf, "UInt", cbPlain, "UInt*", &cbPlain, "UInt", 0)
+
+			DllCall("Bcrypt\BCryptDestroyKey", "Ptr", hKey)
+			DllCall("Bcrypt\BCryptCloseAlgorithmProvider", "Ptr", hAes, "UInt", 0)
+
+			; Remove PKCS7 padding
+			if (cbPlain < 1)
+				throw Error("Decryption failed")
+			padVal := NumGet(plainBuf, cbPlain - 1, "UChar")
+			if (padVal < 1 || padVal > 16)
+				throw Error("Invalid padding")
+			jsonStr := StrGet(plainBuf, cbPlain - padVal, "UTF-8")
+
+			data := JSON.parse(jsonStr)
+			for section, keys in data {
+				for key, val in keys
+					Config.Set(section, key, val)
+			}
+			Config.WriteIni()
+			this.InitialSync()
+			this.Web.ExecuteScript("alert('Config imported successfully.');")
+		} catch as e {
+			this.Web.ExecuteScript("alert('Import failed: invalid or corrupted file.');")
+		}
+	}
+
 	Exit(*) {
 		if (IsSet(Comms) && Comms.isEnabled) {
 			Comms.Send("System", "Disconnect", Map("name", Comms.displayName))
@@ -145,7 +357,7 @@
 	; --- Functions ---
 	GenerateUser(GuiCtrl, *) {
 		name := "K" Random(10000000, 99999999) "X" Random(10000000, 99999999)
-		this.Gui["Communicator_DweetName"].Value := name
+		this.Web.ExecuteScript("document.getElementById('Communicator_DweetName').value = '" name "';")
 		Config.Set("Communicator", "DweetName", name)
 		Config.WriteIni()
 		if IsSet(Comms)
@@ -160,7 +372,7 @@
 				SetTimer(ToolTip, -500)
 				return
 			}
-			this.Gui["Communicator_DweetName"].Value := data
+			this.Web.ExecuteScript("document.getElementById('Communicator_DweetName').value = '" WebViewToo.EscapeJS(data) "';")
 			Config.Set("Communicator", "DweetName", data)
 			Config.WriteIni()
 
@@ -227,30 +439,28 @@
 		this.Web.ExecuteScript(jsEnd)
 	}
 
-	UpdatePassives(key, isChecked) {
+	UpdatePassives(GuiCtrl, *) {
 		current := Config.Get("Tracker", "Passives", "scorch")
 		list := StrSplit(current, "|")
 
-		name := StrLower(key)
+		name := StrLower(StrReplace(GuiCtrl.Name, "Tracker_", ""))
 		if (name = "xflame")
 			name := "x-flame"
-		else if (name = "precision")
-			name := "precise"
-		else if (name = "coconutcombo")
-			name := "combo"
 		
 		newList := []
-		for item in list
-			if (item != name && item != "" && item != "precision" && item != "coconutcombo")
+		found := false
+		for item in list {
+			if (item = name)
+				found := true
+			else if (item != "")
 				newList.Push(item)
+		}
 
-		if (isChecked)
+		if (GuiCtrl.Value)
 			newList.Push(name)
-
 		saveStr := ""
 		for item in newList
 			saveStr .= (A_Index > 1 ? "|" : "") item
-
 		Config.Set("Tracker", "Passives", saveStr)
 		Config.WriteIni()
 		this.RefreshFeature("TrackerEnabled")
@@ -312,7 +522,7 @@
 
 		if (FeatureName = "AltMacroEnabled") {
 			role := isChecked ? "Client" : "Server"
-			try this.Gui["CommsStatus"].Text := role
+			try this.Web.ExecuteScript("document.getElementById('CommsStatus').innerText = '" role "';")
 			if IsSet(Comms)
 				Comms.UpdateSettings()
 		}
@@ -413,7 +623,7 @@
 	SelectSound(GuiCtrl, *) {
 		SelectedFile := FileSelect(1, , "Select Sound File", "Audio (*.wav; *.mp3)")
 		if SelectedFile {
-			this.Gui["Warns_SoundFile"].Value := SelectedFile
+			this.Web.ExecuteScript("document.getElementById('Warns_SoundFile').value = '" WebViewToo.EscapeJS(SelectedFile) "';")
 			Config.Set("Warns", "SoundFile", SelectedFile)
 			Config.WriteIni()
 		}
