@@ -65,12 +65,14 @@
 		MoveSys.coco_enabled := ' Alt.CocoCatch '
 		MoveSys.hive_slot := ' Alt.HiveSlot '
 		MoveSys.is_claimed := ' Alt.ClaimHiveEnabled '
+		MoveSys.pitch := ' Alt.CameraPitch '
 		
 		global field := "' Alt.DefaultField '"
 		global fieldWidth := ' State.FieldSize[Alt.DefaultField].width '
 		global fieldHeight := ' State.FieldSize[Alt.DefaultField].height '
 		global size := ' Alt.PatternSize '
 		global reps := ' Alt.PatternWidth '
+		global pitch := ' Alt.CameraPitch '
 		
 		global AltNumber := ' Alt.AltNumber '
 		
@@ -97,7 +99,8 @@
 		' vars '
 		global index := 0
 		OnMessage(0x5000, IPC_Receive_Control)
-		OnMessage(0x5001, IPC_Receive_Coconut)
+		OnMessage(0x5001, IPC_Receive_Coconut_Pos)
+		OnMessage(0x5002, IPC_Receive_Coconut_Clear)
 		
 		IPC_Receive_Control(wParam, lParam, *) {
 			if (wParam = 1)
@@ -108,13 +111,16 @@
 				SetTimer(start, -1)
 			else if (wParam = 3)
 				SetTimer(TriggerDriftComp, -1)
+			else if (wParam = 4)
+				MoveSys.pending_coco_scan := true
 		}
 		
-		IPC_Receive_Coconut(wParam, lParam, *) {
-			if (wParam = -1)
-				MoveSys.TriggerCoconutCatch(false)
-			else
-				MoveSys.TriggerCoconutCatch(wParam, lParam)
+		IPC_Receive_Coconut_Pos(wParam, lParam, *) {
+			MoveSys.TriggerCoconutCatch(wParam, lParam)
+		}
+
+		IPC_Receive_Coconut_Clear(wParam, lParam, *) {
+			MoveSys.TriggerCoconutCatch(false)
 		}
 		
 		start()

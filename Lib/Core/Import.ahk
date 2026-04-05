@@ -30,24 +30,35 @@ SC_Space := "sc039" ; Space
 SC_1 := "sc002" ; 1
 SC_Slash := "sc035" ; /
 
+
+/*
+make path types
+folder name / path type
+
+loop through the folders (and within them, paths).
+add them to paths[pathType][pathname] = contents
+I don't think I need to include the "deprecated" warning because
+we do not use any path from natro.
+
+*/
 importPaths() {
-	pathtypes := Map(
+	path_types := Map(
       "goto_booster", "gtb"
       , "goto_collector", "gtc"
       , "goto_field", "gtf"
       , "goto_planter", "gtp"
       , "goto_questgiver", "gtq"
       , "walk_from", "wf"
-   )
+	)
 	global paths := Map()
 	paths.CaseSense := 0
-	for folderName, abbreviation in pathtypes {
-		(paths[abbreviation] := Map()).CaseSense := 0
-		loop files A_WorkingDir "\Path\" folderName "\*.ahk", "R" {
-			name := StrReplace(A_LoopFileName, ".ahk")
-			name := StrReplace(name, abbreviation "-")
+
+	for folder_name, path_type in path_types {
+		(paths[path_type] := Map()).CaseSense := 0
+		loop files A_WorkingDir "\Paths\" folder_name "\" path_type "-*.ahk", "R" {
+			name := StrReplace(StrReplace(A_LoopFileName, path_type "-"), ".ahk")
 			contents := FileRead(A_LoopFilePath)
-			paths[abbreviation][name] := contents
+			paths[path_type][name] := contents
 		}
 	}
 }

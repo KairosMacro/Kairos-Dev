@@ -42,6 +42,25 @@ window.chrome.webview.addEventListener('message', function(Msg) {
 			}
 			continue;
 		}
+		if (key === "Passives") {
+			const passivesArr = value.split('|');
+			const passiveIds = {
+				"precise": "Precision",
+				"supersmoothie": "SuperSmoothie",
+				"combo": "CoconutCombo",
+				"scorch": "Scorch",
+				"x-flame": "XFlame",
+				"gummystar": "GummyStar",
+				"gummymorph": "GummyMorph",
+				"gummyballer": "GummyBaller",
+				"popstar": "PopStar"
+			};
+			for (let p in passiveIds) {
+				let ele = document.getElementById(passiveIds[p]);
+				if (ele) ele.checked = passivesArr.includes(p);
+			}
+			continue;
+		}
 		let ele = document.getElementById(key);
 		if (ele) {
 			if (ele.type === "checkbox") {

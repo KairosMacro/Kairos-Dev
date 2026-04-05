@@ -12,9 +12,12 @@ TargetPID := A_Args[1]
 pToken := Gdip_Startup()
 OnExit((*) => Gdip_Shutdown(pToken))
 DetectHiddenWindows true
+
+saw_coconut := false
+miss_count := 0
+
 loop {
 	if !WinExist("ahk_pid " TargetPID) {
-		msgbox "exiting"
 		ExitApp
 	}
 	hwnd := WinExist("ahk_exe RobloxPlayerBeta.exe")
@@ -24,10 +27,22 @@ loop {
 	}
 
 	pos := locateCoco(hwnd)
-	if (pos)
+	if (pos) {
+		saw_coconut := true
+		miss_count := 0
 		PostMessage(0x5001, Round(pos.x), Round(pos.y), , "ahk_class AutoHotkey ahk_pid " TargetPID)
-	else
-		PostMessage(0x5001, -1, 0, , "ahk_class AutoHotkey ahk_pid " TargetPID)
+	} else {
+		if (saw_coconut) {
+			miss_count++
+			if (miss_count > 3) {
+				saw_coconut := false
+				miss_count := 0
+				PostMessage(0x5002, 0, 0, , "ahk_class AutoHotkey ahk_pid " TargetPID)
+				PostMessage(0x5000, 4, 0, , "ahk_class AutoHotkey ahk_pid " TargetPID)
+			}
+		}
+	}
+	sleep 10 ; surprisingly, this is fine
 }
 
 locateCoco(hwnd) {
@@ -41,7 +56,7 @@ locateCoco(hwnd) {
 		coco := Gdip_CreateBitmap(7, 7)
 		G := Gdip_GraphicsFromImage(coco)
 		
-		Gdip_GraphicsClear(G, 0xFF99AAB5)  ; health 0xFF1FE744, coco 0xFF99AAB5, balloon 0xFFBB1A34
+		Gdip_GraphicsClear(G, 0xFFBB1A34)  ; health 0xFF1FE744, coco 0xFF99AAB5, balloon 0xFFBB1A34
 		Gdip_DeleteGraphics(G)
 
 		Gdip_GetImageDimensions(coco, &nWidth, &nHeight)

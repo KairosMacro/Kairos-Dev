@@ -51,32 +51,57 @@ Joining the discord server isn't just for downloading the macro. You get to chat
 <summary><h2>Credits (Click to expand)</h2></summary>
 
 ### Dev Team
-* Dully / Dully176 / DullSmallmega176
-* Ferox / ferox7274 / fenixJK
-* Ninju / .ninju. / ninjubaer
-* Myu / myurius / Myurius
-* Ichigo / prodbyichigo / prodbyichigo
-* Souka / soukakuuu / souukaa
+* **Dully** - [GitHub](https://github.com/DullSmallmega176) | [Discord](https://discordapp.com/users/522940239904243712)
+* **Ferox** - [GitHub](https://github.com/fenixJK) | [Discord](https://discordapp.com/users/723656121180487691)
+* **Ninju** - [GitHub](https://github.com/ninjubaer) | [Discord](https://discordapp.com/users/727937385274540046)
+* **Myu** - [GitHub](https://github.com/Myurius) | [Discord](https://discordapp.com/users/398221420330614796)
+* **Ichigo** - [GitHub](https://github.com/prodbyichigo) | [Discord](https://discordapp.com/users/715232319274745947)
+* **Souka** - [GitHub](https://github.com/souukaa) | [Discord](https://discordapp.com/users/1360414741931229385)
+* **Puck** - [GitHub](https://github.com/iSpyPuck) | [Discord](https://discordapp.com/users/819960471863689237)
 
 ### Helpers & Testers
-* 96theo
-* ihateboredom (daveed)
-* acebss (Ace)
-* jacquefps (Jacque)
-* kmaus
-* myths_1 (myth)
-* iSpyPuck (puck)
+* **BeetleSmile63722** (lk2.0)
+* **binob** (binob)
+* **cheesecake** (possiblycheesecake)
+* **Chronologicalism** (chronologicalism)
+* **critical error** (error2337)
+* **ichigo** (prodbyichigo)
+* **friedfryer** (friedfryer)
+* **George** (george273832)
+* **hex** (hexhippos)
+* **hi** (vertig04)
+* **huh** (hello_mam)
+* **jacque** (jacquefps)
+* **Jeff** (jeffisrelatable)
+* **King_Billy** (atlm_ozl)
+* **koharu** (chloecerise)
+* **Leon** (fdsafdsa2160)
+* **Myth** (myths_1)
+* **pavelskibrawlh** (jamie34_er)
+* **PlainMonke** (plainmonke)
+* **PollenMarks** (pollenmarks)
+* **Tage9999** (taggenthepro)
+* **UniFio2475** (unifio)
+* **Windy** (zaylily)
+* **wuacob** (wuacooob)
+* **zephyr** (notzephyr.)
+* **MrSir** (mrsiringtonthe4th)
 
 ### Code Based Stuff & Libraries
+
+A massive THANK YOU to those who have made either these libraries or ideas that are being used for Kairos.
+
+| Lib | Creator(s) | Notes
+
 * **Natro Dev Team** - Bitmaps, Libraries (Move lib, Roblox lib, Import, Path, etc. There's so much useful stuff already made). Structure inspiration (GUI, Auto update, Config, Status.ahk).
-* **[DarkMode.ahk](https://www.autohotkey.com/boards/viewtopic.php?t=115952)** - Made by jNizM
 * **Discord.ahk** - Made by G33kDude (File from Natro Macro).
 * **[Gdip_All.ahk](https://github.com/marius-sucan/AHK-GDIp-Library-Compilation/blob/master/ahk-v1-1/Gdip_All.ahk)** - Created by many (translated to v2.0 by buliasz).
 * **[Gdip_ImageSearch.ahk](https://github.com/MasterFocus/AutoHotkey/blob/master/Functions/Gdip_ImageSearch/Gdip_ImageSearch.ahk)** - Made by MasterFocus & mmikeww, translated by SP.
 * **HyperSleep.ahk** - File coming from Natro Macro
 * **[JSON.ahk](https://github.com/Chunjee/json.ahk)** - Made by Chunjee
 * **[WebSockets.ahk](https://github.com/thqby/ahk2_lib)** - Made by thqby
-If there are credits that are missing, create an issue post in the repository.
+
+> *If there are credits that are missing, create an issue post in the repository.*
 </details>
 
 ## Stars Stars STAAAAARS !!!!!!!!!

@@ -115,7 +115,7 @@ class State {
 		, "pepper", { width: 27, height: 21 }
 		, "coconut", { width: 30, height: 21 }
 	)
-	static SprinklerImages := ["saturator", "saturator_blue", "saturator_gold_night", "saturator_blue_night"]
+	static SprinklerImages := ["saturator"]
 }
 
 WindowTracker.Start(50)

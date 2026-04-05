@@ -67,6 +67,10 @@
 	}
 
 	ChangeSetting(val, section, key) {
+		if (section = "Tracker" && key ~= "^(Precision|SuperSmoothie|CoconutCombo|Scorch|XFlame|GummyStar|GummyMorph|GummyBaller|PopStar)$") {
+			this.UpdatePassives(key, val)
+			return
+		}
 		Config.Set(section, key, val)
 		Config.WriteIni()
 		this.RefreshFeature(key)
@@ -223,28 +227,30 @@
 		this.Web.ExecuteScript(jsEnd)
 	}
 
-	UpdatePassives(GuiCtrl, *) {
+	UpdatePassives(key, isChecked) {
 		current := Config.Get("Tracker", "Passives", "scorch")
 		list := StrSplit(current, "|")
 
-		name := StrLower(StrReplace(GuiCtrl.Name, "Tracker_", ""))
+		name := StrLower(key)
 		if (name = "xflame")
 			name := "x-flame"
+		else if (name = "precision")
+			name := "precise"
+		else if (name = "coconutcombo")
+			name := "combo"
 		
 		newList := []
-		found := false
-		for item in list {
-			if (item = name)
-				found := true
-			else if (item != "")
+		for item in list
+			if (item != name && item != "" && item != "precision" && item != "coconutcombo")
 				newList.Push(item)
-		}
 
-		if (GuiCtrl.Value)
+		if (isChecked)
 			newList.Push(name)
+
 		saveStr := ""
 		for item in newList
 			saveStr .= (A_Index > 1 ? "|" : "") item
+
 		Config.Set("Tracker", "Passives", saveStr)
 		Config.WriteIni()
 		this.RefreshFeature("TrackerEnabled")

@@ -4,11 +4,15 @@
 		this.is_running := false
 		this.is_paused := false
 		this.pending_coconut := false
-		this.coco_enabled := false
+		this.pending_drift_comp := false
+		this.pending_coco_scan := false
 		this.active_keys := Map()
 
 		this.hive_slot := 1
 		this.is_claimed := 1
+		this.pitch := 1
+		this.coco_enabled := false
+		this.last_coco_x := 0
 	}
 
 	Pause() {
@@ -58,14 +62,29 @@
 		while (dist_walked < (tiles * 4) - 0.45) {
 			if (!this.is_running)
 				break
-			if (this.coco_enabled && this.pending_coconut) {
+			if (this.pending_coco_scan) {
+				this.pending_coco_scan := false
 				this.ReleaseAllKeys()
-				this.CatchCoconut()
-				this.pending_coconut := false
+				this.FieldDriftCompensate()
+				this.ScanForCoconut()
+
 				this.HoldKeys(dir1)
 				if IsSet(dir2)
 					this.HoldKeys(dir2)
 				last_tick := QPC()
+				continue
+			}
+			if (this.coco_enabled && this.pending_coconut) {
+				this.ReleaseAllKeys()
+				this.CatchCoconut()
+
+				if (!this.pending_coco_scan) {
+					this.HoldKeys(dir1)
+					if IsSet(dir2)
+						this.HoldKeys(dir2)
+				}
+				last_tick := QPC()
+				continue
 			}
 			if (this.is_paused) {
 				this.ReleaseAllKeys()
@@ -311,6 +330,8 @@
 		}
 
 		while (A_TickCount - start < 7000) { ; 7 second limit for sprinkler...
+			if (this.coco_enabled && this.pending_coconut)
+				break
 			if (this.LocateSprinkler(&x, &y) = 0) {
 				if (miss++ > 3)
 					break
@@ -465,83 +486,96 @@
 		win := Roblox.Get()
 		center_x := win.w // 2
 		center_y := win.h // 2
-		dead_x := win.w * 0.035
-		dead_y := win.h * 0.035
+		dead_x := win.w * 0.045
+		dead_y := win.h * 0.045
 
-		last_seen := A_TickCount
-		scan_step := 0
-		scan_count := 0
-		scan_last := 0
-		net_rot := 0
-		pwm := 50
-
-		SetTimer(SpamKeys, 10)
-
-		while (A_TickCount - last_seen < 15000) {
-			if (!this.is_running)
-				break
+		while (this.is_running) {
 			if (this.is_paused) {
 				this.ReleaseAllKeys()
-				SetTimer(SpamKeys, 0)
 				while (this.is_paused && this.is_running)
 					sleep 10
-				if (!this.is_running)
-					break
-				SetTimer(SpamKeys, 10)
-				last_seen := A_TickCount
-				scan_last := A_TickCount
 			}
 			current_coco := this.pending_coconut
 			if (!current_coco) {
-				this.UpdateHeldKeys([])
-				if (scan_step < 160 && A_TickCount - scan_last > 50) {
-					scan_last := A_TickCount
-					scan_step++
-					if (Mod(scan_count, 4) < 2) {
-						send "{" RotLeft "}"
-						net_rot++
-					} else {
-						send "{" RotRight "}"
-						net_rot--
-					}
-					scan_count++
-				}
-				continue
+				this.ReleaseAllKeys()
+				this.pending_coco_scan := true
+				break
 			}
-			last_seen := A_TickCount
-			scan_last := A_TickCount + 275
-			scan_step := 0
-
+			this.last_coco_x := current_coco.x
+			
 			vec_x := current_coco.x - center_x
 			vec_y := current_coco.y - center_y
-
 			if (Abs(vec_x) < dead_x && Abs(vec_y) < dead_y) {
 				this.UpdateHeldKeys([])
+				sleep 10
 				continue
 			}
 
-			max_dist := Max(Abs(vec_x), Abs(vec_y))
-			duty_x := Abs(vec_x) / max_dist
-			duty_y := Abs(vec_y) / max_dist
 			target_x := (vec_x > 0) ? RightKey : LeftKey
 			target_y := (vec_y > 0) ? BackKey : FwdKey
-			cycle := Mod(A_TickCount, pwm)
-			should_hold_x := (cycle < (pwm * duty_x)) && (Abs(vec_x) > dead_x)
-			should_hold_y := (cycle < (pwm * duty_y)) && (Abs(vec_y) > dead_y)
+
 			final_keys := []
-			if (should_hold_x)
+			if (Abs(vec_x) > dead_x)
 				final_keys.Push(target_x)
-			if (should_hold_y)
+			if (Abs(vec_y) > dead_y)
 				final_keys.Push(target_y)
 			this.UpdateHeldKeys(final_keys)
+			sleep 10
+		}
+		this.ReleaseAllKeys()
+	}
+
+	ScanForCoconut() {
+		if (!this.coco_enabled)
+			return
+		start_time := A_TickCount
+		scan_last := 0
+		net_rot := 0
+		scan_step := 0
+		win := Roblox.Get()
+		center_x := win.w // 2
+
+		if (this.last_coco_x < center_x) {
+			rot_key := RotLeft
+			rot_dir := 1
+		} else {
+			rot_key := RotRight
+			rot_dir := -1
+		}
+
+		SetTimer(SpamKeys, 10)
+		while (this.is_running && (A_TickCount - start_time < 12000)) {
+			if (this.is_paused) {
+				SetTimer(SpamKeys, 0)
+				pause_start := A_TickCount
+				while (this.is_paused && this.is_running)
+					sleep 10
+				SetTimer(SpamKeys, 10)
+				start_time += (A_TickCount - pause_start)
+			}
+			if (this.pending_coconut)
+				break
+			
+			if (A_TickCount - scan_last > 20) {
+				scan_last := A_TickCount
+				if (scan_step < 8) {
+					send "{" rot_key "}"
+					net_rot += rot_dir
+					scan_step++
+				} else
+					scan_step := 0
+			}
 		}
 		SetTimer(SpamKeys, 0)
-		send "{" RotDown " 4}"
-		this.ReleaseAllKeys()
+		if (this.pending_coconut) {
+			this.CatchCoconut()
+		}
+		send "{" RotDown " " this.pitch "}"
 		if (net_rot > 0)
-			Send "{" RotRight " " Abs(net_rot) "}"
+			send "{" RotRight " " net_rot "}"
 		else if (net_rot < 0)
-			Send "{" RotLeft " " Abs(net_rot) "}"
+			send "{" RotLeft " " Abs(net_rot) "}"
+
 		SpamKeys() {
 			send "{" RotUp "}{" ZoomOut "}"
 		}
