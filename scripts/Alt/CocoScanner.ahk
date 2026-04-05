@@ -56,7 +56,7 @@ locateCoco(hwnd) {
 		coco := Gdip_CreateBitmap(7, 7)
 		G := Gdip_GraphicsFromImage(coco)
 		
-		Gdip_GraphicsClear(G, 0xFFBB1A34)  ; health 0xFF1FE744, coco 0xFF99AAB5, balloon 0xFFBB1A34
+		Gdip_GraphicsClear(G, 0xFF99AAB5)  ; health 0xFF1FE744, coco 0xFF99AAB5, balloon 0xFFBB1A34
 		Gdip_DeleteGraphics(G)
 
 		Gdip_GetImageDimensions(coco, &nWidth, &nHeight)
