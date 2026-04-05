@@ -179,6 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		{ key: "Morph", name: "Gummy Morph", unit: "x", max: 30 },
 		{ key: "Baller", name: "Gummyballer", unit: "x", max: 1000 },
 		{ key: "Combo", name: "Coconut Combo", unit: "x", max: 40 }
+		{ key: "XFlame", name: "X-Flame", unit: "x", max: 25 }
 	];
 	const warnContainer = document.getElementById('WarningsContainer');
 	if (warnContainer) {
