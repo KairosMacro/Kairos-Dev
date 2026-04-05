@@ -1,4 +1,4 @@
-﻿class Config {
+class Config {
 	static currentPreset := "config"
 	static path := A_WorkingDir "\settings\config.ini"
 	static Data := Map()
@@ -107,9 +107,24 @@
 			, "Combo_Volume", 25
 			, "Combo_PlayOnce", 0
 			, "Combo_SoundFile", A_WorkingDir "\Assets\Audio\CocoCombo.mp3"
+
+			, "XFlame_Enabled", 0
+			, "XFlame_Threshold", 15
+			, "XFlame_Volume", 25
+			, "XFlame_PlayOnce", 0
+			, "XFlame_SoundFile", A_WorkingDir "\Assets\Audio\Xflames.mp3"
 		)
 		, "Tracker", Map(
 			"Passives", "scorch"
+			, "Precision", 0
+			, "SuperSmoothie", 0
+			, "CoconutCombo", 0
+			, "Scorch", 0
+			, "XFlame", 0
+			, "GummyStar", 0
+			, "GummyMorph", 0
+			, "GummyBaller", 0
+			, "PopStar", 0
 			, "OffsetX", 0
 			, "OffsetY", 0
 			, "Zoom", 1
