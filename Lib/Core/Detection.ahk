@@ -73,7 +73,7 @@ class Detection {
 		loop 10 {
 			idx := 10 - A_Index
 			if (Gdip_ImageSearch(pBitmap, bitmaps["buff"][idx], &loc1, x1, y1, x2, y2, 6) = 1) {
-				mX := SubStr(loc1, 1, InStr(loc1, ",") - 1)
+				mX := Integer(SubStr(loc1, 1, InStr(loc1, ",") - 1))
 				currentWidth := this.numOffset[idx]
 				isOverlap := false
 				for item in found {
@@ -89,7 +89,7 @@ class Detection {
 				if (!isOverlap) {
 					found.Push({ num: idx, x: Integer(mX), w: currentWidth })
 					if (Gdip_ImageSearch(pBitmap, bitmaps["buff"][idx], &loc2, mX + currentWidth - 1, y1, x2, y2, 6) = 1) {
-						mX2 := SubStr(loc2, 1, InStr(loc2, ",") - 1)
+						mX2 := Integer(SubStr(loc2, 1, InStr(loc2, ",") - 1))
 						found.Push({ num: idx, x: Integer(mX2), w: currentWidth })
 					}
 				}
