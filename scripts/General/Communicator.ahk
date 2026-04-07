@@ -1,4 +1,4 @@
-﻿class Communicator {
+class Communicator {
 	isEnabled := false
 	isServer := false
 	displayName := ""
@@ -191,7 +191,7 @@
 				singleUser := user
 				break
 			}
-			Main.Web.ExecuteScript("setCommsUI('Connected', '" singleUser "');")
+			Main.Web.ExecuteScript("setCommsUI('Connected', '" WebViewToo.EscapeJS(singleUser) "');")
 		} else
 			Main.Web.ExecuteScript("setCommsUI('Connected', '" count " Users');")
 	}
