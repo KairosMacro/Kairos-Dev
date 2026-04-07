@@ -52,7 +52,7 @@ class Warnings {
 				this.LastPlayed[warnName] := 0
 
 			currentVal := Scanner.Data[profile.key]
-			if (currentVal = -1) {
+			if (currentVal <= 0) {
 				this.HasPlayed[warnName] := false
 				continue
 			}
