@@ -1,4 +1,4 @@
-﻿class DweetTransport {
+class DweetTransport {
 	__New(token, isServer, displayName) {
 		this.isServer := isServer
 		this.displayName := displayName
@@ -26,7 +26,7 @@
 	}
 
 	Send(payload) {
-		SetTimer(() => this.apiWrite.SendMessage(JSON.Stringify(payload)), -1)
+		SetTimer(() => this.apiWrite.SendMessage(JSON.stringify(payload)), -1)
 	}
 
 	Poll() {
