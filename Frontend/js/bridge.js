@@ -152,6 +152,7 @@ function updateAccountUI() {
 	document.getElementById('Alt')?.classList.toggle('hidden', type === 'Main');
 	document.getElementById('Warnings')?.classList.toggle('hidden', type === 'Alt');
 	document.getElementById('Tracker')?.classList.toggle('hidden', type === 'Alt');
+	document.getElementById('section_AlignmentKeybinds')?.classList.toggle('hidden', type === 'Alt');
 	let activeTab = document.getElementsByClassName("active")[0];
 	if (activeTab) {
 		if (type === 'Alt' && (activeTab.id === 'Warnings' || activeTab.id === 'Tracker')) {
@@ -178,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		{ key: "Shower", name: "Star Shower", unit: "x", max: 25 },
 		{ key: "Morph", name: "Gummy Morph", unit: "x", max: 30 },
 		{ key: "Baller", name: "Gummyballer", unit: "x", max: 1000 },
-		{ key: "Combo", name: "Coconut Combo", unit: "x", max: 40 }, 
+		{ key: "Combo", name: "Coconut Combo", unit: "x", max: 40 },
 		{ key: "XFlame", name: "X-Flame", unit: "x", max: 25 }
 	];
 	const warnContainer = document.getElementById('WarningsContainer');
