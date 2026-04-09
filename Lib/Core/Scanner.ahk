@@ -17,9 +17,9 @@ class ScannerEngine {
 		
 		, "gummyballer", { type: "buff", x1: 0, x2: 0, y1: 0, y2: 0, var: 30 }
 		, "supersmoothie", { type: "percent_buff", img: "smoothie", xOff: -5, colors: [0xffFEC650] }
-		, "precise", { type: "percent_buff", img: "Precise", xOff: 9, colors: [0xff8F4EB4, 0xff774296, 0xff3E274C, 0xff211A24, 0xff201A24, 0xff221A26, 0xff55316A, 0xff8448A6] }
+		, "precise", { type: "percent_buff", img: "Precise", xOff: 4, colors: [0xff8F4EB4, 0xff774296, 0xff3E274C, 0xff211A24, 0xff201A24, 0xff221A26, 0xff55316A, 0xff8448A6] }
 
-		, "gummystar", { type: "custom", method: "DetectGumdrops", x1: 0, x2: 0, y1: 7, y2: 14, var: 30 }
+		, "gummystar", { type: "custom", method: "DetectGumdrops", x1: 0, x2: 0, y1: 6, y2: 17, var: 30 }
 
 		, "bloom_red",        { type: "bloom", x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFFFC9191}
 		, "bloom_blue",       { type: "bloom", x1: 0, x2: 0, y1: 10, y2: 14, var: 21, col: 0xFF90A1FC}
@@ -144,13 +144,13 @@ class ScannerEngine {
 	}
 
 	DetectGumdrops(pBMBottom, pBMHotbar) {
-		if (this.ScanPassive(pBMBottom, "gummystar", this.Profiles["gummystar"]) = -1) {
+		if (this.ScanPassive(pBMBottom, "gummystar-1", this.Profiles["gummystar"]) = -1 || this.ScanPassive(pBMBottom, "gummystar-2", this.Profiles["gummystar"]) = -1) {
 			this.GummyStar.pity := 0
 			return -1
 		}
 
 		if (this.GummyStar.slot = -1) {
-			if (Gdip_ImageSearch(pBMHotbar, bitmaps["buff"]["gumdrop"], &loc, , , , , 5) = 1) {
+			if (Gdip_ImageSearch(pBMHotbar, bitmaps["buff"]["gumdrop-1"], &loc, , , , , 5) = 1 || Gdip_ImageSearch(pBMHotbar, bitmaps["buff"]["gumdrop-2"], &loc, , , , , 5) = 1) {
 				foundX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
 				this.GummyStar.slot := Floor(foundX / 75) ; 0 is slot 1
 			} else
@@ -162,7 +162,8 @@ class ScannerEngine {
 		yOff := 15
 		ySize := yOff + 38
 		if (Gdip_ImageSearch(pBMHotbar, bitmaps["buff"]["unused_slot"], &loc, xOff, yOff, xSize, ySize, 5) = 0) {
-			if A_TickCount - this.GummyStar.lastUse >= 2010 {
+			; in total this will de-sync 1 second if constantly used. (limit is 75)
+			if A_TickCount - this.GummyStar.lastUse >= 2015 {
 				this.GummyStar.pity++
 				this.GummyStar.lastUse := A_TickCount
 			}

@@ -11,6 +11,13 @@
 		, "popstar", { last_not_found: 0, cooldown: 60000, duration: 45000 }
 		, "gummystar", { last_not_found: 0, cooldown: 60000, duration: 45000 }
 	)
+	caps := Map(
+		"scorch", 30
+		, "x-flame", 25
+		, "popstar", 45
+		, "gummystar", 75
+		, "combo", 40
+	)
 
 	__New() {
 		this.Fancy := GdipTooltip(true)
@@ -72,6 +79,8 @@
 				if this.cooldowns.Has(i)
 					this.cooldowns[i].last_not_found := QPC()
 				msgSuffix := ": " val
+				if this.caps.Has(i)
+					msgSuffix .= " / " this.caps[i]
 			}
 			msg.Push([bitmaps["icon"][i], msgSuffix])
 		}
