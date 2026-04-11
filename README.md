@@ -56,7 +56,6 @@ Joining the discord server isn't just for downloading the macro. You get to chat
 * **Ninju** - [GitHub](https://github.com/ninjubaer) | [Discord](https://discordapp.com/users/727937385274540046)
 * **Myu** - [GitHub](https://github.com/Myurius) | [Discord](https://discordapp.com/users/398221420330614796)
 * **Ichigo** - [GitHub](https://github.com/prodbyichigo) | [Discord](https://discordapp.com/users/715232319274745947)
-* **Souka** - [GitHub](https://github.com/souukaa) | [Discord](https://discordapp.com/users/1360414741931229385)
 * **Puck** - [GitHub](https://github.com/iSpyPuck) | [Discord](https://discordapp.com/users/819960471863689237)
 
 ### Helpers & Testers
