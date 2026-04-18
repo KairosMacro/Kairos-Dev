@@ -485,7 +485,7 @@ class BoostBar {
 
 				if !lastFire.Has(idx) || (now - lastFire[idx] >= delay) {
 					activeModes := cache.slotModes[idx]
-11111
+
 					shouldFire := (activeModes.Length > 0)
 					for name in activeModes {
 						if (name != "" && this.stats.Modes.Has(name)) {
