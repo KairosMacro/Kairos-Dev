@@ -121,6 +121,8 @@ class Communicator {
 			this.msgHistory.Pop()
 		
 		sender := msg["sender"]
+		channel := msg["channel"]
+		action := msg["action"]
 		isNewUser := !this.activeConnections.Has(sender)
 
 		this.activeConnections[sender] := nowUnix()
@@ -133,14 +135,13 @@ class Communicator {
 				this.transports[sender] := newTrans
 			}
 		}
-		channel := msg["channel"]
-		action := msg["action"]
 		if (IsSet(Main) && IsObject(Main))
 			Main.Web.ExecuteScript("addMessageLog('" sender "', '" channel "', '" action "');")
 
 		if (channel = "System") {
-			if (action = "Handshake")
+			if (action = "Handshake") {
 				this.Send("System", "HandshakeAck", Map("name", this.displayName))
+			}
 
 			else if (action = "Disconnect") {
 				if (this.activeConnections.Has(sender)) {
@@ -207,8 +208,9 @@ class Communicator {
 	}
 
 	SendHeartbeat() {
-		if (this.isEnabled && this.transports)
+		if (this.isEnabled && this.transports) {
 			this.Send("System", "Ping", Map("name", this.displayName))
+		}
 	}
 
 	PruneConnections() {
@@ -218,7 +220,7 @@ class Communicator {
 		deadUsers := []
 
 		for user, lastSeen in this.activeConnections
-			if (nowUnix() - lastSeen > 30)
+			if (nowUnix() - lastSeen > 45)
 				deadUsers.Push(user)
 
 		for _, user in deadUsers {

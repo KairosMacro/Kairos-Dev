@@ -45,7 +45,7 @@
 			if IsObject(win) && win.ok {
 				targetX := win.x + win.w - this.Width
 				targetY := win.y
-				Config.Get("Main", "KeyAlignmentEnabled", 0) ? this.Gui.Show("NA x" targetX " y" targetY " w" this.Width " h" this.Height) : this.Gui.Hide()
+				Config.Get("Main", "KeyAlignmentEnabled", 0) && Config.Get("Main", "AccountType", "Main") = "Main" ? this.Gui.Show("NA x" targetX " y" targetY " w" this.Width " h" this.Height) : this.Gui.Hide()
 			} else {
 				this.Gui.Hide()
 			}
@@ -54,7 +54,7 @@
 
 	Toggle() {
 		this.IsRunning ^= 1
-		this.IsActive := this.IsRunning && Config.Get("Main", "KeyAlignmentEnabled", 0)
+		this.IsActive := this.IsRunning && Config.Get("Main", "KeyAlignmentEnabled", 0) && Config.Get("Main", "AccountType", "Main") = "Main"
 		if (this.IsActive) {
 			this.Draw()
 			this.RegisterActionHotkey(true)

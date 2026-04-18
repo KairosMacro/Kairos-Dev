@@ -352,7 +352,7 @@
 		State.offsetY := GetYOffset()
 		GetImg() {
 			pBMScreen := Gdip_BitmapFromScreen(windowX + (windowWidth // 2) "|" windowY + State.offsetY "|400|125")
-			while ((A_Index <= 20) && (Gdip_ImageSearch(pBMScreen, bitmaps["FriendJoin"][1], , , , , , 6) = 1 || Gdip_ImageSearch(pBMScreen, bitmaps["FriendJoin"][2], , , , , , 6) = 1)) {
+			while ((A_Index <= 20) && (Gdip_ImageSearch(pBMScreen, bitmaps["FriendJoin"][1], , , , , , 3) = 1 || Gdip_ImageSearch(pBMScreen, bitmaps["FriendJoin"][2], , , , , , 3) = 1)) {
 				Gdip_DisposeImage(pBMScreen)
 				MouseMove windowX + (windowWidth // 2) - 3, windowY + 24
 				click
@@ -379,11 +379,12 @@
 					n += ((Gdip_ImageSearch(pBMScreen, bitmaps["emptyhealth"], , , , , , 10) || this.HealthBar()) = (n = 0))
 					Gdip_DisposeImage(pBMScreen)
 				}
+				SetKeyDelay(PrevKeyDelay)
 				sleep 500
 			}
-
-			if !ignoreCam
+			if !ignoreCam {
 				this.DetectSpawn() ; just to fix camera rotation
+			}
 
 			if system = 1 {
 				movement := this.spawnMoveTo(this.slotMove[this.HiveSlot])
@@ -405,70 +406,71 @@
 					return 1
 				}
 				Gdip_DisposeImage(pBMScreen)
-			}
-			system := 0
-			continue
-		}
-
-		Sleep 500
-		GetRobloxClientPos()
-		MouseMove windowX + 350, windowY + State.offsetY + 100
-		send "{" ZoomOut " 8}"
-
-		movement := 'walk(4, "' RightKey '")`nwalk(20, "' RightKey '", "' FwdKey '")'
-		Path.Execute(movement, "claim_hive")
-
-		slots := Map()
-		move := 'walk(9.2, "' LeftKey '")'
-		Loop this.HiveSlot {
-			if (A_Index > 1) {
-				Path.Execute(move, "claim_hive")
-			}
-
-			sleep 500
-			pBMScreen := GetImg()
-			if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {
-				slots[A_Index] := 1
-			}
-			Gdip_DisposeImage(pBMScreen)
-
-			if (slots.Has(this.HiveSlot) && (slots[this.HiveSlot] = 1)) {
-				break
+				system := 0
+				continue
 			} else {
-				if ((slot := ObjMinIndex(slots)) > 0) {
-					movement := 'walk(' (this.HiveSlot - slot) * 9.2 ', "' RightKey '")'
-					Path.Execute(movement, "claim_hive")
+				Sleep 500
+				GetRobloxClientPos()
+				MouseMove windowX + 350, windowY + State.offsetY + 100
+				send "{" ZoomOut " 8}"
+
+				movement := 'walk(4, "' RightKey '")`nwalk(20, "' RightKey '", "' FwdKey '")'
+				Path.Execute(movement, "claim_hive")
+
+				slots := Map()
+				move := 'walk(9.2, "' LeftKey '")'
+				Loop this.HiveSlot {
+					if (A_Index > 1) {
+						Path.Execute(move, "claim_hive")
+					}
 
 					sleep 500
 					pBMScreen := GetImg()
 					if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {
-						this.HiveSlot := slot
-						break
+						slots[A_Index] := 1
 					}
 					Gdip_DisposeImage(pBMScreen)
-				} else {
-					Loop (6 - this.HiveSlot) {
-						Path.Execute(move, "claim_hive")
-						sleep 500
-						pBMScreen := GetImg()
-						if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {
-							this.HiveSlot := A_Index
-							break 2
-						}
-						Gdip_DisposeImage(pBMScreen)
-					}
-				}
-			}
-			if (A_Index = 5)
-				return 0
-		}
 
-		Send "{" SC_E " down}"
-		sleep 100
-		Send "{" SC_E " up}"
-		HiveConfirmed := 1
-		MouseMove windowX + 350, windowY + State.offsetY + 100
-		return 1
+					if (slots.Has(this.HiveSlot) && (slots[this.HiveSlot] = 1)) {
+						break
+					} else {
+						if ((slot := ObjMinIndex(slots)) > 0) {
+							movement := 'walk(' (this.HiveSlot - slot) * 9.2 ', "' RightKey '")'
+							Path.Execute(movement, "claim_hive")
+
+							sleep 500
+							pBMScreen := GetImg()
+							if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {
+								this.HiveSlot := slot
+								break
+							}
+							Gdip_DisposeImage(pBMScreen)
+						} else {
+							Loop (6 - this.HiveSlot) {
+								Path.Execute(move, "claim_hive")
+								sleep 500
+								pBMScreen := GetImg()
+								if (Gdip_ImageSearch(pBMScreen, bitmaps["claimhive"],,,,,,2,,6) = 1) {
+									this.HiveSlot := A_Index
+									break 2
+								}
+								Gdip_DisposeImage(pBMScreen)
+							}
+						}
+					}
+					if (A_Index = 5)
+						return 0
+				}
+
+				Send "{" SC_E " down}"
+				sleep 100
+				Send "{" SC_E " up}"
+				HiveConfirmed := 1
+				MouseMove windowX + 350, windowY + State.offsetY + 100
+				return 1
+			}
+		}
+		return 0
 	}
 
 	spawnMoveTo(moves) {
@@ -507,13 +509,15 @@
 			SetKeyDelay PrevKeyDelay
 
 			if (!this.ClaimHiveEnabled) {
-				if this.DetectSpawn()
+				if this.DetectSpawn() {
 					return
+				}
 			} else {
 				if (!this.atHive() && this.DetectSpawn()) {
 					sleep 500
-					if this.ClaimHive(1)
+					if this.ClaimHive(1) {
 						return
+					}
 				}
 				if (HiveDown)
 					sendinput "{" RotDown "}"

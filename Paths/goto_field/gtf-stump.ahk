@@ -8,4 +8,5 @@ send "{" FwdKey " up}{" SC_Space " 2}"
 HyperSleep(5000)
 send "{" SC_Space "}"
 sleep 1000
-walk(4, LeftKey)
+walk(5, LeftKey)
+walk(2, BackKey)

@@ -2,7 +2,7 @@ class DweetTransport {
 	__New(token, isServer, displayName) {
 		this.isServer := isServer
 		this.displayName := displayName
-		this.lastMessage := 0
+		this.lastMsgId := ""
 		this.readTimer := ""
 		this.OnMessage := ""
 
@@ -32,9 +32,9 @@ class DweetTransport {
 	Poll() {
 		try {
 			msg := this.apiRead.ReceiveMessage()
-			if (msg = "" || msg["timestamp"] <= this.lastMessage)
+			if (msg = "" || !msg.Has("msgId") || msg["msgId"] = this.lastMsgId)
 				return
-			this.lastMessage := msg["timestamp"]
+			this.lastMsgId := msg["msgId"]
 			if (HasProp(this, "OnMessage") && this.OnMessage) {
 				callback := this.OnMessage
 				callback(msg)
@@ -58,6 +58,7 @@ class dweet {
 			return wr.ResponseText
 		} catch as e
 			return "Error: " e.Message
+		tooltip str
 	}
 
 	ReceiveMessage(ignoreOld := 20) {

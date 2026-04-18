@@ -23,7 +23,7 @@
 		"shower", { key: "shower", var: 0, time: 0, type: "buff" }
 		, "scorch", { key: "scorch", var: 30, time: 0, type: "check" }
 		, "popstar", { key: "popstar", var: 30, time: 0, type: "check" }
-		, "gummy", { key: "gummystar", var: 30, time: 0, type: "check" }
+		, "gummy", { key: ["gummystar-1", "gummystar-2"], var: 30, time: 0, type: "check" }
 	)
 
 	Modes := Map(
@@ -49,7 +49,7 @@
 	}
 
 	SearchBuffs(*) {
-		if (Config.Get("Main", "AltMacroEnabled", 0))
+		if (Config.Get("Main", "AccountType", "Main") != "Main")
 			return
 
 		win := WindowTracker.Get()
@@ -64,7 +64,6 @@
 
 		top := this.Scan(pBMTop, this.topBuff)
 		bottom := this.Scan(pBMBottom, this.bottomBuff)
-
 		for name, data in this.topBuff {
 			isActive := false
 			if (top.Has(name) && top[name].found) {
@@ -82,7 +81,6 @@
 				this.BuffState[name] := isActive ? 1 : 0
 			}
 		}
-
 		for name, data in this.bottomBuff {
 			if (data.type = "check")
 				continue
@@ -108,12 +106,9 @@
 		results := Map()
 		if !pBitmap
 			return results
-
-
 		for name, data in list {
 			found := false
 			val := 0
-
 			if (name = "glitter") {
 				field := Config.Get("Alt", "DefaultField", "pepper")
 				for variant in ["3", "1", "0"] {
@@ -125,6 +120,18 @@
 							found := true
 							break
 						}
+					}
+				}
+			} else if (name = "gummy") {
+				for i in [1, 2] {
+					if (Gdip_ImageSearch(pBitmap, bitmaps["buff"]["gummystar-" i], &loc, , , , , data.var, , 6) = 1) {
+						found := true
+						if (data.time != 0) {
+							x := SubStr(loc, 1, InStr(loc, ",") - 1)
+							gridX := Floor(x / 38) * 38
+							val := this.MeasureBuff(pBitmap, gridX)
+						}
+						break
 					}
 				}
 			} else if (Gdip_ImageSearch(pBitmap, bitmaps["buff"][data.key], &loc, , , , , data.var, , 6) = 1) {
@@ -444,7 +451,7 @@ class BoostBar {
 		this.IsRunning ^= 1
 		this.IsEnabled := this.ConfigCache.enabled
 		this.IsActive := this.IsRunning && this.IsEnabled
-		this.stats.BuffState["Timer"] := (this.IsActive && !Config.Get("Main", "AltMacroEnabled", 0)) ? 1 : 0
+		this.stats.BuffState["Timer"] := (this.IsActive && Config.Get("Main", "AccountType", "Main") != "Alt") ? 1 : 0
 		this.Draw()
 		if (this.IsEnabled) {
 			if (this.IsActive && !this.ConfigCache.showWhenActive) {
@@ -478,7 +485,7 @@ class BoostBar {
 
 				if !lastFire.Has(idx) || (now - lastFire[idx] >= delay) {
 					activeModes := cache.slotModes[idx]
-
+11111
 					shouldFire := (activeModes.Length > 0)
 					for name in activeModes {
 						if (name != "" && this.stats.Modes.Has(name)) {
