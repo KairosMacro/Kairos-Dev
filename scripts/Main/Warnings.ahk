@@ -16,6 +16,7 @@ class Warnings {
 		, "Gummy Morph", { conf: "Morph", key: "gummymorph", max: 30 }
 		, "Gummyballer", { conf: "Baller", key: "gummyballer", max: 1000 }
 		, "Coconut Combo", { conf: "Combo", key: "combo", max: 40 }
+		, "Combo Buff", { conf: "ComboBuff", key: "combo_buff", max: 30, mult: 0.3 }
 		, "X-Flame", { conf: "XFlame", key: "x-flame", max: 25 }
 	)
 

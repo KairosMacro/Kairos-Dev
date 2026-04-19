@@ -57,6 +57,8 @@
 			val := Scanner.Data[i]
 			if (i = "precise")
 				val := (val = -1) ? -1 : this.FormatTime(Round((val / 100) * 60))
+			else if (i = "combo_buff")
+				val := (val = -1) ? -1 : this.FormatTime(Round((val / 100) * 30))
 			else if (i = "supersmoothie")
 				val := (val = -1) ? -1 : this.FormatTime(Round((val / 100) * 1200))
 			

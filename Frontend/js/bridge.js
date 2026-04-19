@@ -53,7 +53,8 @@ window.chrome.webview.addEventListener('message', function(Msg) {
 				"gummystar": "GummyStar",
 				"gummymorph": "GummyMorph",
 				"gummyballer": "GummyBaller",
-				"popstar": "PopStar"
+				"popstar": "PopStar",
+				"combo_buff": "ComboBuff"
 			};
 			for (let p in passiveIds) {
 				let ele = document.getElementById(passiveIds[p]);
@@ -180,7 +181,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		{ key: "Morph", name: "Gummy Morph", unit: "x", max: 30 },
 		{ key: "Baller", name: "Gummyballer", unit: "x", max: 1000 },
 		{ key: "Combo", name: "Coconut Combo", unit: "x", max: 40 },
-		{ key: "XFlame", name: "X-Flame", unit: "x", max: 25 }
+		{ key: "XFlame", name: "X-Flame", unit: "x", max: 25 },
+		{ key: "ComboBuff", name: "Combo Buff", unit: "s", max: 30 }
 	];
 	const warnContainer = document.getElementById('WarningsContainer');
 	if (warnContainer) {

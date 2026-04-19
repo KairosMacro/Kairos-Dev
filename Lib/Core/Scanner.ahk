@@ -18,6 +18,7 @@ class ScannerEngine {
 		, "gummyballer", { type: "buff", x1: 0, x2: 0, y1: 0, y2: 0, var: 30 }
 		, "supersmoothie", { type: "percent_buff", img: "smoothie", xOff: -5, colors: [0xffFEC650] }
 		, "precise", { type: "percent_buff", img: "Precise", xOff: 4, colors: [0xff8F4EB4, 0xff774296, 0xff3E274C, 0xff211A24, 0xff201A24, 0xff221A26, 0xff55316A, 0xff8448A6] }
+		, "combo_buff", { type: "percent_buff", img: "combo_buff", xOff: -3, colors: [0xff88633E, 0xff854C30, 0xffAE2317, 0xffAE2216, 0xff9D3321, 0xff835535, 0xff86613D] }
 
 		, "gummystar", { type: "custom", method: "DetectGumdrops", x1: 0, x2: 0, y1: 6, y2: 17, var: 30 }
 

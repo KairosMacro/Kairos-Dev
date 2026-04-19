@@ -39,6 +39,7 @@ class MainGui {
 			"GummyMorph", "gummymorph",
 			"GummyBaller", "gummyballer",
 			"PopStar", "popstar"
+			,"ComboBuff", "combo_buff"
 		)
 
 		this.Web.AddHostObjectToScript("drag", { func: (*) => (ControlClick(this.Web.Gui["NCLBUTTONDOWN_Sink"], this.Web.Gui, , "Left", 1), PostMessage(0x00A1, 2, , this.Web.Hwnd)) })

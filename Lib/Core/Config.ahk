@@ -113,6 +113,13 @@ class Config {
 			, "XFlame_Volume", 25
 			, "XFlame_PlayOnce", 0
 			, "XFlame_SoundFile", A_WorkingDir "\Assets\Audio\Xflames.mp3"
+
+			, "ComboBuff_Enabled", 0
+			, "ComboBuff_Threshold", 15
+			, "ComboBuff_Volume", 25
+			, "ComboBuff_PlayOnce", 1
+			, "ComboBuff_SoundFile", A_WorkingDir "\Assets\Audio\ComboBuff.mp3"
+
 		)
 		, "Tracker", Map(
 			"Passives", "scorch"
@@ -124,6 +131,7 @@ class Config {
 			, "GummyStar", 0
 			, "GummyMorph", 0
 			, "GummyBaller", 0
+			, "ComboBuff", 0
 			, "PopStar", 0
 			, "OffsetX", 0
 			, "OffsetY", 0
