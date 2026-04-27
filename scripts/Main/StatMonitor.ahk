@@ -19,7 +19,7 @@
 		try {
 			for objItem in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_OperatingSystem")
 				this.os_ver := Trim(StrReplace(StrReplace(StrReplace(StrReplace(objItem.Caption, "Microsoft"), "Майкрософт"), "مايكروسوفت"), "微软"))
-      }
+		}
 
 		this.buff_groups := Map(
 			"boost_red", "boost"
@@ -442,10 +442,10 @@
 			buffs["tide_blessing"] := tide
 
 			snapshot := Map()
-         snapshot["time"] := startTime + (tick * 1000)
-         snapshot["raw_honey"] := raw_honey
-         snapshot["bag"] := Round(Mod(tick, 60) * (100/60), 2)
-         snapshot["buffs"] := buffs
+			snapshot["time"] := startTime + (tick * 1000)
+			snapshot["raw_honey"] := raw_honey
+			snapshot["bag"] := Round(Mod(tick, 60) * (100/60), 2)
+			snapshot["buffs"] := buffs
 			this.logs.Push(snapshot)
 		}
 	}

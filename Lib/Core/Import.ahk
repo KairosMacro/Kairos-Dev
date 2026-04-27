@@ -43,12 +43,12 @@ we do not use any path from natro.
 */
 importPaths() {
 	path_types := Map(
-      "goto_booster", "gtb"
-      , "goto_collector", "gtc"
-      , "goto_field", "gtf"
-      , "goto_planter", "gtp"
-      , "goto_questgiver", "gtq"
-      , "walk_from", "wf"
+		"goto_booster", "gtb"
+		, "goto_collector", "gtc"
+		, "goto_field", "gtf"
+		, "goto_planter", "gtp"
+		, "goto_questgiver", "gtq"
+		, "walk_from", "wf"
 	)
 	global paths := Map()
 	paths.CaseSense := 0

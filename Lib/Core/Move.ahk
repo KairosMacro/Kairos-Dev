@@ -12,7 +12,19 @@
 		this.is_claimed := 1
 		this.pitch := 1
 		this.coco_enabled := false
+		
 		this.last_coco_x := 0
+		this.coco_dx := 0
+		this.last_coco_time := 0
+		this.last_rot_time := 0
+		
+		this.is_catching := false
+		this.coco_scan_ready := false
+		this.scan_lock := false
+		this.frames_since_rot := 0
+		this.rot_blind_spot := 0
+
+		SetTimer(this.BackgroundCocoMonitor.Bind(this), 50)
 	}
 
 	Pause() {
@@ -29,6 +41,49 @@
 		this.ReleaseAllKeys()
 	}
 
+	Walk(tiles, dir1, dir2?) {
+		s := QPC()
+		this.HoldKey(dir1)
+		if IsSet(dir2)
+			this.HoldKey(dir2)
+
+		dist_walked := 0
+		last_tick := QPC()
+		
+		while (dist_walked < (tiles * 4) - 0.45) {
+			if (!this.is_running)
+				break
+			
+			if (this.is_paused || this.is_catching) {
+				this.ReleaseAllKeys()
+				
+				while ((this.is_paused || this.is_catching) && this.is_running)
+					sleep 10
+					
+				if (this.is_running) {
+					this.HoldKey(dir1)
+					if IsSet(dir2)
+						this.HoldKey(dir2)
+				}
+				last_tick := QPC()
+			}
+			
+			current_tick := QPC()
+			delta_time := (current_tick - last_tick) / 1000
+			
+			if (delta_time > 0.5) {
+				last_tick := current_tick
+				continue
+			}
+			
+			last_tick := current_tick
+			dist_walked += this.DetectMovespeed(true) * delta_time
+		}
+		this.ReleaseKey(dir1)
+		if IsSet(dir2)
+			this.ReleaseKey(dir2)
+	}
+
 	Move(tiles) {
 		s := QPC()
 		dist_walked := 0
@@ -37,74 +92,47 @@
 		while (dist_walked < (tiles * 4) - 0.45) {
 			if (!this.is_running)
 				break
-			if (this.is_paused) {
-				while (this.is_paused && this.is_running)
+				
+			if (this.is_paused || this.is_catching) {
+				this.ReleaseAllKeys()
+				while ((this.is_paused || this.is_catching) && this.is_running)
 					sleep 10
 				last_tick := QPC()
 			}
+			
 			current_tick := QPC()
 			delta_time := (current_tick - last_tick) / 1000
+			
+			if (delta_time > 0.5) {
+				last_tick := current_tick
+				continue
+			}
+			
 			last_tick := current_tick
 			dist_walked += this.DetectMovespeed(true) * delta_time
 		}
 		return QPC() - s
 	}
 
-	Walk(tiles, dir1, dir2?) {
-		s := QPC()
-		this.HoldKeys(dir1)
-		if IsSet(dir2)
-			this.HoldKeys(dir2)
+	BackgroundCocoMonitor() {
+		if (!this.is_running || !this.coco_enabled)
+			return
 
-		dist_walked := 0
-		last_tick := QPC()
-		
-		while (dist_walked < (tiles * 4) - 0.45) {
-			if (!this.is_running)
-				break
-			if (this.pending_coco_scan) {
-				this.pending_coco_scan := false
-				this.ReleaseAllKeys()
-				this.FieldDriftCompensate()
-				this.ScanForCoconut()
-
-				this.HoldKeys(dir1)
-				if IsSet(dir2)
-					this.HoldKeys(dir2)
-				last_tick := QPC()
-				continue
-			}
-			if (this.coco_enabled && this.pending_coconut) {
-				this.ReleaseAllKeys()
-				this.CatchCoconut()
-
-				if (!this.pending_coco_scan) {
-					this.HoldKeys(dir1)
-					if IsSet(dir2)
-						this.HoldKeys(dir2)
+		if (this.pending_coconut && !this.is_catching) {
+			this.is_catching := true
+			while (this.is_running && (this.pending_coconut || this.pending_coco_scan)) {
+				if (this.pending_coconut) {
+					this.ReleaseAllKeys()
+					this.CatchCoconut()
 				}
-				last_tick := QPC()
-				continue
-			}
-			if (this.is_paused) {
-				this.ReleaseAllKeys()
-				while (this.is_paused && this.is_running)
-					sleep 10
-				if (this.is_running) {
-					this.HoldKeys(dir1)
-					if IsSet(dir2)
-						this.HoldKeys(dir2)
+				if (this.pending_coco_scan) {
+					this.pending_coco_scan := false
+					this.ScanForCoconut()
 				}
-				last_tick := QPC()
 			}
-			current_tick := QPC()
-			delta_time := (current_tick - last_tick) / 1000
-			last_tick := current_tick
-			dist_walked += this.DetectMovespeed(true) * delta_time
+			this.FieldDriftCompensate() 
+			this.is_catching := false
 		}
-		this.ReleaseKey(dir1)
-		if IsSet(dir2)
-			this.ReleaseKey(dir2)
 	}
 
 	DetectMovespeed(getMovespeed?) {
@@ -169,8 +197,8 @@
 		return ((BaseMovespeed + BearMorph + CoconutHaste) * Multiplier * Haste * HastePlus * (GiftedHasty ? 1.15 : 1) * (HastyGuards ? 1.1 : 1)) * (IsSet(getMovespeed) ? 1 : (QPC() - s) / 1000)
 	}
 
-	HoldKeys(key) {
-		if (!this.active_keys.Has(key) || !this.active_keys[key]) {
+	HoldKey(key) {
+		if (!this.active_keys.Has(key) || !this.active_keys[key] || !GetKeyState(key)) {
 			send "{" key " down}"
 			this.active_keys[key] := true
 		}
@@ -184,11 +212,9 @@
 	}
 
 	ReleaseAllKeys() {
+		send "{" FwdKey " up}{" BackKey " up}{" LeftKey " up}{" RightKey " up}"
 		for key, is_down in this.active_keys {
-			if (is_down) {
-				send "{" key " up}"
-				this.active_keys[key] := false
-			}
+			this.active_keys[key] := false
 		}
 	}
 
@@ -209,13 +235,13 @@
 
 		success := false
 		loop 10 {
-			this.HoldKeys(SC_Space)
-			this.HoldKeys(RightKey)
+			this.HoldKey(SC_Space)
+			this.HoldKey(RightKey)
 			sleep 100
 			this.ReleaseKey(SC_Space)
 			this.Walk(2, RightKey)
 			this.Walk(1.5, FwdKey, RightKey)
-			this.HoldKeys(RightKey)
+			this.HoldKey(RightKey)
 
 			DllCall("GetSystemTimeAsFileTime", "int64p", &s:=0)
 			n := s, f := s + 100000000
@@ -315,7 +341,7 @@
 		center_x := win.w // 2
 		center_y := win.h // 2
 
-		dead_x := win.w * 0.02
+		dead_x := win.h * 0.02
 		dead_y := win.h * 0.02
 
 		held_x := ""
@@ -329,9 +355,25 @@
 			return
 		}
 
-		while (A_TickCount - start < 7000) { ; 7 second limit for sprinkler...
+		while (this.is_running && (A_TickCount - start < 7000)) { ; 7 second limit for sprinkler...
+			if (this.is_paused) {
+				this.ReleaseAllKeys()
+				send "{F15 Up}"
+				pause_start := A_TickCount
+				
+				while (this.is_paused && this.is_running)
+					sleep 10
+					
+				if (!this.is_running)
+					break
+					
+				send "{F15 Down}"
+				start += (A_TickCount - pause_start)
+			}
+
 			if (this.coco_enabled && this.pending_coconut)
 				break
+
 			if (this.LocateSprinkler(&x, &y) = 0) {
 				if (miss++ > 3)
 					break
@@ -345,22 +387,22 @@
 			target_y := ""
 
 			if (Abs(vec_x) > dead_x)
-				target_x := (vec_x > 0) ? RightKey : LeftKey
+				target_x := (vec_x > 0) ? this.keys.right : this.keys.left
 			if (Abs(vec_y) > dead_y)
-				target_y := (vec_y > 0) ? BackKey : FwdKey
+				target_y := (vec_y > 0) ? this.keys.back : this.keys.fwd
 			
 			if (held_x != target_x) {
 				if (held_x)
 					this.ReleaseKey(held_x)
 				if (target_x)
-					this.HoldKeys(target_x)
+					this.HoldKey(target_x)
 				held_x := target_x
 			}
 			if (held_y != target_y) {
 				if (held_y)
 					this.ReleaseKey(held_y)
 				if (target_y)
-					this.HoldKeys(target_y)
+					this.HoldKey(target_y)
 				held_y := target_y
 			}
 
@@ -475,109 +517,182 @@
 		}
 	}
 
-	TriggerCoconutCatch(x := false, y := false) {
-		if (x = false)
-			this.pending_coconut := false
-		else
+	TriggerCoconutCatch(x := 0, y := 0) {
+		static last := QPC()
+		if (this.scan_lock && A_TickCount < this.rot_blind_spot) {
+			return
+		}
+		if (this.scan_lock) {
+			this.scan_lock := false
+		}
+		if (x = 0 && y = 0) {
+			last := QPC()
+			this.pending_coconut := false, x := 0, y := 0
+			this.last_coco_x := 0
+			this.coco_vel_x := 0
+		} else {
+			last := QPC()
+			current_time := A_TickCount
+			if (this.last_coco_x != 0 && this.HasProp("last_frame_time")) {
+				dt := current_time - this.last_frame_time
+				dx := x - this.last_coco_x
+				
+				win := Roblox.Get()
+				if (dt > 0 && Abs(dx) < win.h * 0.15) {
+					this.coco_vel_x := (dx / dt) * 1000 
+				}
+			} else {
+				this.coco_vel_x := 0
+			}
+
+			this.last_coco_x := x
+			this.last_frame_time := current_time
+			this.last_coco_time := current_time
 			this.pending_coconut := {x: x, y: y}
+		}
 	}
 
 	CatchCoconut() {
 		win := Roblox.Get()
 		center_x := win.w // 2
 		center_y := win.h // 2
-		dead_x := win.w * 0.045
-		dead_y := win.h * 0.045
+
+		dead_x := win.h * 0.03
+		dead_y := win.h * 0.03
+
+		base_brake_x := win.h * 0.06
+		base_brake_y := win.h * 0.06
+
+		heldX := ""
+		heldY := ""
+		send "{" RotUp " 11}"
 
 		while (this.is_running) {
 			if (this.is_paused) {
 				this.ReleaseAllKeys()
 				while (this.is_paused && this.is_running)
-					sleep 10
+					sleep 50
 			}
+			
 			current_coco := this.pending_coconut
 			if (!current_coco) {
+				if (this.last_coco_time = 0) {
+					sleep 1
+					continue
+				}
+				time_missing := QPC() - this.last_coco_time
+				if (time_missing < 200) {
+					sleep 1
+					continue
+				}
+				if (time_missing < 15000) { ; did it go to another field ?
+					this.ReleaseAllKeys()
+					this.ScanForCoconut()
+					sleep 1
+					continue
+				}
 				this.ReleaseAllKeys()
 				this.pending_coco_scan := true
 				break
 			}
+			if (this.last_coco_x != 0) {
+				dx := current_coco.x - this.last_coco_x
+				if (Abs(dx) < win.w * 0.15)
+					this.coco_dx := dx
+			} else {
+				this.coco_dx := 0
+			}
 			this.last_coco_x := current_coco.x
+			this.last_coco_y := current_coco.y
 			
 			vec_x := current_coco.x - center_x
 			vec_y := current_coco.y - center_y
-			if (Abs(vec_x) < dead_x && Abs(vec_y) < dead_y) {
-				this.UpdateHeldKeys([])
-				sleep 10
-				continue
+
+			brake_x := base_brake_x + (Abs(this.coco_dx) * 0.02)
+			brake_y := base_brake_y + (Abs(this.coco_dx) * 0.02)
+
+			targetX := ""
+			if (heldX) {
+				if (Abs(vec_x) > brake_x)
+					targetX := (vec_x > 0) ? RightKey : LeftKey
+			} else {
+				if (Abs(vec_x) > dead_x)
+					targetX := (vec_x > 0) ? RightKey : LeftKey
 			}
 
-			target_x := (vec_x > 0) ? RightKey : LeftKey
-			target_y := (vec_y > 0) ? BackKey : FwdKey
+			targetY := ""
+			if (heldY) {
+				if (Abs(vec_y) > brake_y)
+					targetY := (vec_y > 0) ? BackKey : FwdKey
+			} else {
+				if (Abs(vec_y) > dead_y)
+					targetY := (vec_y > 0) ? BackKey : FwdKey
+			}
 
-			final_keys := []
-			if (Abs(vec_x) > dead_x)
-				final_keys.Push(target_x)
-			if (Abs(vec_y) > dead_y)
-				final_keys.Push(target_y)
-			this.UpdateHeldKeys(final_keys)
-			sleep 10
+			if (heldX && heldX != targetX) {
+				send "{" heldX " up}"
+				heldX := ""
+			}
+			if (targetX) {
+				if (!GetKeyState(targetX)) {
+					send "{" targetX " down}"
+				}
+				heldX := targetX
+			}
+			if (heldY && heldY != targetY) {
+				send "{" heldY " up}"
+				heldY := ""
+			}
+			if (targetY) {
+				if (!GetKeyState(targetY)) {
+					send "{" targetY " down}"
+				}
+				heldY := targetY
+			}
+			sleep 5
 		}
 		this.ReleaseAllKeys()
+		this.ScanForCoconut(true)
 	}
 
-	ScanForCoconut() {
-		if (!this.coco_enabled)
+	ScanForCoconut(reset := false) {
+		static step := 0
+		static active_dir := 0
+		static predicted_x := 0
+		static down := 0
+
+		if (reset) {
+			step := 0
+			active_dir := 0
+			predicted_x := 0
 			return
-		start_time := A_TickCount
-		scan_last := 0
-		net_rot := 0
-		scan_step := 0
+		}
+
+		if (this.scan_lock || this.pending_coconut)
+			return
+
+		this.scan_lock := true
 		win := Roblox.Get()
 		center_x := win.w // 2
 
-		if (this.last_coco_x < center_x) {
-			rot_key := RotLeft
-			rot_dir := 1
-		} else {
-			rot_key := RotRight
-			rot_dir := -1
-		}
-
-		SetTimer(SpamKeys, 10)
-		while (this.is_running && (A_TickCount - start_time < 12000)) {
-			if (this.is_paused) {
-				SetTimer(SpamKeys, 0)
-				pause_start := A_TickCount
-				while (this.is_paused && this.is_running)
-					sleep 10
-				SetTimer(SpamKeys, 10)
-				start_time += (A_TickCount - pause_start)
-			}
-			if (this.pending_coconut)
-				break
-			
-			if (A_TickCount - scan_last > 20) {
-				scan_last := A_TickCount
-				if (scan_step < 8) {
-					send "{" rot_key "}"
-					net_rot += rot_dir
-					scan_step++
-				} else
-					scan_step := 0
+		if (step = 0) {
+			if (this.last_coco_x = 0) {
+				active_dir := 1
+				predicted_x := "No Data"
+			} else {
+				predicted_x := this.last_coco_x + (this.coco_vel_x * 0.15) 
+				active_dir := (predicted_x < center_x) ? -1 : 1
 			}
 		}
-		SetTimer(SpamKeys, 0)
-		if (this.pending_coconut) {
-			this.CatchCoconut()
-		}
-		send "{" RotDown " " this.pitch "}"
-		if (net_rot > 0)
-			send "{" RotRight " " net_rot "}"
-		else if (net_rot < 0)
-			send "{" RotLeft " " Abs(net_rot) "}"
 
-		SpamKeys() {
-			send "{" RotUp "}{" ZoomOut "}"
+		rot_key := (active_dir = 1) ? RotRight : RotLeft
+		send "{" rot_key "}" 
+		this.rot_blind_spot := A_TickCount + 30
+		step++
+
+		if (Mod(step, 8) = 0 && down <= 2) {
+			send "{" RotDown "}"
+			down++
 		}
 	}
 
@@ -594,6 +709,6 @@
 			}
 		}
 		for t_key in target_arr
-			this.HoldKeys(t_key)
+			this.HoldKey(t_key)
 	}
 }

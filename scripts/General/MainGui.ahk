@@ -50,8 +50,8 @@ class MainGui {
 
 		this.Web.AddHostObjectToScript("ahk", {
 			Start: this.start.Bind(this),
-         Pause: this.pause.Bind(this),
-         Stop: this.stop.Bind(this),
+			Pause: this.pause.Bind(this),
+			Stop: this.stop.Bind(this),
 			OpenLink: ((url) => Run(url)),
 			Action: this.HandleAction.Bind(this)
 		})

@@ -30,15 +30,15 @@
 		CoordMode "Pixel", "Screen"
 		OnExit(ExitFunc)
 		#Include "' A_WorkingDir '\Lib\Utils\"
-      #Include "Gdip_All.ahk"
-      #Include "Gdip_ImageSearch.ahk"
-      #Include "Utility.ahk"
-      #Include "JSON.ahk"
+		#Include "Gdip_All.ahk"
+		#Include "Gdip_ImageSearch.ahk"
+		#Include "Utility.ahk"
+		#Include "JSON.ahk"
 		
 		#Include "' A_WorkingDir '\Lib\Core\"
-      #Include "Roblox.ahk"
-      #Include "Move.ahk"
-      #Include "Scheduler.ahk"
+		#Include "Roblox.ahk"
+		#Include "Move.ahk"
+		#Include "Scheduler.ahk"
 		
 		global movespeed := ' Alt.Movespeed '
 		global both := (Mod(movespeed*1000, 1265) = 0) || (Mod(Round((movespeed+0.005)*1000), 1265) = 0)
@@ -113,6 +113,8 @@
 				SetTimer(TriggerDriftComp, -1)
 			else if (wParam = 4)
 				MoveSys.pending_coco_scan := true
+			else if (wParam = 5)
+				MoveSys.coco_scan_ready := true
 		}
 		
 		IPC_Receive_Coconut_Pos(wParam, lParam, *) {
@@ -120,7 +122,7 @@
 		}
 
 		IPC_Receive_Coconut_Clear(wParam, lParam, *) {
-			MoveSys.TriggerCoconutCatch(false)
+			MoveSys.TriggerCoconutCatch(0, 0)
 		}
 		
 		start()

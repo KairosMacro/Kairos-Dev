@@ -4,6 +4,7 @@
 
 #Include "..\..\Lib\Utils\Gdip_All.ahk"
 #Include "..\..\Lib\Utils\Gdip_ImageSearch.ahk"
+#iNCLUDE "..\..\Lib\Utils\Utility.ahk"
 
 if (A_Args.Length < 1)
 	ExitApp
@@ -14,12 +15,13 @@ OnExit((*) => Gdip_Shutdown(pToken))
 DetectHiddenWindows true
 
 saw_coconut := false
-miss_count := 0
 
 loop {
+	start_time := QPC()
 	if !WinExist("ahk_pid " TargetPID) {
 		ExitApp
 	}
+
 	hwnd := WinExist("ahk_exe RobloxPlayerBeta.exe")
 	if (!hwnd) {
 		sleep 1000
@@ -27,38 +29,25 @@ loop {
 	}
 
 	pos := locateCoco(hwnd)
-	if (pos) {
-		saw_coconut := true
-		miss_count := 0
-		PostMessage(0x5001, Round(pos.x), Round(pos.y), , "ahk_class AutoHotkey ahk_pid " TargetPID)
-	} else {
-		if (saw_coconut) {
-			miss_count++
-			if (miss_count > 3) {
-				saw_coconut := false
-				miss_count := 0
-				PostMessage(0x5002, 0, 0, , "ahk_class AutoHotkey ahk_pid " TargetPID)
-				PostMessage(0x5000, 4, 0, , "ahk_class AutoHotkey ahk_pid " TargetPID)
-			}
+	try {
+		if (pos) {
+			SendMessage(0x5001, Round(pos.x), Round(pos.y), , "ahk_class AutoHotkey ahk_pid " TargetPID)
+		} else {
+			SendMessage(0x5002, 0, 0, , "ahk_class AutoHotkey ahk_pid " TargetPID)
 		}
-	}
-	sleep 10 ; surprisingly, this is fine
+	} catch
+		ExitApp
 }
 
 locateCoco(hwnd) {
-	WinGetPos(&windowX, &windowY, &windowWidth, &windowHeight, hwnd)
+	WinGetClientPos(&windowX, &windowY, &windowWidth, &windowHeight, hwnd)
 	static init := false
 	static coco := ""
 	static lastPos := ""
 	static nWidth, nHeight, nStride, nScan, nBitmap
 
 	if (!init) {
-		coco := Gdip_CreateBitmap(7, 7)
-		G := Gdip_GraphicsFromImage(coco)
-		
-		Gdip_GraphicsClear(G, 0xFF99AAB5)  ; health 0xFF1FE744, coco 0xFF99AAB5, balloon 0xFFBB1A34
-		Gdip_DeleteGraphics(G)
-
+		coco := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAYAAADEUlfTAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAAATSURBVBhXY5i5aut/BnxgyCgAADdzFMLU+WDwAAAAAElFTkSuQmCC")
 		Gdip_GetImageDimensions(coco, &nWidth, &nHeight)
 		Gdip_LockBits(coco, 0, 0, nWidth, nHeight, &nStride, &nScan, &nBitmap)
 		init := true
