@@ -387,9 +387,9 @@
 			target_y := ""
 
 			if (Abs(vec_x) > dead_x)
-				target_x := (vec_x > 0) ? this.keys.right : this.keys.left
+				target_x := (vec_x > 0) ? RightKey : LeftKey
 			if (Abs(vec_y) > dead_y)
-				target_y := (vec_y > 0) ? this.keys.back : this.keys.fwd
+				target_y := (vec_y > 0) ? BackKey : FwdKey
 			
 			if (held_x != target_x) {
 				if (held_x)
