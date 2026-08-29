@@ -52,11 +52,12 @@ Joining the discord server isn't just for downloading the macro. You get to chat
 
 ### Dev Team
 * Dully / Dully176 / DullSmallmega176
+* Puck / iSpyPuck / puckman1010
 * Ferox / ferox7274 / fenixJK
 * Ninju / .ninju. / ninjubaer
 * Myu / myurius / Myurius
 * Ichigo / prodbyichigo / prodbyichigo
-* Souka / soukakuuu / souukaa
+  
 
 ### Helpers & Testers
 * 96theo
@@ -65,7 +66,6 @@ Joining the discord server isn't just for downloading the macro. You get to chat
 * jacquefps (Jacque)
 * kmaus
 * myths_1 (myth)
-* iSpyPuck (puck)
 
 ### Code Based Stuff & Libraries
 * **Natro Dev Team** - Bitmaps, Libraries (Move lib, Roblox lib, Import, Path, etc. There's so much useful stuff already made). Structure inspiration (GUI, Auto update, Config, Status.ahk).
