@@ -37,7 +37,7 @@ TraySetIcon "Assets\Images\Kairos.ico"
 class boost_bar {
 	static master_pid := ""
 	static my_path := "scripts\general\boost_bar.ahk"
-	static is_running := false
+	static current_state := "stopped"
 	static scanner := unset
 	static startup_timer := 0
 
@@ -128,20 +128,20 @@ class boost_bar {
 		action := data["action"]
 
 		if (action == "set_state") {
-			if (data["state"] == "running") {
-				this.start()
+			if (!data.Has("state"))
 				return
-			}
 
-			if (data["state"] == "toggle") {
-				if (this.is_running) {
+			switch data["state"] {
+				case "running", "start", "resumed":
+					this.start()
+				case "stopped", "stop":
 					this.stop()
-					return
-				}
-
-				this.start()
-				return
+				case "paused":
+					this.pause()
+				case "toggle":
+					(this.current_state == "running") ? this.stop() : this.start()
 			}
+			return
 		}
 
 		if (action == "apply_startup_settings") {
@@ -194,11 +194,10 @@ class boost_bar {
 	}
 
 	static start() {
-		if (this.is_running) {
+		if (this.current_state == "running")
 			return
-		}
-		this.is_running := true
 
+		this.current_state := "running"
 		if (this.settings["main"]["boost_bar_enabled"]) {
 			this.scanner.Toggle(1)
 			SetTimer(this.spam_func, 5)
@@ -208,11 +207,21 @@ class boost_bar {
 	}
 
 	static stop() {
-		if (!this.is_running) {
+		if (this.current_state == "stopped")
 			return
-		}
-		this.is_running := false
 
+		this.current_state := "stopped"
+		this.scanner.Toggle(0)
+		SetTimer(this.spam_func, 0)
+		this.draw()
+		this.follow_window()
+	}
+
+	static pause() {
+		if (this.current_state == "paused")
+			return
+
+		this.current_state := "paused"
 		this.scanner.Toggle(0)
 		SetTimer(this.spam_func, 0)
 		this.draw()
@@ -235,7 +244,7 @@ class boost_bar {
 			if (IsObject(win) && win.ok) {
 				target_x := win.x + (win.w // 2) - 261
 				target_y := win.y + win.h - 182
-				should_show := this.settings["main"]["boost_bar_enabled"] && (!this.is_running || (this.is_running && this.settings["boost_bar"]["show_when_active"]))
+				should_show := this.settings["main"]["boost_bar_enabled"] && (this.current_state != "running" || (this.current_state == "running" && this.settings["boost_bar"]["show_when_active"]))
 				if (should_show) {
 					this.gui_obj.Show("NA x" target_x " y" target_y " w" this.width " h" this.height)
 				} else {
@@ -286,7 +295,7 @@ class boost_bar {
 			Gdip_TextToGraphics(this.G, String(timer_val), options, "Segoe UI")
 		}
 
-		if (this.is_running) {
+		if (this.current_state == "running") {
 			Gdip_FillRectangle(this.G, this.brush_running, 0, this.height - 2, this.width, 2)
 		}
 
@@ -412,7 +421,7 @@ class boost_bar {
 	}
 
 	static spam_loop(*) {
-		if (!this.is_running || !this.settings["main"]["boost_bar_enabled"]) {
+		if (this.current_state != "running" || !this.settings["main"]["boost_bar_enabled"]) {
 			return
 		}
 

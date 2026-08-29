@@ -45,7 +45,7 @@ class buff_warns {
 	static loop_interval := 150
 	static startup_timer := 0
 
-	static is_running := false
+	static current_state := "stopped"
 	static scanner := unset
 	static tooltip_gui := 0
 
@@ -100,24 +100,25 @@ class buff_warns {
 			"script", this.my_path,
 			"pid", ProcessExist()
 		)
-		IPC.send_message("ahk_pid " this.master_pid, 1, payload)
+		try IPC.send_message("ahk_pid " this.master_pid, 1, payload)
 	}
 
 	static handle_command(data) {
 		action := data["action"]
 
 		if (action == "set_state") {
-			if (data["state"] == "running") {
-				this.start()
+			if (!data.Has("state"))
 				return
-			}
-			if (data["state"] == "toggle") {
-				if (this.is_running) {
+
+			switch data["state"] {
+				case "running", "start", "resumed":
+					this.start()
+				case "stopped", "stop":
 					this.stop()
-					return
-				}
-				this.start()
-				return
+				case "paused":
+					this.pause()
+				case "toggle":
+					(this.current_state == "running") ? this.stop() : this.start()
 			}
 			return
 		}
@@ -162,10 +163,9 @@ class buff_warns {
 	}
 
 	static start() {
-		if (this.is_running) {
+		if (this.current_state == "running")
 			return
-		}
-		this.is_running := true
+		this.current_state := "running"
 		this.scanner.Toggle(1)
 		SetTimer(this.check_func, this.loop_interval)
 
@@ -178,15 +178,25 @@ class buff_warns {
 	}
 
 	static stop() {
-		if (!this.is_running) {
+		if (this.current_state == "stopped")
 			return
-		}
-
-		this.is_running := false
+		this.current_state := "stopped"
 		this.scanner.Toggle(0)
 		SetTimer(this.check_func, 0)
 		if (this.tooltip_gui && HasMethod(this.tooltip_gui, "Show")) {
 			this.tooltip_gui.Show("Warns: OFF")
+			SetTimer(() => this.tooltip_gui.Hide(), -500)
+		}
+	}
+
+	static pause() {
+		if (this.current_state == "paused")
+			return
+		this.current_state := "paused"
+		this.scanner.Toggle(0)
+		SetTimer(this.check_func, 0)
+		if (this.tooltip_gui && HasMethod(this.tooltip_gui, "Show")) {
+			this.tooltip_gui.Show("Warns: PAUSED")
 			SetTimer(() => this.tooltip_gui.Hide(), -500)
 		}
 	}
@@ -196,7 +206,7 @@ class buff_warns {
 	}
 
 	static check_loop(*) {
-		if (!this.is_running || !this.settings["main"].Has("warns_enabled") || !this.settings["main"]["warns_enabled"] || !WinActive("Roblox")) {
+		if (this.current_state != "running" || !this.settings["main"].Has("warns_enabled") || !this.settings["main"]["warns_enabled"] || !WinActive("Roblox")) {
 			return
 		}
 
@@ -305,7 +315,7 @@ class buff_warns {
 			"action", "heartbeat"
 			, "script", this.MY_PATH
 		)
-		IPC.send_message("ahk_pid " this.MASTER_PID, 2, payload)
+		try IPC.send_message("ahk_pid " this.MASTER_PID, 2, payload)
 	}
 
 }

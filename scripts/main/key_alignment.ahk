@@ -247,7 +247,7 @@ class key_alignment {
 	}
 
 	static start_rebind() {
-		if (this.is_running || this.is_rebinding) {
+		if (this.current_state == "running" || this.is_rebinding) {
 			return
 		}
 
@@ -311,18 +311,16 @@ class key_alignment {
 	}
 
 	static start() {
-		if (this.is_running) {
+		if (this.current_state == "running")
 			return
-		}
-		this.is_running := true
+		this.current_state := "running"
 		this.draw()
 	}
 
 	static stop() {
-		if (!this.is_running) {
+		if (this.current_state == "stopped")
 			return
-		}
-		this.is_running := false
+		this.current_state := "stopped"
 		this.draw()
 	}
 
@@ -369,7 +367,7 @@ class key_alignment {
 		if (this.is_rebinding || this.current_state != "running") {
 			return false
 		}
-		return (this.is_running && this.settings["main"]["key_alignment_enabled"])
+		return (this.current_state == "running" && this.settings["main"]["key_alignment_enabled"])
 	}
 
 	static draw(text := "") {

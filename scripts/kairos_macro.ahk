@@ -49,6 +49,7 @@ class kairos_main {
 	static ready_modules := Map()
 	static loading_gui := unset
 	static log_edit := unset
+	static is_paused := false
 
 	static init() {
 		IPC.init(ObjBindMethod(this, "handle_command"))
@@ -435,14 +436,18 @@ class kairos_main {
 	}
 
 	static on_start(*) {
+		this.is_paused := false
 		process_manager.broadcast_state("running")
 	}
 
 	static on_pause(*) {
-		process_manager.broadcast_state("toggle")
+		this.is_paused := !this.is_paused
+		state_str := this.is_paused ? "paused" : "resumed"
+		process_manager.broadcast_state(state_str)
 	}
 
 	static on_stop(*) {
+		this.is_paused := false
 		process_manager.kill_all()
 		Reload()
 	}

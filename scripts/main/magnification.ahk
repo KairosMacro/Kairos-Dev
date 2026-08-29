@@ -35,7 +35,7 @@ class magnification {
 	static master_pid := ""
 	static my_path := "scripts\main\magnification.ahk"
 	static startup_timer := 0
-	static is_running := false
+	static current_state := "stopped"
 	static width := 594
 	static height := 36
 	static hdc_screen := 0
@@ -82,28 +82,26 @@ class magnification {
 			"script", this.my_path,
 			"pid", ProcessExist()
 		)
-		IPC.send_message("ahk_pid " this.master_pid, 1, payload)
+		try IPC.send_message("ahk_pid " this.master_pid, 1, payload)
 	}
 
 	static handle_command(data) {
 		action := data["action"]
 
 		if (action == "set_state") {
-			if (data["state"] == "running") {
-				this.start()
+			if (!data.Has("state"))
 				return
-			}
 
-			if (data["state"] == "toggle") {
-				if (this.is_running) {
+			switch data["state"] {
+				case "running", "start", "resumed":
+					this.start()
+				case "stopped", "stop":
 					this.stop()
-					return
-				}
-
-				this.start()
-				return
+				case "paused":
+					this.pause()
+				case "toggle":
+					(this.current_state == "running") ? this.stop() : this.start()
 			}
-
 			return
 		}
 
@@ -156,11 +154,11 @@ class magnification {
 	}
 
 	static start() {
-		if (this.is_running)
+		if (this.current_state == "running")
 			return
+		this.current_state := "running"
 		Roblox.GetYOffset()
 		Roblox.StartTracker(50)
-		this.is_running := true
 		this.gui_obj.Show("NA")
 		this.hdc_screen := DllCall("GetDC", "Ptr", 0, "Ptr")
 		this.hdc_gui := DllCall("GetDC", "Ptr", this.gui_obj.hwnd, "Ptr")
@@ -169,9 +167,23 @@ class magnification {
 	}
 
 	static stop() {
-		if (!this.is_running)
+		if (this.current_state == "stopped")
 			return
-		this.is_running := false
+		this.current_state := "stopped"
+		SetTimer(this.update_func, 0)
+		if (this.hdc_screen)
+			DllCall("ReleaseDC", "Ptr", 0, "Ptr", this.hdc_screen)
+		if (this.hdc_gui)
+			DllCall("ReleaseDC", "Ptr", this.gui_obj.hwnd, "Ptr", this.hdc_gui)
+		this.hdc_screen := 0
+		this.hdc_gui := 0
+		this.gui_obj.Hide()
+	}
+
+	static pause() {
+		if (this.current_state == "paused")
+			return
+		this.current_state := "paused"
 		SetTimer(this.update_func, 0)
 		if (this.hdc_screen)
 			DllCall("ReleaseDC", "Ptr", 0, "Ptr", this.hdc_screen)
@@ -201,7 +213,7 @@ class magnification {
 				target_x := win.x + (win.w // 2) - (gui_w // 2)
 				target_y := win.y + win.h + win.offsetY - this.settings["magnifier"]["offset_y"]
 
-				if (this.is_running && this.settings["main"]["magnifier_enabled"]) {
+				if (this.current_state == "running" && this.settings["main"]["magnifier_enabled"]) {
 					this.gui_obj.Show("NA x" target_x " y" target_y " w" gui_w " h" gui_h)
 				} else {
 					this.gui_obj.Hide()
@@ -214,7 +226,7 @@ class magnification {
 
 	static send_heartbeat() {
 		payload := Map("action", "heartbeat", "script", this.my_path)
-		IPC.send_message("ahk_pid " this.master_pid, 2, payload)
+		try IPC.send_message("ahk_pid " this.master_pid, 2, payload)
 	}
 
 	static update() {
