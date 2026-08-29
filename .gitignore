@@ -1,0 +1,18 @@
+﻿# Folders
+settings/
+graphs/
+logs/
+.vscode/
+
+# Environment and temp files
+.env
+*.env.*
+*.test.*
+*.temp.*
+*.bak
+
+# Macro specific files
+graph_*.png
+hi.png
+hi.txt
+GumGumMorph.ahk
