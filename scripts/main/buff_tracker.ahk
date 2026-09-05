@@ -222,16 +222,10 @@ class buff_tracker {
 	}
 
 	static check_loop(*) {
-
-		if (this.current_state != "running") {
-			return
-		}
-
-		if (this.is_edit_mode) {
-			return
-		}
-
-		if (!this.settings["main"].Has("tracker_enabled") || !this.settings["main"]["tracker_enabled"]) {
+		if (this.current_state != "running" || this.is_edit_mode || !this.settings["main"].Has("tracker_enabled") || !this.settings["main"]["tracker_enabled"]) {
+			if (this.tooltip_gui && HasMethod(this.tooltip_gui, "Hide")) {
+				this.tooltip_gui.Hide()
+			}
 			return
 		}
 
@@ -314,6 +308,9 @@ class buff_tracker {
 		}
 
 		if (msg_queue.Length == 0) {
+			if (this.tooltip_gui && HasMethod(this.tooltip_gui, "Hide")) {
+				this.tooltip_gui.Hide()
+			}
 			return
 		}
 

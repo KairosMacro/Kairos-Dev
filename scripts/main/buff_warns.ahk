@@ -275,7 +275,6 @@ class buff_warns {
 			}
 		}
 
-		; Display the debug information in the top left corner of your screen
 		ToolTip(debug_str, 10, 250, 19)
 	}
 

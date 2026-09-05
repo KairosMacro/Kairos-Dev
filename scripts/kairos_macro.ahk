@@ -84,6 +84,7 @@ class kairos_main {
 	]
 
 	static init() {
+		OnExit((*) => process_manager.kill_all())
 		IPC.init(ObjBindMethod(this, "handle_command"))
 		this.show_loading_screen()
 
@@ -227,6 +228,9 @@ class kairos_main {
 						, "slot_timer_7", Config.Get("boost_bar", "slot_timer_7", 100)
 						, "slot_mode_7", Config.Get("boost_bar", "slot_mode_7", "Timer")
 					)
+					, "tracker", Map(
+						"passives", Config.Get("tracker", "passives", "scorch")
+					)
 				)
 			}
 
@@ -298,6 +302,10 @@ class kairos_main {
 	}
 
 	static build_ui() {
+		if (this.HasOwnProp("main_gui") && this.main_gui) {
+			return
+		}
+
 		this.main_gui := Gui("", "Kairos Macro")
 		this.main_gui.OnEvent("Close", ObjBindMethod(this, "on_exit"))
 
@@ -611,9 +619,7 @@ class kairos_main {
 
 	static update_and_broadcast(section, key, val) {
 		Config.Set(section, key, val)
-
-		payload := Map("action", "update_setting", "section", section, "key", key, "value", val)
-		process_manager.broadcast_state(payload)
+		process_manager.broadcast_setting(section, key, val)
 	}
 
 	static get_array_index(arr, search_val) {

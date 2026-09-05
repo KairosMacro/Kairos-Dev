@@ -44,16 +44,29 @@ class boost_bar {
 	static slot_w := 68
 	static slot_h := 36
 	static gap := 7
-	static width := (68 * 7) + (7 * 6) + 4
+	static width := 537
 	static height := 36
 
-	static brush_back := 0
+	static color_bg := 0xB31E1E1E
+	static color_active := 0xFF4CAF50
+	static color_inactive := 0xFFD32F2F
+
+	static brush_bg := 0
 	static brush_off := 0
 	static brush_on := 0
 	static brush_special := 0
 	static brush_multi := 0
 	static brush_timer := 0
-	static brush_running := 0
+
+	static mode_gui := 0
+	static mode_checkboxes := Map()
+
+	static cooldowns := Map(
+		"scorch", { last_not_found: 0, cooldown: 60000, duration: 45000 },
+		"x-flame", { last_not_found: 0, cooldown: 20000, duration: 0 },
+		"popstar", { last_not_found: 0, cooldown: 60000, duration: 45000 },
+		"gummystar", { last_not_found: 0, cooldown: 60000, duration: 45000 }
+	)
 
 	static settings := Map(
 		"main", Map(
@@ -82,8 +95,8 @@ class boost_bar {
 		, "On Star Shower", "shower"
 		, "On Gummy Star", "gummystar"
 		, "On Gummy Morph", "gummymorph"
-		, "On Coconut Combo", "coconutcombo"
-		, "On X-Flame", "xflame"
+		, "On Coconut Combo", "combo"
+		, "On X-Flame", "x-flame"
 	)
 
 	static init() {
@@ -103,6 +116,7 @@ class boost_bar {
 		this.draw()
 
 		this.scanner := ScannerEngine()
+		roblox.start_tracker()
 
 		OnMessage(0x201, ObjBindMethod(this, "on_click"))
 		OnMessage(0x204, ObjBindMethod(this, "on_right_click"))
@@ -115,7 +129,6 @@ class boost_bar {
 		this.startup_timer := ObjBindMethod(this, "request_startup_settings")
 		SetTimer(this.startup_timer, 250)
 		this.request_startup_settings()
-		SetTimer(ObjBindMethod(this, "follow_window"), 50)
 	}
 
 	static request_startup_settings() {
@@ -151,6 +164,7 @@ class boost_bar {
 			if (this.HasOwnProp("startup_timer") && this.startup_timer) {
 				SetTimer(this.startup_timer, 0)
 				this.startup_timer := 0
+				SetTimer(ObjBindMethod(this, "follow_window"), 50)
 			}
 
 			for section_name, section_data in data["settings"] {
@@ -167,7 +181,7 @@ class boost_bar {
 				"action", "module_ready"
 				, "script", this.my_path
 			)
-			SetTimer(() => IPC.send_message("ahk_pid " this.master_pid, 1, ready_payload), -1)
+			SetTimer(ObjBindMethod(IPC, "send_message", "ahk_pid " this.master_pid, 1, ready_payload), -1)
 			return
 		}
 
@@ -261,19 +275,27 @@ class boost_bar {
 
 	static draw(*) {
 		Gdip_GraphicsClear(this.G)
-		Gdip_FillRoundedRectangle(this.G, this.brush_back, 0, 0, this.width, this.height, 5)
+
+		Gdip_FillRoundedRectangle(this.G, this.brush_bg, 0, 0, this.width, this.height, 5)
+
+		c_accent := (this.current_state == "running") ? this.color_active : this.color_inactive
+		c_ind := Gdip_BrushCreateSolid(c_accent)
+		Gdip_FillRoundedRectangle(this.G, c_ind, 5, 5, 5, this.height - 10, 2)
+		Gdip_DeleteBrush(c_ind)
+
+		start_x := 15
 
 		loop 7 {
 			idx := A_Index
-			is_slot_active := this.settings["boost_bar"]["slot_active_" idx]
+			is_active := this.settings["boost_bar"]["slot_active_" idx]
 			mode_str := this.settings["boost_bar"]["slot_mode_" idx]
 			timer_val := this.settings["boost_bar"]["slot_timer_" idx]
 			active_modes := (mode_str == "") ? [] : StrSplit(mode_str, "|")
 
-			x := 2 + (idx - 1) * (this.slot_w + this.gap)
+			x := start_x + (idx - 1) * (this.slot_w + this.gap)
 			y := 2
 
-			if !(is_slot_active) {
+			if (!is_active) {
 				btn_color := this.brush_off
 				display_text := "Off"
 			} else {
@@ -298,10 +320,6 @@ class boost_bar {
 			Gdip_TextToGraphics(this.G, String(timer_val), options, "Segoe UI")
 		}
 
-		if (this.current_state == "running") {
-			Gdip_FillRectangle(this.G, this.brush_running, 0, this.height - 2, this.width, 2)
-		}
-
 		UpdateLayeredWindow(this.gui_obj.hwnd, this.hdc, , , this.width, this.height)
 	}
 
@@ -324,19 +342,27 @@ class boost_bar {
 	}
 
 	static handle_click(x, y, click_type) {
+		start_x := 15
+
 		loop 7 {
-			slot_x := 2 + (A_Index - 1) * (this.slot_w + this.gap)
-			if (x >= slot_x && x <= slot_x + this.slot_w) {
-				if (y <= 18) {
-					if (click_type == "Right") {
-						this.open_mode_menu(A_Index)
-					} else {
-						try WinActivate("ahk_id " WinExist("Roblox ahk_exe RobloxPlayerBeta.exe"))
-						this.toggle_slot(A_Index)
-					}
-				} else if (y > 18 && y < 34) {
-					this.open_edit(A_Index, slot_x, 20)
+			slot_x := start_x + (A_Index - 1) * (this.slot_w + this.gap)
+
+			if (x < slot_x || x > slot_x + this.slot_w)
+				continue
+
+			if (y <= 18) {
+				if (click_type == "Right") {
+					this.open_mode_menu(A_Index)
+					return
 				}
+
+				try WinActivate("ahk_id " WinExist("Roblox ahk_exe RobloxPlayerBeta.exe"))
+				this.toggle_slot(A_Index)
+				return
+			}
+
+			if (y > 18 && y < 34) {
+				this.open_edit(A_Index, slot_x, 20)
 				return
 			}
 		}
@@ -351,34 +377,68 @@ class boost_bar {
 	}
 
 	static open_mode_menu(idx) {
-		m := Menu()
+		if (this.mode_gui) {
+			this.close_mode_menu()
+		}
+
+		this.mode_gui := Gui("-Caption +AlwaysOnTop +ToolWindow +Border", "Slot " idx " Modes")
+		this.mode_gui.BackColor := "1E1E1E"
+		this.mode_gui.SetFont("s9 cWhite", "Segoe UI")
+		this.mode_gui.OnEvent("Escape", (*) => this.close_mode_menu())
+
+		this.mode_checkboxes.Clear()
+
 		current_str := this.settings["boost_bar"]["slot_mode_" idx]
 		has_mode(name) => InStr("|" current_str "|", "|" name "|")
+
+		cb := this.mode_gui.Add("CheckBox", "x15 y10 w140 h20 Checked" has_mode("Timer"), "Timer")
+		cb.OnEvent("Click", ObjBindMethod(this, "toggle_mode", idx, "Timer"))
+		this.mode_checkboxes[cb.hwnd] := cb
+
+		this.mode_gui.Add("Progress", "x10 y35 w150 h1 c444444 Background444444", 100)
+
+		y_pos := 45
 		for mode_name in this.available_modes {
-			m.Add(mode_name, ObjBindMethod(this, "toggle_mode", idx, mode_name))
-			if has_mode(mode_name) {
-				m.Check(mode_name)
-			}
+			cb := this.mode_gui.Add("CheckBox", "x15 y" y_pos " w140 h20 Checked" has_mode(mode_name), mode_name)
+			cb.OnEvent("Click", ObjBindMethod(this, "toggle_mode", idx, mode_name))
+			this.mode_checkboxes[cb.hwnd] := cb
+			y_pos += 25
 		}
-		m.Show()
+
+		WinSetTransparent(230, this.mode_gui.hwnd)
+
+		WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " this.gui_obj.hwnd)
+		menu_w := 170
+		menu_h := y_pos + 10
+		start_x := 15
+
+		slot_x := wx + start_x + (idx - 1) * (this.slot_w + this.gap)
+		final_x := slot_x - (menu_w // 2) + (this.slot_w // 2)
+		final_y := wy - menu_h - 10
+
+		this.mode_gui.Show("x" final_x " y" final_y)
+
+		SetTimer(ObjBindMethod(this, "check_menu_focus"), 100)
 	}
 
-	static toggle_mode(idx, mode_name, *) {
+	static toggle_mode(idx, mode_name, ctrl, *) {
+		is_checked := ctrl.Value
 		current_str := this.settings["boost_bar"]["slot_mode_" idx]
 		current_list := current_str == "" ? [] : StrSplit(current_str, "|")
+
 		new_list := []
-		found := false
 
-		for item in current_list {
-			if (item == mode_name) {
-				found := true
-			} else if (item != "") {
-				new_list.Push(item)
+		if (mode_name == "Timer" && is_checked) {
+			new_list.Push("Timer")
+		} else {
+			for item in current_list {
+				if (item != mode_name && item != "" && item != "Timer") {
+					new_list.Push(item)
+				}
 			}
-		}
-
-		if (!found) {
-			new_list.Push(mode_name)
+			if (is_checked) {
+				new_list.Push(mode_name)
+			}
 		}
 
 		new_str := ""
@@ -386,9 +446,38 @@ class boost_bar {
 			new_str .= (A_Index > 1 ? "|" : "") item
 		}
 
+		if (new_str == "") {
+			new_str := "Timer"
+		}
+
 		this.settings["boost_bar"]["slot_mode_" idx] := new_str
 		this.save_settings_to_master("boost_bar", "slot_mode_" idx, new_str)
 		this.draw()
+
+		if (this.mode_gui) {
+			for hwnd, chk in this.mode_checkboxes {
+				chk.Value := (InStr("|" new_str "|", "|" chk.Text "|") > 0)
+			}
+		}
+	}
+
+	static check_menu_focus() {
+		if (this.mode_gui) {
+			if (!WinActive("ahk_id " this.mode_gui.hwnd)) {
+				this.close_mode_menu()
+			}
+		} else {
+			SetTimer(ObjBindMethod(this, "check_menu_focus"), 0)
+		}
+	}
+
+	static close_mode_menu() {
+		if (this.mode_gui) {
+			try this.mode_gui.Destroy()
+			this.mode_gui := 0
+			this.mode_checkboxes.Clear()
+		}
+		SetTimer(ObjBindMethod(this, "check_menu_focus"), 0)
 	}
 
 	static open_edit(idx, x, y) {
@@ -428,12 +517,19 @@ class boost_bar {
 			return
 		}
 
+		win := Roblox.Get()
+		if (!IsObject(win) || !win.is_ok) {
+			return
+		}
+
 		static last_fire := Map()
 		now := A_TickCount
+		debug_str := "=== BOOST BAR DIAGNOSTICS ===`n"
 
 		loop 7 {
 			idx := A_Index
 			if (!this.settings["boost_bar"]["slot_active_" idx]) {
+				debug_str .= "Slot " idx " | INACTIVE`n"
 				if (last_fire.Has(idx)) {
 					last_fire.Delete(idx)
 				}
@@ -441,7 +537,10 @@ class boost_bar {
 			}
 
 			delay := this.settings["boost_bar"]["slot_timer_" idx]
-			if (last_fire.Has(idx) && (now - last_fire[idx] < delay)) {
+			time_left := last_fire.Has(idx) ? delay - (now - last_fire[idx]) : 0
+			debug_str .= "Slot " idx " | " (time_left > 0 ? "CD: " time_left "ms" : "READY") "`n"
+
+			if (time_left > 0) {
 				continue
 			}
 
@@ -452,15 +551,59 @@ class boost_bar {
 			for _, ui_mode_name in active_modes {
 				if (ui_mode_name == "Timer" || ui_mode_name == "") {
 					has_valid_condition := true
+					debug_str .= "  -> Mode: " ui_mode_name " (Auto-Trigger)`n"
 					break
 				}
 
 				scanner_key := this.available_modes.Has(ui_mode_name) ? this.available_modes[ui_mode_name] : ""
 
 				try {
-					if (scanner_key != "" && this.scanner.Data.Has(scanner_key) && this.scanner.Data[scanner_key] > 0) {
-						has_valid_condition := true
-						break
+					if (scanner_key != "" && this.scanner.Data.Has(scanner_key)) {
+						val := this.scanner.Data[scanner_key]
+						is_passive := InStr("|gummystar|popstar|scorch|shower|x-flame|", "|" scanner_key "|")
+
+						if (is_passive) {
+							equipped_passives := this.settings.Has("tracker") ? this.settings["tracker"]["passives"] : ""
+
+							if (!InStr("|" equipped_passives "|", "|" scanner_key "|")) {
+								debug_str .= "  -> Mode: " ui_mode_name " | Key: " scanner_key " | ERROR: NOT EQUIPPED`n"
+								continue
+							}
+
+							is_active := false
+
+							if (val == -1) {
+								if (this.cooldowns.Has(scanner_key)) {
+									cooldown_data := this.cooldowns[scanner_key]
+									if (cooldown_data.last_not_found != 0) {
+										elapsed := QPC() - cooldown_data.last_not_found
+										if (elapsed <= cooldown_data.duration) {
+											is_active := true
+										}
+									}
+								} else {
+									is_active := true
+								}
+							} else {
+								if (this.cooldowns.Has(scanner_key)) {
+									this.cooldowns[scanner_key].last_not_found := QPC()
+								}
+							}
+						} else {
+							is_active := (val > 0)
+						}
+
+						debug_str .= "  -> Mode: " ui_mode_name " | Key: " scanner_key " | Active: " is_active " (Raw: " val ")`n"
+
+						if (InStr(ui_mode_name, "Re-") && !is_active) {
+							has_valid_condition := true
+							break
+						} else if (InStr(ui_mode_name, "On ") && is_active) {
+							has_valid_condition := true
+							break
+						}
+					} else {
+						debug_str .= "  -> Mode: " ui_mode_name " | Key: " scanner_key " | ERROR: NOT FOUND`n"
 					}
 				}
 			}
@@ -470,8 +613,10 @@ class boost_bar {
 			}
 
 			Send(idx)
+			debug_str .= "  *** FIRED KEY " idx " ***`n"
 			last_fire[idx] := now
 		}
+		ToolTip(debug_str, 10, 300, 20)
 	}
 
 	static save_settings_to_master(section, key, val) {
@@ -490,35 +635,31 @@ class boost_bar {
 	}
 
 	static init_brushes() {
-		if (this.brush_back) {
+		if (this.brush_bg)
 			return
-		}
-		this.brush_back := Gdip_BrushCreateSolid(0xCC111111)
+		this.brush_bg := Gdip_BrushCreateSolid(this.color_bg)
 		this.brush_off := Gdip_BrushCreateSolid(0xFF333333)
 		this.brush_on := Gdip_BrushCreateSolid(0xFF4cAF50)
 		this.brush_special := Gdip_BrushCreateSolid(0xFF3480EB)
 		this.brush_multi := Gdip_BrushCreateSolid(0xFF9C27B0)
 		this.brush_timer := Gdip_BrushCreateSolid(0xFF222222)
-		this.brush_running := Gdip_BrushCreateSolid(0xFFFF0000)
 	}
 
 	static dispose_brushes() {
 		brushes := [
-			this.brush_back, this.brush_off, this.brush_on,
-			this.brush_special, this.brush_multi, this.brush_timer,
-			this.brush_running
+			this.brush_bg, this.brush_off, this.brush_on,
+			this.brush_special, this.brush_multi, this.brush_timer
 		]
 		for _, handle in brushes {
 			if (handle)
 				Gdip_DeleteBrush(handle)
 		}
-		this.brush_back := 0
+		this.brush_bg := 0
 		this.brush_off := 0
 		this.brush_on := 0
 		this.brush_special := 0
 		this.brush_multi := 0
 		this.brush_timer := 0
-		this.brush_running := 0
 	}
 }
 
