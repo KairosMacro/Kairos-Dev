@@ -5,13 +5,13 @@ class region {
 	; 0 = exact, 1 = compensated (buff collected)
 	static buff_region(win, mode := 0) {
 		coords := [[36, 37], [30, 50]]
-		return win.x "|" win.y + win.offsetY + coords[mode + 1][1] "|" win.w "|" coords[mode + 1][2]
+		return win.x "|" win.y + win.y_offset + coords[mode + 1][1] "|" win.w "|" coords[mode + 1][2]
 	}
 
 	; text for y-offset.
-	static honey_region(win) => (win.x + (win.w // 2) - 241 "|" win.y + win.offsetY + 4 "|" 221 "|" 28)
+	static honey_region(win) => (win.x + (win.w // 2) - 241 "|" win.y + win.y_offset + 4 "|" 221 "|" 28)
 
-	static pollen_region(win) => (win.x + (win.w // 2) + 59 "|" win.y + win.offsetY + 3 "|" 221 "|" 29)
+	static pollen_region(win) => (win.x + (win.w // 2) + 59 "|" win.y + win.y_offset + 3 "|" 221 "|" 29)
 
 	; inv, quests, etc...
 	static bss_tabs_region(win, tab := 0) {
@@ -24,14 +24,14 @@ class region {
 			[275, 3, 54, 49] ; shop
 		]
 		if tab = 0 {
-			return win.x + 6 "|" win.y + win.offsetY + 76 "|" 329 "|" 56
+			return win.x + 6 "|" win.y + win.y_offset + 76 "|" 329 "|" 56
 		} else { ; SELECTED
-			return win.x + 6 + coords[tab][1] "|" win.y + win.offsetY + 76 + coords[tab][2] "|" coords[tab][3] "|" coords[tab][4]
+			return win.x + 6 + coords[tab][1] "|" win.y + win.y_offset + 76 + coords[tab][2] "|" coords[tab][3] "|" coords[tab][4]
 		}
 	}
 
 	; ALL DEPENDS ON FIRST LAUNCH, so defaults to finding down to bottom window
-	static bss_menu_region(win) => (win.x "|" win.y + win.offsetY + 146 "|" 322 "|" win.h - win.offsetY - 146)
+	static bss_menu_region(win) => (win.x "|" win.y + win.y_offset + 146 "|" 322 "|" win.h - win.y_offset - 146)
 
 	; --- BOTTOM HUD ---
 
@@ -61,7 +61,7 @@ class region {
 	; --- MIDDLE HUD ---
 
 	; "E button" + message
-	static prompt_region(win, e_button := 0) => (win.x + (win.w // 2) - 180 + (e_button ? 0 : 4) "|" win.y + win.offsetY + 36 "|" 356 - (e_button ? 0 : 4) "|" 66)
+	static prompt_region(win, e_button := 0) => (win.x + (win.w // 2) - 180 + (e_button ? 0 : 4) "|" win.y + win.y_offset + 36 "|" 356 - (e_button ? 0 : 4) "|" 66)
 
 	; plant/harvest
 	static planter_prompt_region(win) => (win.x + (win.w // 2) - 218 "|" win.y + (win.h // 2) - 106 "|" 437 "|" 191)

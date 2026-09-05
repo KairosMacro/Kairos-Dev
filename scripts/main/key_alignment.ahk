@@ -8,7 +8,7 @@ CoordMode "Mouse", "Screen"
 CoordMode "Pixel", "Screen"
 SendMode "Event"
 
-if (A_Args.Length = 0) {
+if (A_Args.Length == 0) {
 	MsgBox "This macro needs to be ran by Kairos, please do not run it directly."
 	ExitApp
 }
@@ -20,9 +20,8 @@ if (A_Args.Length = 0) {
 #Include "..\..\lib\utils\JSON.ahk"
 #Include "..\..\lib\utils\utility.ahk"
 
-if !(pToken := Gdip_Startup()) {
+if !(pToken := Gdip_Startup())
 	throw Error("GDI+ failed to start, exiting script.")
-}
 
 (bitmaps := Map()).CaseSense := false
 #Include "..\..\assets\bitmaps\Offset.ahk"
@@ -58,6 +57,7 @@ class key_alignment {
 			, "rebind_hotkey", "^+k"
 			, "rot_right", "Comma"
 			, "rot_left", "Period"
+			, "show_overlay", 1
 		)
 	)
 
@@ -65,21 +65,20 @@ class key_alignment {
 	static heartbeat_func := ObjBindMethod(this, "send_heartbeat")
 
 	static init() {
-		if (A_Args.Length > 0) {
+		if (A_Args.Length > 0)
 			this.master_pid := A_Args[1]
-		}
 
 		win := Roblox.Get()
 
 		this.gui_obj := Gui("-Caption +E0x80000 +E0x20 +AlwaysOnTop +ToolWindow +OwnDialogs", "Key Alignment")
-		if (IsObject(win) && win.ok) {
-			xPos := win.x + win.w - this.width
-			yPos := win.y
+		if (IsObject(win) && win.is_ok) {
+			x_pos := win.x + win.w - this.width
+			y_pos := win.y
 		} else {
-			xPos := 0
-			yPos := 0
+			x_pos := 0
+			y_pos := 0
 		}
-		this.gui_obj.Show("NA x" xPos " y" yPos)
+		this.gui_obj.Show("NA x" x_pos " y" y_pos)
 
 		this.hbm := CreateDIBSection(this.width, this.height)
 		this.hdc := CreateCompatibleDC()
@@ -90,9 +89,8 @@ class key_alignment {
 		this.init_brushes()
 		this.draw()
 
-		if (this.master_pid) {
+		if (this.master_pid)
 			SetTimer(this.heartbeat_func, 2000)
-		}
 
 		IPC.init(ObjBindMethod(this, "handle_command"))
 		this.startup_timer := ObjBindMethod(this, "request_startup_settings")
@@ -162,20 +160,15 @@ class key_alignment {
 			key := data["key"]
 			val := data["value"]
 
-			if (!this.settings.Has(section)) {
+			if (!this.settings.Has(section) || !this.settings[section].Has(key))
 				return
-			}
 
-			if (this.settings[section].Has(key)) {
-				this.settings[section][key] := val
+			this.settings[section][key] := val
 
-				if (key == "alignment_key" || key == "rebind_hotkey" || key == "key_alignment_enabled") {
-					this.refresh_hotkeys()
-					this.draw()
-					if (key == "key_alignment_enabled") {
-						this.follow_window()
-					}
-				}
+			if (key == "alignment_key" || key == "rebind_hotkey" || key == "key_alignment_enabled" || key == "show_overlay") {
+				this.refresh_hotkeys()
+				this.draw()
+				this.follow_window()
 			}
 			return
 		}
@@ -187,9 +180,8 @@ class key_alignment {
 	}
 
 	static refresh_hotkeys() {
-		if (this.old_rebind_key != "") {
+		if (this.old_rebind_key != "")
 			try Hotkey(this.old_rebind_key, "Off")
-		}
 
 		if (this.old_action_key != "") {
 			HotIf (*) => key_alignment.should_intercept()
@@ -224,45 +216,46 @@ class key_alignment {
 	}
 
 	static perform_action() {
-		if (this.is_rebinding || this.is_action_running) {
+		if (this.is_rebinding || this.is_action_running || !WinActive("Roblox ahk_exe RobloxPlayerBeta.exe"))
 			return
-		}
 
 		this.is_action_running := true
 		was_right_click := GetKeyState("RButton", "P")
 
-		if (was_right_click) {
+		if (was_right_click)
 			Click("Up Right")
-		}
 
 		Send("{" this.settings["key_alignment"]["rot_right"] "}")
 		Sleep(6)
 		Send("{" this.settings["key_alignment"]["rot_left"] "}")
 
-		if (was_right_click) {
+		if (was_right_click)
 			Click("Down Right")
-		}
 
 		this.is_action_running := false
 	}
 
 	static start_rebind() {
-		if (this.current_state == "running" || this.is_rebinding) {
+		if (this.current_state == "running" || this.is_rebinding)
 			return
-		}
 
 		this.is_rebinding := true
 		this.draw("Rebinding...")
 		this.register_action_hotkey(false)
 
-		ih := InputHook("L1 T7", "{Escape}{Space}{Tab}{Enter}{Backspace}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}")
-		captured_key := ""
+		ih := InputHook("T7")
+		ih.KeyOpt("{All}", "E")
+		ih.KeyOpt("{LCtrl}{RCtrl}{LAlt}{RAlt}{LShift}{RShift}{LWin}{RWin}", "-E")
 
+		captured_key := ""
 		mouse_callback := (this_hotkey) => (captured_key := StrReplace(this_hotkey, "$"), ih.Stop())
 		mouse_keys := ["LButton", "RButton", "MButton", "XButton1", "XButton2"]
 
 		for key in mouse_keys {
 			Hotkey("$" key, mouse_callback, "On")
+			Hotkey("$^" key, mouse_callback, "On")
+			Hotkey("$+" key, mouse_callback, "On")
+			Hotkey("$!" key, mouse_callback, "On")
 		}
 
 		ih.Start()
@@ -270,13 +263,25 @@ class key_alignment {
 
 		for key in mouse_keys {
 			Hotkey("$" key, "Off")
+			Hotkey("$^" key, "Off")
+			Hotkey("$+" key, "Off")
+			Hotkey("$!" key, "Off")
 		}
 
 		final_key := ""
+		mods := ""
+
+		if (GetKeyState("Ctrl", "P"))
+			mods .= "^"
+		if (GetKeyState("Shift", "P"))
+			mods .= "+"
+		if (GetKeyState("Alt", "P"))
+			mods .= "!"
+		if (GetKeyState("LWin", "P") || GetKeyState("RWin", "P"))
+			mods .= "#"
+
 		if (captured_key != "") {
-			final_key := captured_key
-		} else if (ih.EndReason == "Max") {
-			final_key := ih.Input
+			final_key := RegExReplace(captured_key, "[\^\+!\#]", "")
 		} else if (ih.EndReason == "EndKey") {
 			if (ih.EndKey != "Escape") {
 				final_key := ih.EndKey
@@ -284,15 +289,23 @@ class key_alignment {
 		}
 
 		if (final_key != "") {
+			if (StrLen(final_key) == 1)
+				final_key := StrLower(final_key)
+
+			final_key := mods . final_key
+			base_key := RegExReplace(final_key, "[\^\+!\#]", "")
 			blacklist := "|LButton|RButton|Enter|Space|Tab|Backspace|Escape|"
-			if (InStr(blacklist, "|" final_key "|")) {
+
+			if (InStr(blacklist, "|" base_key "|"))
 				final_key := ""
-			}
 		}
 
 		if (final_key != "") {
 			this.settings["key_alignment"]["alignment_key"] := final_key
 			this.save_setting_to_master("key_alignment", "alignment_key", final_key)
+
+			payload := Map("action", "update_setting", "section", "key_alignment", "key", "alignment_key", "value", final_key)
+			IPC.send_message("ahk_pid " this.master_pid, 1, payload)
 		}
 
 		this.is_rebinding := false
@@ -337,13 +350,15 @@ class key_alignment {
 	static follow_window() {
 		try {
 			is_enabled := this.settings["main"]["key_alignment_enabled"]
-			if (!is_enabled) {
+			show_overlay := this.settings["key_alignment"].Has("show_overlay") ? this.settings["key_alignment"]["show_overlay"] : 1
+
+			if (!is_enabled || !show_overlay) {
 				this.gui_obj.Hide()
 				return
 			}
 
 			win := Roblox.Get()
-			if (IsObject(win) && win.ok) {
+			if (IsObject(win) && win.is_ok) {
 				x_pos := win.x + win.w - this.width
 				y_pos := win.y
 			} else {
@@ -364,9 +379,8 @@ class key_alignment {
 	}
 
 	static should_intercept() {
-		if (this.is_rebinding || this.current_state != "running") {
+		if (this.is_rebinding || this.current_state != "running")
 			return false
-		}
 		return (this.current_state == "running" && this.settings["main"]["key_alignment_enabled"])
 	}
 
@@ -388,16 +402,14 @@ class key_alignment {
 	}
 
 	static init_brushes() {
-		if (this.brush) {
+		if (this.brush)
 			return
-		}
 		this.brush := Gdip_BrushCreateSolid(this.color_bg)
 	}
 
 	static dispose_brushes() {
-		if (this.brush) {
+		if (this.brush)
 			Gdip_DeleteBrush(this.brush)
-		}
 		this.brush := 0
 	}
 }

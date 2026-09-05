@@ -12,7 +12,7 @@ class GdipTooltip {
 	__New(draggable := false) {
 		this.Draggable := draggable
 
-		this.Gui := Gui("-Caption +E0x80000 +E0x08000000 +AlwaysOnTop +ToolWindow +OwnDialogs")
+		this.Gui := Gui("-Caption +E0x80000 +E0x08000000 +E0x20 +AlwaysOnTop +ToolWindow +OwnDialogs")
 		this.Gui.Show("NA")
 		this.hwnd := this.Gui.Hwnd
 
@@ -43,6 +43,9 @@ class GdipTooltip {
 
 		; register this instance so OnMessage handlers can find it
 		GdipTooltip._Register(this)
+		this.is_ctrl_down := false
+		this.ctrl_watcher := ObjBindMethod(this, "watch_ctrl_state")
+		SetTimer(this.ctrl_watcher, 50)
 
 		this.MaxWidth := this.BaseMaxWidth
 		this.MaxHeight := this.BaseMaxHeight
@@ -64,6 +67,23 @@ class GdipTooltip {
 		this.padY := this.BasePadY
 		this.rowSpacing := this.BaseRowSpacing
 		this.columnSpacing := this.BaseColumnSpacing
+	}
+
+	watch_ctrl_state() {
+		if (!this.HasOwnProp("hwnd") || !this.hwnd)
+			return
+
+		current_state := GetKeyState("Ctrl", "P")
+		if (current_state == this.is_ctrl_down)
+			return
+
+		this.is_ctrl_down := current_state
+
+		if (current_state) {
+			WinSetExStyle("-0x20", "ahk_id " this.hwnd)
+		} else {
+			WinSetExStyle("+0x20", "ahk_id " this.hwnd)
+		}
 	}
 
 	; OnMessage Hooks
@@ -116,7 +136,7 @@ class GdipTooltip {
 		inst._manualPos := true
 
 		; drag by clicking
-		PostMessage(0xA1, 2,,, "ahk_id " hwnd) ; WM_NCLBUTTONDOWN, HTCAPTION
+		PostMessage(0xA1, 2, , , "ahk_id " hwnd) ; WM_NCLBUTTONDOWN, HTCAPTION
 		return 0
 	}
 
@@ -204,10 +224,10 @@ class GdipTooltip {
 				isImage := false
 				pBM := 0
 
-				if IsInteger(item) && item > 65535 {
+				if (IsInteger(item) && item > 65535) {
 					pBM := item
 					isImage := true
-				} else if FileExist(item) {
+				} else if (Type(item) == "String" && FileExist(item)) {
 					pBM := Gdip_CreateBitmapFromFile(item)
 					isImage := true
 					trash.Push(pBM)
@@ -220,7 +240,14 @@ class GdipTooltip {
 					obj.h := (scale ? Round(Gdip_GetImageHeight(pBM) * zoom) : this.imageSize)
 				} else {
 					obj.Type := "Text"
-					obj.Text := String(item)
+
+					if (IsObject(item) && item.HasOwnProp("Text")) {
+						obj.Text := String(item.Text)
+						obj.Color := item.HasOwnProp("Color") ? item.Color : this.fontColor
+					} else {
+						obj.Text := String(item)
+						obj.Color := this.fontColor
+					}
 
 					rect := this.MeasureText(obj.Text)
 					obj.w := rect.w
@@ -262,7 +289,7 @@ class GdipTooltip {
 				if (item.Type = "Image") {
 					Gdip_DrawImage(this.G, item.Ptr, currentX, drawY, item.w, item.h)
 				} else {
-					Options := "x" currentX " y" drawY " c" this.fontColor " s" this.fontSize " " this.fontStyle " NoWrap"
+					Options := "x" currentX " y" drawY " c" item.Color " s" this.fontSize " " this.fontStyle " NoWrap"
 					Gdip_TextToGraphics(this.G, item.Text, Options, this.fontName, item.w + 10, item.h + 10)
 				}
 				currentX += item.w + this.columnSpacing
@@ -321,6 +348,9 @@ class GdipTooltip {
 	}
 
 	__Delete() {
+		if (this.HasOwnProp("ctrl_watcher")) {
+			SetTimer(this.ctrl_watcher, 0)
+		}
 		SelectObject(this.hdc, this.obm)
 		DeleteObject(this.hbm)
 		DeleteDC(this.hdc)

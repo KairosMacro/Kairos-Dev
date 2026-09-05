@@ -189,6 +189,7 @@ class buff_tracker {
 			return
 		this.current_state := "running"
 		this.scanner.Toggle(1)
+		Roblox.start_tracker()
 		SetTimer(this.check_func, this.loop_interval)
 	}
 
@@ -197,6 +198,7 @@ class buff_tracker {
 			return
 		this.current_state := "stopped"
 		this.scanner.Toggle(0)
+		Roblox.stop_tracker()
 		SetTimer(this.check_func, 0)
 		if (this.tooltip_gui && HasMethod(this.tooltip_gui, "Hide"))
 			SetTimer(() => this.tooltip_gui.Hide(), -100)
@@ -213,11 +215,23 @@ class buff_tracker {
 	}
 
 	static cleanup() {
+		if (this.HasOwnProp("ctrl_watcher")) {
+			SetTimer(this.ctrl_watcher, 0)
+		}
 		this.stop()
 	}
 
 	static check_loop(*) {
-		if (this.current_state != "running" || this.is_edit_mode || !this.settings["main"].Has("tracker_enabled") || !this.settings["main"]["tracker_enabled"]) {
+
+		if (this.current_state != "running") {
+			return
+		}
+
+		if (this.is_edit_mode) {
+			return
+		}
+
+		if (!this.settings["main"].Has("tracker_enabled") || !this.settings["main"]["tracker_enabled"]) {
 			return
 		}
 
@@ -226,12 +240,13 @@ class buff_tracker {
 		}
 
 		win := Roblox.Get()
-		if (!IsObject(win) || !win.ok) {
+		if (!IsObject(win) || !win.is_ok) {
 			return
 		}
 
 		msg_queue := []
 		passive_list := StrSplit(this.settings["tracker"]["passives"], "|")
+
 		for passive_name in passive_list {
 			if (!this.scanner.Profiles.Has(passive_name)) {
 				continue
@@ -250,8 +265,12 @@ class buff_tracker {
 			}
 
 			msg_suffix := ""
+			color_hex := "FFFFFFFF"
+
 			if (val == -1) {
 				msg_suffix := ": N/A"
+				color_hex := "FF777777"
+
 				if (this.cooldowns.Has(passive_name)) {
 					cooldown_data := this.cooldowns[passive_name]
 					if (cooldown_data.last_not_found != 0) {
@@ -260,27 +279,44 @@ class buff_tracker {
 						if (elapsed <= cooldown_data.duration) {
 							active_rem := Round((cooldown_data.duration - elapsed) / 1000)
 							msg_suffix := ": Active: " active_rem "s"
+							color_hex := "FF4CAF50"
 						}
+
 						if (elapsed > cooldown_data.duration) {
 							cd_rem := Round((cooldown_data.cooldown - elapsed) / 1000)
 							msg_suffix := ": CD: " cd_rem "s"
+							cd_total := (cooldown_data.cooldown - cooldown_data.duration) / 1000
+							ratio := Max(0, Min(1, cd_rem / cd_total))
+							green_val := Round(255 * (1 - ratio))
+							color_hex := Format("FFFF{:02X}00", green_val)
 						}
 					}
 				}
 			}
+
 			if (val != -1) {
 				if (this.cooldowns.Has(passive_name)) {
 					this.cooldowns[passive_name].last_not_found := QPC()
 				}
 				msg_suffix := ": " val
+				color_hex := "FFFFFFFF"
+
 				if (this.caps.Has(passive_name)) {
 					msg_suffix .= " / " this.caps[passive_name]
+					cap_ratio := Max(0, Min(1, val / this.caps[passive_name]))
+					red_blue_val := Round(255 * (1 - cap_ratio))
+					color_hex := Format("FF{:02X}FF{:02X}", red_blue_val, red_blue_val)
 				}
 			}
 
 			icon_bmp := (IsSet(bitmaps) && bitmaps.Has("icon") && bitmaps["icon"].Has(passive_name)) ? bitmaps["icon"][passive_name] : 0
-			msg_queue.Push([icon_bmp, msg_suffix])
+			msg_queue.Push([icon_bmp, { Text: msg_suffix, Color: color_hex }])
 		}
+
+		if (msg_queue.Length == 0) {
+			return
+		}
+
 		target_x := (win.x + win.w // 2) + this.offset_x
 		target_y := (win.y + win.h // 2) + this.offset_y
 		this.tooltip_gui.Show(msg_queue, target_x, target_y)
@@ -307,7 +343,7 @@ class buff_tracker {
 		}
 
 		win := Roblox.Get()
-		if (!IsObject(win) || !win.ok) {
+		if (!IsObject(win) || !win.is_ok) {
 			return
 		}
 

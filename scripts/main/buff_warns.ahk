@@ -30,7 +30,9 @@ if !(pToken := Gdip_Startup()) {
 }
 
 (bitmaps := Map()).CaseSense := false
+#Include "..\..\assets\bitmaps\Offset.ahk"
 #Include "..\..\assets\bitmaps\Buffs.ahk"
+#Include "..\..\assets\bitmaps\Icons.ahk"
 
 TraySetIcon "Assets\Images\Kairos.ico"
 
@@ -64,7 +66,7 @@ class buff_warns {
 		, "Gummyballer", { conf: "baller", key: "gummyballer", max: 1000 }
 		, "Coconut Combo", { conf: "combo", key: "combo", max: 40 }
 		, "Combo Buff", { conf: "combo_buff", key: "combo_buff", max: 30, mult: 0.3 }
-		, "X-Flame", { conf: "xflame", key: "x-flame", max: 25 }
+		, "X-Flame", { conf: "x_flame", key: "x-flame", max: 25 }
 	)
 
 	static settings := Map(
@@ -167,6 +169,7 @@ class buff_warns {
 			return
 		this.current_state := "running"
 		this.scanner.Toggle(1)
+		Roblox.start_tracker()
 		SetTimer(this.check_func, this.loop_interval)
 
 		if (this.settings["main"].Has("warns_enabled") && this.settings["main"]["warns_enabled"]) {
@@ -182,6 +185,7 @@ class buff_warns {
 			return
 		this.current_state := "stopped"
 		this.scanner.Toggle(0)
+		Roblox.stop_tracker()
 		SetTimer(this.check_func, 0)
 		if (this.tooltip_gui && HasMethod(this.tooltip_gui, "Show")) {
 			this.tooltip_gui.Show("Warns: OFF")
@@ -206,9 +210,11 @@ class buff_warns {
 	}
 
 	static check_loop(*) {
-		if (this.current_state != "running" || !this.settings["main"].Has("warns_enabled") || !this.settings["main"]["warns_enabled"] || !WinActive("Roblox")) {
+		if (this.current_state != "running" || !this.settings["main"].Has("warns_enabled") || !this.settings["main"]["warns_enabled"]) {
 			return
 		}
+
+		debug_str := "=== WARNS DEBUG ===`n"
 
 		for warn_name, profile in this.warn_profiles {
 			prefix := profile.conf
@@ -222,25 +228,31 @@ class buff_warns {
 			if (!this.has_played_states.Has(warn_name)) {
 				this.has_played_states[warn_name] := false
 			}
+			if (!this.last_played_timestamps.Has(warn_name)) {
+				this.last_played_timestamps[warn_name] := 0
+			}
 
 			current_val := 0
 			if (this.scanner.Data.Has(profile.key)) {
 				current_val := this.scanner.Data[profile.key]
 			}
 
+			threshold_key := prefix "_threshold"
+			threshold := this.settings["warns"].Has(threshold_key) ? this.settings["warns"][threshold_key] : this.default_warn_threshold
+
+			debug_str .= warn_name " -> Raw: " current_val " | Thresh: " threshold "`n"
+
 			if (current_val <= 0) {
 				this.has_played_states[warn_name] := false
 				continue
 			}
-
-			threshold_key := prefix "_threshold"
-			threshold := this.settings["warns"].Has(threshold_key) ? this.settings["warns"][threshold_key] : this.default_warn_threshold
 
 			is_triggered := false
 			ratio := 1.0
 
 			if (profile.HasProp("mult")) {
 				scaled_val := Round(profile.mult * current_val)
+				debug_str .= "   Scaled: " scaled_val "`n"
 				if (scaled_val <= threshold) {
 					is_triggered := true
 					ratio := scaled_val / threshold
@@ -255,20 +267,24 @@ class buff_warns {
 				}
 			}
 
-			if (!is_triggered) {
+			if (is_triggered) {
+				debug_str .= "   >>> TRIGGERED! Ratio: " Round(ratio, 2) "`n"
+				this.handle_alert(warn_name, ratio)
+			} else {
 				this.has_played_states[warn_name] := false
-				continue
 			}
-			this.handle_alert(warn_name, ratio)
 		}
+
+		; Display the debug information in the top left corner of your screen
+		ToolTip(debug_str, 10, 250, 19)
 	}
 
 	static handle_alert(warn_name, ratio) {
 		prefix := this.warn_profiles[warn_name].conf
 
 		vol_key := prefix "_volume"
-		play_once_key := prefix "_playonce"
-		sound_key := prefix "_soundfile"
+		play_once_key := prefix "_play_once"
+		sound_key := prefix "_sound_file"
 
 		vol := this.settings["warns"].Has(vol_key) ? this.settings["warns"][vol_key] : this.default_warn_volume
 		should_play_once := this.settings["warns"].Has(play_once_key) ? this.settings["warns"][play_once_key] : 0

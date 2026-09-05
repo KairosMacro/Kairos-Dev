@@ -59,61 +59,51 @@ class config {
 			"precise_volume", 25,
 			"precise_play_once", 0,
 			"precise_sound_file", A_WorkingDir "\Assets\Audio\Precision.mp3",
-
 			"smoothie_enabled", 0,
 			"smoothie_threshold", 180,
 			"smoothie_volume", 25,
 			"smoothie_play_once", 1,
 			"smoothie_sound_file", A_WorkingDir "\Assets\Audio\Smoothie.mp3",
-
 			"pop_enabled", 0,
 			"pop_threshold", 25,
 			"pop_volume", 25,
 			"pop_play_once", 0,
 			"pop_sound_file", A_WorkingDir "\Assets\Audio\PopStar.mp3",
-
 			"scorch_enabled", 0,
 			"scorch_threshold", 25,
 			"scorch_volume", 25,
 			"scorch_play_once", 0,
 			"scorch_sound_file", A_WorkingDir "\Assets\Audio\ScorchStar.mp3",
-
 			"shower_enabled", 0,
 			"shower_threshold", 20,
 			"shower_volume", 25,
 			"shower_play_once", 0,
 			"shower_sound_file", A_WorkingDir "\Assets\Audio\Shower.mp3",
-
 			"morph_enabled", 0,
 			"morph_threshold", 25,
 			"morph_volume", 25,
 			"morph_play_once", 0,
 			"morph_sound_file", A_WorkingDir "\Assets\Audio\GummyMorph.mp3",
-
 			"gummy_enabled", 0,
 			"gummy_threshold", 70,
 			"gummy_volume", 27,
 			"gummy_play_once", 0,
 			"gummy_sound_file", A_WorkingDir "\Assets\Audio\GummyStar.mp3",
-
 			"baller_enabled", 0,
 			"baller_threshold", 901,
 			"baller_volume", 25,
 			"baller_play_once", 0,
 			"baller_sound_file", A_WorkingDir "\Assets\Audio\Baller.mp3",
-
 			"combo_enabled", 0,
 			"combo_threshold", 35,
 			"combo_volume", 25,
 			"combo_play_once", 0,
 			"combo_sound_file", A_WorkingDir "\Assets\Audio\CocoCombo.mp3",
-
 			"x_flame_enabled", 0,
 			"x_flame_threshold", 15,
 			"x_flame_volume", 25,
 			"x_flame_play_once", 0,
 			"x_flame_sound_file", A_WorkingDir "\Assets\Audio\Xflames.mp3",
-
 			"combo_buff_enabled", 0,
 			"combo_buff_threshold", 15,
 			"combo_buff_volume", 25,
@@ -272,8 +262,6 @@ class config {
 		else
 			this.Data[section] := Map(key, val)
 		this.WriteIni()
-		if (IsSet(process_manager))
-			process_manager.broadcast_setting(section, key, val)
 	}
 	static Get(section, key, defaultVal := "") => (this.Data.Has(section) && this.Data[section].Has(key)) ? this.Data[section][key] : defaultVal
 }

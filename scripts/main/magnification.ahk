@@ -157,8 +157,7 @@ class magnification {
 		if (this.current_state == "running")
 			return
 		this.current_state := "running"
-		Roblox.GetYOffset()
-		Roblox.StartTracker(50)
+		Roblox.start_tracker(50)
 		this.gui_obj.Show("NA")
 		this.hdc_screen := DllCall("GetDC", "Ptr", 0, "Ptr")
 		this.hdc_gui := DllCall("GetDC", "Ptr", this.gui_obj.hwnd, "Ptr")
@@ -202,16 +201,16 @@ class magnification {
 	static follow_window() {
 		try {
 			win := Roblox.Get()
-			if (IsObject(win) && win.ok) {
+			if (IsObject(win) && win.is_ok) {
 				this.src.x := win.x + (win.w // 2) + this.settings["magnifier"]["target_offset"]
-				this.src.y := win.y + win.offsetY
+				this.src.y := win.y + win.y_offset
 				this.src.w := this.width
 				this.src.h := this.height
 
 				gui_w := Floor(this.width * this.settings["magnifier"]["zoom_factor"])
 				gui_h := Floor(this.height * this.settings["magnifier"]["zoom_factor"])
 				target_x := win.x + (win.w // 2) - (gui_w // 2)
-				target_y := win.y + win.h + win.offsetY - this.settings["magnifier"]["offset_y"]
+				target_y := win.y + win.h + win.y_offset - this.settings["magnifier"]["offset_y"]
 
 				if (this.current_state == "running" && this.settings["main"]["magnifier_enabled"]) {
 					this.gui_obj.Show("NA x" target_x " y" target_y " w" gui_w " h" gui_h)

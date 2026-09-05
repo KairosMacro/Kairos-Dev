@@ -74,13 +74,16 @@ class boost_bar {
 	static spam_func := ObjBindMethod(this, "spam_loop")
 
 	static available_modes := Map(
-		"On Scorch", "scorch"
-		, "On Gummy", "gummystar"
-		, "ReGlitter", "glitter"
-		, "ReSmoothie", "supersmoothie"
-		, "On Shower", "shower"
+		"Re-Glitter", "glitter"
+		, "On Scorch Star", "scorch"
+		, "Re-Smoothie", "supersmoothie"
 		, "On Pop Star", "popstar"
-		, "On Baller", "gummyballer"
+		, "On Gummyballer", "gummyballer"
+		, "On Star Shower", "shower"
+		, "On Gummy Star", "gummystar"
+		, "On Gummy Morph", "gummymorph"
+		, "On Coconut Combo", "coconutcombo"
+		, "On X-Flame", "xflame"
 	)
 
 	static init() {
@@ -241,7 +244,7 @@ class boost_bar {
 	static follow_window() {
 		try {
 			win := Roblox.Get()
-			if (IsObject(win) && win.ok) {
+			if (IsObject(win) && win.is_ok) {
 				target_x := win.x + (win.w // 2) - 261
 				target_y := win.y + win.h - 182
 				should_show := this.settings["main"]["boost_bar_enabled"] && (this.current_state != "running" || (this.current_state == "running" && this.settings["boost_bar"]["show_when_active"]))

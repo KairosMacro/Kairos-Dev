@@ -1,6 +1,7 @@
 class ScannerEngine {
 	is_running := false
 	Detector := unset
+	active_field_override := "blueflower"
 
 	Data := Map()
 	BuffStates := Map()
@@ -63,12 +64,12 @@ class ScannerEngine {
 		}
 
 		win := Roblox.Get()
-		if (!IsObject(win) || !win.ok) {
+		if (!IsObject(win) || !win.is_ok) {
 			return
 		}
 
-		bm_top := Gdip_BitmapFromScreen(win.x "|" win.y + win.offsetY + 48 "|" win.w "|32")
-		bm_top_percent := Gdip_BitmapFromScreen(win.x "|" win.y + win.offsetY + 32 "|" win.w "|42")
+		bm_top := Gdip_BitmapFromScreen(win.x "|" win.y + win.y_offset + 48 "|" win.w "|32")
+		bm_top_percent := Gdip_BitmapFromScreen(win.x "|" win.y + win.y_offset + 36 "|" win.w "|38")
 		bm_bottom := Gdip_BitmapFromScreen(win.x + (win.w // 2) - 257 "|" win.y + win.h - 142 "|517|36")
 		bm_hotbar := Gdip_BitmapFromScreen(win.x + (win.w // 2) - 261 "|" win.y + win.h - 102 "|517|68")
 
@@ -95,12 +96,12 @@ class ScannerEngine {
 					new_val := this.scan_buff(bm_top, name, profile)
 				} else if (profile.type == "percent_buff") {
 					new_val := this.scan_percent_buff(bm_top_percent, name, profile)
-				} else if (profile.type == "custom") {
+				} else if (profile.type == "custom_bottom") {
 					method := profile.method
 					new_val := this.%method%(bm_bottom, bm_hotbar)
 				} else if (profile.type == "custom_top") {
 					method := profile.method
-					new_val := this.%method%(bm_top)
+					new_val := this.%method%(bm_top_percent)
 				}
 			} catch {
 				continue
@@ -230,5 +231,58 @@ class ScannerEngine {
 		lowY := this.Detector.ReadPercentageFill(pBitmap, scanX, 0, 35, profile.col, 100)
 		state.val := Round((36 - lowY) / 36, 2)
 		return state.val
+	}
+
+	detect_glitter(pBitmap) {
+		field := (this.active_field_override != "") ? this.active_field_override : config.get("alt", "default_field", "pepper")
+
+		for variant in ["3", "1", "0"] {
+			try {
+				if (Gdip_ImageSearch(pBitmap, bitmaps["boost"][field . variant], &loc, , , , , variant == "3" ? 50 : 35) == 1) {
+					comma_idx := InStr(loc, ",")
+					x_coord := Integer(SubStr(loc, 1, comma_idx - 1))
+					grid_x := Floor(x_coord / 38) * 38
+
+					this.Data["glitter_mult"] := variant
+					return this.measure_boost(pBitmap, grid_x)
+				}
+			}
+		}
+
+		this.Data["glitter_mult"] := "0"
+		return 0
+	}
+
+	measure_boost(pBitmap, slot_x) {
+		static fail_count := 0
+		static last_val := 0
+
+		is_booster(c) {
+			return ((((c) & 0x00FF0000) >= 0x00b80000) && (((c) & 0x00FF0000) <= 0x00e10000)) && ((((c) & 0x0000FF00) >= 0x0000a400) && (((c) & 0x0000FF00) <= 0x0000cd00)) && ((((c) & 0x000000FF) >= 0x0000003a) && (((c) & 0x000000FF) <= 0x00000063))
+		}
+
+		scan_x := slot_x
+		if (!is_booster(Gdip_GetPixel(pBitmap, scan_x, 37))) {
+			if (++fail_count < 15) {
+				return last_val
+			}
+			return 0
+		}
+
+		fail_count := 0
+		low := 0
+		high := 35
+
+		while (low < high) {
+			mid := Floor((low + high) / 2)
+			if (is_booster(Gdip_GetPixel(pBitmap, scan_x, mid))) {
+				high := mid
+			} else {
+				low := mid + 1
+			}
+		}
+
+		last_val := Round((36 - low) / 36, 2)
+		return last_val
 	}
 }
