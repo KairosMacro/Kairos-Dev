@@ -36,13 +36,15 @@ OnError(log_error)
 config.Load()
 
 class kairos_main {
-	static BTN_W := 120
+	static MACRO_VERSION := "1.0.0"
+	static BTN_W := 70
 	static BTN_H := 20
 	static BTN_Y := 280
 	static WM_VSCROLL := 0x0115
 	static SB_BOTTOM := 7
 
 	static expected_modules := [
+		"scripts\general\buff_scanner.ahk",
 		"scripts\main\magnification.ahk",
 		"scripts\main\key_alignment.ahk",
 		"scripts\general\boost_bar.ahk",
@@ -53,6 +55,7 @@ class kairos_main {
 	static loading_gui := unset
 	static log_edit := unset
 	static is_paused := false
+	static is_running := false ; used just for pausing...
 	static ui_controls := Map()
 
 	static selected_warn_prefix := "scorch"
@@ -67,7 +70,7 @@ class kairos_main {
 		["baller", "Gummyballer", 1000],
 		["combo", "Coco Combo", 40],
 		["combo_buff", "Combo Buff", 30],
-		["xflame", "X-Flame", 25]
+		["x_flame", "X-Flame", 25]
 	]
 	static tracker_items := [
 		["precise", "Precision"],
@@ -79,9 +82,18 @@ class kairos_main {
 		["gummymorph", "Gummy Morph"],
 		["gummyballer", "Gummy Baller"],
 		["popstar", "Pop Star"],
-		["starshower", "Star Shower"],
+		["shower", "Star Shower"],
 		["cocoinspire", "Coconut Inspire"]
 	]
+
+	static BTN_MOVE_W := 75
+	static BTN_MOVE_H := 25
+
+	static current_warn_key := ""
+	static current_warn_max := 0
+	static current_boost_slot := 0
+
+	static boost_mode_chks := Map()
 
 	static init() {
 		OnExit((*) => process_manager.kill_all())
@@ -155,6 +167,15 @@ class kairos_main {
 			if (this.ready_modules.Has(script)) {
 				this.ready_modules[script] := true
 				this.check_startup_completion()
+			}
+			return
+		}
+
+		if (action == "sync_buff_data") {
+			for script_path, proc_info in process_manager.processes {
+				if (!InStr(script_path, "buff_scanner.ahk")) {
+					IPC.send_message("ahk_class AutoHotkey ahk_pid " proc_info.pid, 1, data)
+				}
 			}
 			return
 		}
@@ -235,6 +256,14 @@ class kairos_main {
 			}
 
 			if (InStr(script, "buff_tracker.ahk")) {
+				warns_map := Map()
+				prefixes := ["precise", "smoothie", "gummy", "pop", "scorch", "shower", "morph", "baller", "combo", "combo_buff", "x_flame"]
+
+				for prefix in prefixes {
+					warns_map[prefix "_enabled"] := Config.Get("warns", prefix "_enabled", 0)
+					warns_map[prefix "_threshold"] := Config.Get("warns", prefix "_threshold", 25)
+				}
+
 				payload["settings"] := Map(
 					"main", Map(
 						"tracker_enabled", Config.Get("main", "tracker_enabled", 0)
@@ -245,6 +274,7 @@ class kairos_main {
 						, "offset_y", Config.Get("tracker", "offset_y", 0)
 						, "zoom", Config.Get("tracker", "zoom", 1.0)
 					)
+					, "warns", warns_map
 				)
 			}
 
@@ -302,9 +332,8 @@ class kairos_main {
 	}
 
 	static build_ui() {
-		if (this.HasOwnProp("main_gui") && this.main_gui) {
+		if (this.HasOwnProp("main_gui") && this.main_gui)
 			return
-		}
 
 		this.main_gui := Gui("", "Kairos Macro")
 		this.main_gui.OnEvent("Close", ObjBindMethod(this, "on_exit"))
@@ -317,7 +346,7 @@ class kairos_main {
 			? ["Home", "Tracker", "Warnings", "Boost Bar", "Comms", "Settings"]
 			: ["Home", "Alt", "Boost Bar", "Comms", "Settings"]
 
-		this.tabs := this.main_gui.Add("Tab3", "w450 h260", tab_list)
+		this.tabs := this.main_gui.Add("Tab3", "w450 h270", tab_list)
 
 		this.tabs.UseTab("Home")
 		this.build_home_tab(account_type)
@@ -339,15 +368,23 @@ class kairos_main {
 		this.tabs.UseTab("")
 
 		opt_start := "x15 y" this.BTN_Y " w" this.BTN_W " h" this.BTN_H
-		btn_start := this.main_gui.Add("Button", opt_start, "Start (" Config.Get("main", "start_hotkey", "F1") ")")
-		btn_start.OnEvent("Click", ObjBindMethod(this, "on_start"))
+		this.btn_start_ctrl := this.main_gui.Add("Button", opt_start, "Start (" Config.Get("main", "start_hotkey", "F1") ")")
+		this.btn_start_ctrl.OnEvent("Click", ObjBindMethod(this, "on_start"))
 
-		opt_chain := "x+15 yp w" this.BTN_W " h" this.BTN_H
-		btn_pause := this.main_gui.Add("Button", opt_chain, "Pause (" Config.Get("main", "pause_hotkey", "F2") ")")
-		btn_pause.OnEvent("Click", ObjBindMethod(this, "on_pause"))
+		opt_chain := "x+5 yp w" this.BTN_W " h" this.BTN_H
+		this.btn_pause_ctrl := this.main_gui.Add("Button", opt_chain, "Pause (" Config.Get("main", "pause_hotkey", "F2") ")")
+		this.btn_pause_ctrl.OnEvent("Click", ObjBindMethod(this, "on_pause"))
 
-		btn_exit := this.main_gui.Add("Button", opt_chain, "Stop (" Config.Get("main", "stop_hotkey", "F3") ")")
-		btn_exit.OnEvent("Click", ObjBindMethod(this, "on_stop"))
+		this.btn_stop_ctrl := this.main_gui.Add("Button", opt_chain, "Stop (" Config.Get("main", "stop_hotkey", "F3") ")")
+		this.btn_stop_ctrl.OnEvent("Click", ObjBindMethod(this, "on_stop"))
+
+		this.main_gui.SetFont("s9", "Segoe UI")
+		link_txt := '<a href="https://discord.gg/SWWfETTEjJ">Discord</a>  |  <a href="https://github.com/KairosMacro/Kairos">GitHub</a>'
+		this.main_gui.Add("Link", "x+90 yp+1", link_txt)
+
+		this.main_gui.SetFont("cGray")
+		this.main_gui.Add("Text", "x+5 yp", "v" this.MACRO_VERSION)
+		this.main_gui.SetFont("cDefault")
 
 		pos_str := (gui_x != "" && gui_y != "") ? "x" gui_x " y" gui_y : "Center"
 		this.main_gui.Show("NA " pos_str " NoActivate")
@@ -391,25 +428,108 @@ class kairos_main {
 	}
 
 	static build_tracker_tab() {
-		this.main_gui.Add("GroupBox", "Section w410 h185", "Tracker Settings")
+		this.main_gui.Add("GroupBox", "Section w410 h240", "Tracker Settings")
 		this.main_gui.SetFont("s8", "Segoe UI")
 
-		passives_str := Config.Get("tracker", "passives", "scorch")
-		has_passive := (str) => InStr("|" passives_str "|", "|" str "|")
+		this.tracker_lv := this.main_gui.Add("ListView", "xs+10 ys+20 w290 h200 -Hdr", ["Key", "Name", "Status"])
+		this.tracker_lv.OnEvent("ItemSelect", ObjBindMethod(this, "on_tracker_select"))
 
-		for index, item in this.tracker_items {
-			key := item[1]
-			name := item[2]
+		btn_up := this.main_gui.Add("Button", "x+10 ys+20 w" this.BTN_MOVE_W " h" this.BTN_MOVE_H, "Move Up")
+		btn_up.OnEvent("Click", ObjBindMethod(this, "move_tracker_item", -1))
 
-			col_offset := (Mod(index - 1, 2) == 0) ? 10 : 210
-			row_offset := 15 + (Floor((index - 1) / 2) * 26)
+		btn_down := this.main_gui.Add("Button", "xp y+5 w" this.BTN_MOVE_W " h" this.BTN_MOVE_H, "Move Down")
+		btn_down.OnEvent("Click", ObjBindMethod(this, "move_tracker_item", 1))
 
-			chk := this.main_gui.Add("CheckBox", "xs+" col_offset " ys+" row_offset " w15 h15 Checked" has_passive(key))
-			chk.OnEvent("Click", ObjBindMethod(this, "update_passives", key, chk))
+		this.chk_enable := this.main_gui.Add("CheckBox", "xp y+15 w" this.BTN_MOVE_W " h20", "Enable")
+		this.chk_enable.OnEvent("Click", ObjBindMethod(this, "on_enable_toggle"))
 
-			this.main_gui.Add("Text", "xp+20 yp+1 w150", name)
-		}
+		this.populate_tracker_list()
+
+		this.tracker_lv.ModifyCol(1, 0)
+		this.tracker_lv.ModifyCol(2, 210)
+		this.tracker_lv.ModifyCol(3, 60)
 		this.main_gui.SetFont("s9", "Segoe UI")
+	}
+
+	static populate_tracker_list() {
+		try {
+			this.tracker_lv.Delete()
+			saved_str := Config.Get("tracker", "passives", "scorch")
+			saved_keys := StrSplit(saved_str, "|")
+
+			added_keys := Map()
+
+			for index, key in saved_keys {
+				if (key == "")
+					continue
+
+				name := this.get_tracker_name(key)
+				this.tracker_lv.Add("", key, name, "Enabled")
+				added_keys[key] := true
+			}
+
+			for index, item in this.tracker_items {
+				key := item[1]
+				if (added_keys.Has(key))
+					continue
+
+				this.tracker_lv.Add("", key, item[2], "")
+			}
+		} catch as err {
+			this.log_msg("Error populating tracker list: " err.Message)
+		}
+	}
+
+	static get_tracker_name(search_key) {
+		for index, item in this.tracker_items {
+			if (item[1] == search_key)
+				return item[2]
+		}
+		return "Unknown"
+	}
+
+	static on_tracker_select(gui_ctrl, item_index, selected) {
+		if (!selected) {
+			if (!this.tracker_lv.GetNext(0)) {
+				this.chk_enable.Value := 0
+			}
+			return
+		}
+
+		status := this.tracker_lv.GetText(item_index, 3)
+		this.chk_enable.Value := (status == "Enabled")
+	}
+
+	static on_enable_toggle(ctrl, *) {
+		focused_row := this.tracker_lv.GetNext(0, "Focused")
+		if (!focused_row)
+			return
+
+		key := this.tracker_lv.GetText(focused_row, 1)
+		name := this.tracker_lv.GetText(focused_row, 2)
+		status_text := ctrl.Value ? "Enabled" : ""
+
+		this.tracker_lv.Modify(focused_row, "", key, name, status_text)
+		this.save_tracker_order()
+	}
+
+	static move_tracker_item(direction, *) {
+		focused_row := this.tracker_lv.GetNext(0, "Focused")
+		if (!focused_row)
+			return
+
+		target_row := focused_row + direction
+		if (target_row < 1 || target_row > this.tracker_lv.GetCount())
+			return
+
+		key := this.tracker_lv.GetText(focused_row, 1)
+		name := this.tracker_lv.GetText(focused_row, 2)
+		status := this.tracker_lv.GetText(focused_row, 3)
+
+		this.tracker_lv.Delete(focused_row)
+		this.tracker_lv.Insert(target_row, "Focus Select", key, name, status)
+
+		this.save_tracker_order()
 	}
 
 	static update_passives(key, chk_ctrl, *) {
@@ -433,118 +553,438 @@ class kairos_main {
 	}
 
 	static build_warnings_tab() {
-		this.main_gui.Add("GroupBox", "Section w420 h185", "Warning Settings")
+		this.main_gui.Add("GroupBox", "Section w420 h225", "Warning Settings")
 		this.main_gui.SetFont("s8", "Segoe UI")
 
-		for index, item in this.warn_items {
-			key := item[1]
-			name := item[2]
-			max_val := item[3]
+		this.warns_lv := this.main_gui.Add("ListView", "xs+10 ys+20 w400 h90 -Hdr", ["Key", "Name", "Status", "Threshold", "Max"])
+		this.warns_lv.OnEvent("ItemSelect", ObjBindMethod(this, "on_warn_select"))
 
-			col_offset := (Mod(index - 1, 2) == 0) ? 10 : 225
-			row_offset := 15 + (Floor((index - 1) / 2) * 26)
+		this.chk_warn_enable := this.main_gui.Add("CheckBox", "xs+10 y+15 w65 h20", "Enable")
+		this.chk_warn_enable.OnEvent("Click", ObjBindMethod(this, "on_warn_toggle"))
 
-			chk := this.main_gui.Add("CheckBox", "xs+" col_offset " ys+" row_offset " w15 h15 Checked" Config.Get("warns", key "_enabled", 0))
-			chk.OnEvent("Click", this.create_setting_callback("warns", key "_enabled", chk, "Value"))
+		this.main_gui.Add("Text", "x+5 yp+3 w60", "Threshold:")
+		this.edit_warn_thresh := this.main_gui.Add("Edit", "x+0 yp-3 w40 h18 Number Center")
+		this.edit_warn_thresh.OnEvent("Change", ObjBindMethod(this, "on_warn_param_change", "threshold"))
+		this.lbl_warn_max := this.main_gui.Add("Text", "x+5 yp+3 w35", "/ 0")
 
-			this.main_gui.Add("Text", "xp+20 yp+1 w90", name)
+		this.main_gui.Add("Text", "x+5 yp w50", "Volume:")
+		this.edit_warn_vol := this.main_gui.Add("Edit", "x+0 yp-3 w40 h18 Number Center")
+		this.edit_warn_vol.OnEvent("Change", ObjBindMethod(this, "on_warn_param_change", "volume"))
+		this.ud_warn_vol := this.main_gui.Add("UpDown", "Range0-100")
 
-			edit_thresh := this.main_gui.Add("Edit", "xp+70 yp-3 w35 h18 Number", Config.Get("warns", key "_threshold", 25))
-			edit_thresh.OnEvent("Change", this.create_setting_callback("warns", key "_threshold", edit_thresh, "Value"))
+		this.chk_warn_playonce := this.main_gui.Add("CheckBox", "x+15 yp+3 w80 h20", "Play Once")
+		this.chk_warn_playonce.OnEvent("Click", ObjBindMethod(this, "on_warn_param_change", "play_once"))
 
-			this.main_gui.Add("Text", "xp+38 yp+3 cGray", "/" max_val)
+		this.main_gui.Add("Text", "xs+10 y+15 w40", "Sound:")
+		this.edit_warn_sound := this.main_gui.Add("Edit", "x+0 yp-3 w235 h20 ReadOnly")
 
-			btn_cfg := this.main_gui.Add("Button", "xp+35 yp-3 w25 h18", "...")
-			btn_cfg.OnEvent("Click", ObjBindMethod(this, "open_warn_settings", key, name))
-		}
+		this.btn_warn_browse := this.main_gui.Add("Button", "x+10 yp-1 w50 h22", "Browse")
+		this.btn_warn_browse.OnEvent("Click", ObjBindMethod(this, "browse_warn_sound"))
+
+		this.btn_warn_test := this.main_gui.Add("Button", "x+5 yp w50 h22", "Test")
+		this.btn_warn_test.OnEvent("Click", ObjBindMethod(this, "test_warn_sound"))
+
+		this.populate_warns_list()
+		this.set_warn_controls_state(false)
+
+		this.warns_lv.ModifyCol(1, 0)
+		this.warns_lv.ModifyCol(2, 120)
+		this.warns_lv.ModifyCol(3, 70)
+		this.warns_lv.ModifyCol(4, 180)
+		this.warns_lv.ModifyCol(5, 0)
 		this.main_gui.SetFont("s9", "Segoe UI")
 	}
 
-	static open_warn_settings(warn_key, warn_name, *) {
-		static warn_gui := unset
-		if (IsSet(warn_gui) && warn_gui) {
-			try warn_gui.Destroy()
-			warn_gui := unset
+	static set_warn_controls_state(is_enabled) {
+		this.chk_warn_enable.Enabled := is_enabled
+		this.edit_warn_thresh.Enabled := is_enabled
+		this.edit_warn_vol.Enabled := is_enabled
+		this.ud_warn_vol.Enabled := is_enabled
+		this.chk_warn_playonce.Enabled := is_enabled
+		this.btn_warn_browse.Enabled := is_enabled
+		this.btn_warn_test.Enabled := is_enabled
+
+		if (!is_enabled) {
+			this.chk_warn_enable.Value := 0
+			this.edit_warn_thresh.Value := ""
+			this.lbl_warn_max.Text := "/ 0"
+			this.edit_warn_vol.Value := ""
+			this.chk_warn_playonce.Value := 0
+			this.edit_warn_sound.Value := ""
 		}
+	}
 
-		warn_gui := Gui("+Owner" this.main_gui.hwnd " +AlwaysOnTop +Border +ToolWindow", warn_name " Settings")
-		warn_gui.SetFont("s9", "Segoe UI")
-		warn_gui.OnEvent("Close", (*) => (warn_gui.Destroy(), warn_gui := unset))
+	static populate_warns_list() {
+		try {
+			this.warns_lv.Delete()
+			for index, item in this.warn_items {
+				key := item[1]
+				name := item[2]
+				max_val := item[3]
 
-		save_local(*) {
-			this.update_and_broadcast("warns", warn_key "_volume", warn_gui["volume"].Value)
-			this.update_and_broadcast("warns", warn_key "_playonce", warn_gui["play_once"].Value)
-		}
+				is_enabled := Config.Get("warns", key "_enabled", 0)
+				status_text := is_enabled ? "Enabled" : ""
 
-		browse_sound(*) {
-			selected_file := FileSelect(1, , "Select Sound File", "Audio (*.wav; *.mp3)")
-			if (!selected_file)
-				return
+				current_threshold := Config.Get("warns", key "_threshold", 25)
+				if (!IsNumber(current_threshold) || current_threshold == "") {
+					current_threshold := 25
+				}
 
-			warn_gui["sound_file"].Value := selected_file
-			this.update_and_broadcast("warns", warn_key "_sound_file", selected_file)
-		}
+				threshold_text := "Threshold: " current_threshold " / " max_val
 
-		test_audio(*) {
-			sound_path := warn_gui["sound_file"].Value
-			if (!FileExist(sound_path)) {
-				sound_path := "C:\Windows\Media\Windows Critical Stop.wav"
+				this.warns_lv.Add("", key, name, status_text, threshold_text, max_val)
 			}
-			vol := warn_gui["volume"].Value
-			try {
-				kairos_main.test_audio_player := Audio(sound_path)
-				kairos_main.test_audio_player.Play(vol)
-			} catch as err {
-				MsgBox("Error playing audio: " err.Message, "Kairos", 16)
+		} catch as err {
+			this.log_msg("Error populating warns list: " err.Message)
+		}
+	}
+
+	static on_warn_toggle(ctrl, *) {
+		if (this.current_warn_key == "") {
+			return
+		}
+
+		focused_row := this.warns_lv.GetNext(0, "Focused")
+		if (!focused_row) {
+			return
+		}
+
+		status_text := ctrl.Value ? "Enabled" : ""
+		key := this.warns_lv.GetText(focused_row, 1)
+		name := this.warns_lv.GetText(focused_row, 2)
+		threshold := this.warns_lv.GetText(focused_row, 4)
+		max_val := this.warns_lv.GetText(focused_row, 5)
+
+		this.warns_lv.Modify(focused_row, "", key, name, status_text, threshold, max_val)
+		this.update_and_broadcast("warns", key "_enabled", ctrl.Value)
+	}
+
+	static on_warn_param_change(param_type, ctrl, *) {
+		if (this.current_warn_key == "") {
+			return
+		}
+
+		key := this.current_warn_key
+		val := ctrl.Value
+
+		if (param_type == "threshold") {
+			if (val == "") {
+				val := 0
+			}
+
+			focused_row := this.warns_lv.GetNext(0, "Focused")
+			if (focused_row) {
+				name := this.warns_lv.GetText(focused_row, 2)
+				status := this.warns_lv.GetText(focused_row, 3)
+				max_val := this.warns_lv.GetText(focused_row, 5)
+
+				threshold_text := "Threshold: " val " / " max_val
+				this.warns_lv.Modify(focused_row, "", key, name, status, threshold_text, max_val)
 			}
 		}
 
-		warn_gui.Add("Text", "x15 y15 w50", "Volume:")
-		edit_vol := warn_gui.Add("Edit", "x65 y12 w50 Number vvolume", Config.Get("warns", warn_key "_volume", 25))
-		edit_vol.OnEvent("Change", save_local)
-		warn_gui.Add("UpDown", "Range0-100", Config.Get("warns", warn_key "_volume", 25))
-		warn_gui.Add("Text", "x120 y15", "%")
+		this.update_and_broadcast("warns", key "_" param_type, val)
+	}
 
-		chk_play := warn_gui.Add("CheckBox", "x15 y40 w100 vplay_once Checked" Config.Get("warns", warn_key "_playonce", 0), "Play Once")
-		chk_play.OnEvent("Click", save_local)
+	static browse_warn_sound(*) {
+		if (this.current_warn_key == "") {
+			return
+		}
 
-		warn_gui.Add("Text", "x15 y70 w50", "Sound:")
-		btn_browse := warn_gui.Add("Button", "x60 y67 w55 h22", "Browse")
-		btn_browse.OnEvent("Click", browse_sound)
+		selected_file := FileSelect(1, , "Select Sound File", "Audio (*.wav; *.mp3)")
+		if (!selected_file) {
+			return
+		}
 
-		btn_test := warn_gui.Add("Button", "x120 y67 w55 h22", "Test")
-		btn_test.OnEvent("Click", test_audio)
+		this.update_and_broadcast("warns", this.current_warn_key "_sound_file", selected_file)
+		this.edit_warn_sound.Value := this.format_display_path(selected_file)
+	}
 
-		warn_gui.Add("Edit", "x15 y95 w220 h20 ReadOnly vsound_file", Config.Get("warns", warn_key "_sound_file", "C:\Windows\Media\Windows Critical Stop.wav"))
+	static test_warn_sound(*) {
+		if (this.current_warn_key == "") {
+			return
+		}
 
-		warn_gui.Show("w250 h130")
+		sound_path := Config.Get("warns", this.current_warn_key "_sound_file", "C:\Windows\Media\Windows Critical Stop.wav")
+		if (!FileExist(sound_path)) {
+			sound_path := "C:\Windows\Media\Windows Critical Stop.wav"
+		}
+
+		vol := Config.Get("warns", this.current_warn_key "_volume", 25)
+		try {
+			kairos_main.test_audio_player := Audio(sound_path)
+			kairos_main.test_audio_player.Play(vol)
+		} catch as err {
+			MsgBox("Error playing audio: " err.Message, "Kairos", 16)
+		}
+	}
+
+	static on_warn_select(gui_ctrl, item_index, selected) {
+		if (!selected) {
+			if (!this.warns_lv.GetNext(0)) {
+				this.current_warn_key := ""
+				this.set_warn_controls_state(false)
+			}
+			return
+		}
+
+		key := this.warns_lv.GetText(item_index, 1)
+		max_val := this.warns_lv.GetText(item_index, 5)
+
+		this.current_warn_key := key
+		this.current_warn_max := max_val
+		this.set_warn_controls_state(true)
+
+		status := this.warns_lv.GetText(item_index, 3)
+		this.chk_warn_enable.Value := (status == "Enabled")
+
+		thresh_val := Config.Get("warns", key "_threshold", 25)
+		this.edit_warn_thresh.Value := (IsNumber(thresh_val) && thresh_val != "") ? thresh_val : 25
+		this.lbl_warn_max.Text := "/ " max_val
+
+		vol_val := Config.Get("warns", key "_volume", 25)
+		this.edit_warn_vol.Value := (IsNumber(vol_val) && vol_val != "") ? vol_val : 25
+
+		play_val := Config.Get("warns", key "_play_once", 0)
+		this.chk_warn_playonce.Value := (play_val == 1 || play_val == "1") ? 1 : 0
+
+		raw_path := Config.Get("warns", key "_sound_file", "C:\Windows\Media\Windows Critical Stop.wav")
+		this.edit_warn_sound.Value := this.format_display_path(raw_path)
+	}
+
+	static save_tracker_order() {
+		active_passives := []
+		total_rows := this.tracker_lv.GetCount()
+
+		loop total_rows {
+			row_idx := A_Index
+			if (this.tracker_lv.GetText(row_idx, 3) == "Enabled") {
+				key := this.tracker_lv.GetText(row_idx, 1)
+				active_passives.Push(key)
+			}
+		}
+
+		save_str := ""
+		for index, item in active_passives {
+			save_str .= (A_Index > 1 ? "|" : "") item
+		}
+
+		this.update_and_broadcast("tracker", "passives", save_str)
+	}
+
+	static format_display_path(file_path) {
+		try {
+			work_dir := A_WorkingDir
+			if (InStr(file_path, work_dir)) {
+				return StrReplace(file_path, work_dir, "root")
+			}
+
+			user_dir := EnvGet("USERPROFILE")
+			if (InStr(file_path, user_dir)) {
+				return StrReplace(file_path, user_dir, "~")
+			}
+
+			return file_path
+		} catch {
+			return file_path
+		}
 	}
 
 	static build_boost_bar_tab() {
-		this.main_gui.Add("GroupBox", "Section w300 h185", "Boost Bar Slots")
-		this.main_gui.Add("Text", "xs+15 ys+20 w50", "Active")
-		this.main_gui.Add("Text", "xs+75 ys+20 w50", "Timers")
-		this.main_gui.Add("Text", "xs+150 ys+20 w50", "Modes")
+		this.main_gui.Add("GroupBox", "Section w420 h235", "Boost Bar Slots")
+		this.main_gui.SetFont("s8", "Segoe UI")
 
-		loop 7 {
-			idx := A_Index
-			y_pos := "ys+" (15 + (idx * 21))
+		this.boost_lv := this.main_gui.Add("ListView", "xs+10 ys+20 w400 h80 -Hdr", ["Slot Num", "Name", "Status", "Timer", "Modes"])
+		this.boost_lv.OnEvent("ItemSelect", ObjBindMethod(this, "on_boost_select"))
 
-			chk := this.main_gui.Add("CheckBox", "xs+20 " y_pos " w20 h20 Checked" Config.Get("boost_bar", "slot_active_" idx, 0))
-			chk.OnEvent("Click", this.create_setting_callback("boost_bar", "slot_active_" idx, chk, "Value"))
+		this.chk_boost_enable := this.main_gui.Add("CheckBox", "xs+10 y+10 w75 h20", "Enable Slot")
+		this.chk_boost_enable.OnEvent("Click", ObjBindMethod(this, "on_boost_toggle"))
 
-			edit_timer := this.main_gui.Add("Edit", "xs+70 " y_pos " w40 h18 Number Center", Config.Get("boost_bar", "slot_timer_" idx, 100))
-			edit_timer.OnEvent("Change", this.create_setting_callback("boost_bar", "slot_timer_" idx, edit_timer, "Value"))
+		this.main_gui.Add("Text", "x+10 yp+3 w40", "Timer:")
+		this.edit_boost_timer := this.main_gui.Add("Edit", "x+0 yp-3 w50 h18 Number Center")
+		this.edit_boost_timer.OnEvent("Change", ObjBindMethod(this, "on_boost_timer_change"))
 
-			current_modes := Config.Get("boost_bar", "slot_mode_" idx, "Timer")
-			display_text := (current_modes == "") ? "None" : (StrSplit(current_modes, "|").Length > 1 ? "Multiple" : current_modes)
+		this.main_gui.Add("Text", "xs+10 y+5 w400 0x10")
 
-			btn_mode := this.main_gui.Add("Button", "xs+130 " y_pos " w85 h20", display_text)
-			btn_mode.OnEvent("Click", ObjBindMethod(this, "open_mode_selector", idx, btn_mode))
+		mode_list := ["Timer", "Re-Glitter", "On Scorch Star", "Re-Smoothie", "On Pop Star", "On Gummyballer", "On Star Shower", "On Gummy Star", "On Gummy Morph", "On Coconut Combo", "On X-Flame"]
+		this.boost_mode_chks := Map()
+
+		for index, mode_name in mode_list {
+			i := A_Index - 1
+			col := Mod(i, 3)
+
+			if (col == 0) {
+				opt := (i == 0) ? "xs+15 y+0" : "xs+15 y+5"
+			} else {
+				opt := "x+5 yp"
+			}
+
+			w_val := (col == 0) ? "w120" : (col == 1 ? "w110" : "w125")
+
+			cb := this.main_gui.Add("CheckBox", opt " " w_val " h16", mode_name)
+			cb.OnEvent("Click", ObjBindMethod(this, "on_boost_mode_toggle"))
+			this.boost_mode_chks[mode_name] := cb
+		}
+
+		this.populate_boost_list()
+		this.set_boost_controls_state(false)
+
+		this.boost_lv.ModifyCol(1, 0)
+		this.boost_lv.ModifyCol(2, 50)
+		this.boost_lv.ModifyCol(3, 60)
+		this.boost_lv.ModifyCol(4, 50)
+		this.boost_lv.ModifyCol(5, 210)
+
+		this.main_gui.SetFont("s9", "Segoe UI")
+	}
+
+	static set_boost_controls_state(is_enabled) {
+		this.chk_boost_enable.Enabled := is_enabled
+		this.edit_boost_timer.Enabled := is_enabled
+
+		for mode_name, cb in this.boost_mode_chks {
+			cb.Enabled := is_enabled
+			if (!is_enabled) {
+				cb.Value := 0
+			}
+		}
+
+		if (!is_enabled) {
+			this.chk_boost_enable.Value := 0
+			this.edit_boost_timer.Value := ""
 		}
 	}
 
-	static open_mode_selector(idx, btn_ctrl, *) {
+	static populate_boost_list() {
+		try {
+			this.boost_lv.Delete()
+			loop 7 {
+				idx := A_Index
+				is_enabled := Config.Get("boost_bar", "slot_active_" idx, 0)
+				status_text := is_enabled ? "Enabled" : ""
+
+				timer_val := Config.Get("boost_bar", "slot_timer_" idx, 100)
+				if (!IsNumber(timer_val) || timer_val == "") {
+					timer_val := 100
+				}
+
+				current_modes := Config.Get("boost_bar", "slot_mode_" idx, "Timer")
+				mode_text := (current_modes == "") ? "None" : (StrSplit(current_modes, "|").Length > 1 ? "Multiple" : current_modes)
+
+				this.boost_lv.Add("", idx, "Slot " idx, status_text, timer_val, mode_text)
+			}
+		} catch as err {
+			this.log_msg("Error populating boost list: " err.Message)
+		}
+	}
+
+	static on_boost_select(gui_ctrl, item_index, selected) {
+		if (!selected) {
+			if (!this.boost_lv.GetNext(0)) {
+				this.current_boost_slot := 0
+				this.set_boost_controls_state(false)
+			}
+			return
+		}
+
+		idx := this.boost_lv.GetText(item_index, 1)
+		this.current_boost_slot := idx
+		this.set_boost_controls_state(true)
+
+		status := this.boost_lv.GetText(item_index, 3)
+		this.chk_boost_enable.Value := (status == "Enabled")
+
+		timer_val := Config.Get("boost_bar", "slot_timer_" idx, 100)
+		this.edit_boost_timer.Value := (IsNumber(timer_val) && timer_val != "") ? timer_val : 100
+
+		current_modes := Config.Get("boost_bar", "slot_mode_" idx, "Timer")
+		for mode_name, cb in this.boost_mode_chks {
+			cb.Value := InStr("|" current_modes "|", "|" mode_name "|")
+		}
+	}
+
+	static on_boost_mode_toggle(*) {
+		idx := this.current_boost_slot
+		if (idx == 0) {
+			return
+		}
+
+		saved_list := []
+		for mode_name, cb in this.boost_mode_chks {
+			if (cb.Value) {
+				saved_list.Push(mode_name)
+			}
+		}
+
+		save_str := ""
+		for index, item in saved_list {
+			save_str .= (A_Index > 1 ? "|" : "") item
+		}
+
+		this.update_and_broadcast("boost_bar", "slot_mode_" idx, save_str)
+
+		count := saved_list.Length
+		display_text := (count == 0) ? "None" : (count > 1 ? "Multiple" : save_str)
+
+		focused_row := this.boost_lv.GetNext(0, "Focused")
+		if (focused_row) {
+			key_idx := this.boost_lv.GetText(focused_row, 1)
+			name := this.boost_lv.GetText(focused_row, 2)
+			status := this.boost_lv.GetText(focused_row, 3)
+			timer := this.boost_lv.GetText(focused_row, 4)
+			this.boost_lv.Modify(focused_row, "", key_idx, name, status, timer, display_text)
+		}
+	}
+
+	static on_boost_toggle(ctrl, *) {
+		if (this.current_boost_slot == 0) {
+			return
+		}
+
+		focused_row := this.boost_lv.GetNext(0, "Focused")
+		if (!focused_row) {
+			return
+		}
+
+		status_text := ctrl.Value ? "Enabled" : ""
+		idx := this.boost_lv.GetText(focused_row, 1)
+		name := this.boost_lv.GetText(focused_row, 2)
+		timer := this.boost_lv.GetText(focused_row, 4)
+		modes := this.boost_lv.GetText(focused_row, 5)
+
+		this.boost_lv.Modify(focused_row, "", idx, name, status_text, timer, modes)
+		this.update_and_broadcast("boost_bar", "slot_active_" idx, ctrl.Value)
+	}
+
+	static on_boost_timer_change(ctrl, *) {
+		if (this.current_boost_slot == 0) {
+			return
+		}
+
+		val := ctrl.Value
+		if (val == "") {
+			val := 0
+		}
+
+		focused_row := this.boost_lv.GetNext(0, "Focused")
+		if (focused_row) {
+			idx := this.boost_lv.GetText(focused_row, 1)
+			name := this.boost_lv.GetText(focused_row, 2)
+			status := this.boost_lv.GetText(focused_row, 3)
+			modes := this.boost_lv.GetText(focused_row, 5)
+
+			this.boost_lv.Modify(focused_row, "", idx, name, status, val, modes)
+		}
+
+		this.update_and_broadcast("boost_bar", "slot_timer_" this.current_boost_slot, val)
+	}
+
+	static open_boost_mode_selector(*) {
+		idx := this.current_boost_slot
+		if (idx == 0) {
+			return
+		}
+
 		static mode_gui := unset
 		if (IsSet(mode_gui) && mode_gui) {
 			try mode_gui.Destroy()
@@ -562,17 +1002,29 @@ class kairos_main {
 		update_config(*) {
 			saved_list := []
 			for mode, ctrl in checkboxes {
-				if (ctrl.Value)
+				if (ctrl.Value) {
 					saved_list.Push(mode)
+				}
 			}
 
 			save_str := ""
-			for item in saved_list
+			for item in saved_list {
 				save_str .= (A_Index > 1 ? "|" : "") item
+			}
 
 			this.update_and_broadcast("boost_bar", "slot_mode_" idx, save_str)
+
 			count := saved_list.Length
-			btn_ctrl.Text := (count == 0) ? "None" : (count > 1 ? "Multiple" : save_str)
+			display_text := (count == 0) ? "None" : (count > 1 ? "Multiple" : save_str)
+
+			focused_row := this.boost_lv.GetNext(0, "Focused")
+			if (focused_row) {
+				key_idx := this.boost_lv.GetText(focused_row, 1)
+				name := this.boost_lv.GetText(focused_row, 2)
+				status := this.boost_lv.GetText(focused_row, 3)
+				timer := this.boost_lv.GetText(focused_row, 4)
+				this.boost_lv.Modify(focused_row, "", key_idx, name, status, timer, display_text)
+			}
 		}
 
 		for index, mode_name in mode_list {
@@ -688,6 +1140,10 @@ class kairos_main {
 		display_ctrl.Value := "Listening..."
 		gui_ctrl.Enabled := false
 
+		try Hotkey(Config.Get("main", "start_hotkey", "F1"), "Off")
+		try Hotkey(Config.Get("main", "pause_hotkey", "F2"), "Off")
+		try Hotkey(Config.Get("main", "stop_hotkey", "F3"), "Off")
+
 		ih := InputHook("T7")
 		ih.KeyOpt("{All}", "E")
 		ih.KeyOpt("{LCtrl}{RCtrl}{LAlt}{RAlt}{LShift}{RShift}{LWin}{RWin}", "-E")
@@ -718,11 +1174,11 @@ class kairos_main {
 		final_key := ""
 
 		mods := ""
-		if (GetKeyState("Ctrl", "P"))
+		if GetKeyState("Ctrl", "P")
 			mods .= "^"
-		if (GetKeyState("Shift", "P"))
+		if GetKeyState("Shift", "P")
 			mods .= "+"
-		if (GetKeyState("Alt", "P"))
+		if GetKeyState("Alt", "P")
 			mods .= "!"
 		if (GetKeyState("LWin", "P") || GetKeyState("RWin", "P"))
 			mods .= "#"
@@ -730,15 +1186,13 @@ class kairos_main {
 		if (captured_key != "") {
 			final_key := RegExReplace(captured_key, "[\^\+!\#]", "")
 		} else if (ih.EndReason == "EndKey") {
-			if (ih.EndKey != "Escape") {
+			if (ih.EndKey != "Escape")
 				final_key := ih.EndKey
-			}
 		}
 
 		if (final_key != "") {
-			if (StrLen(final_key) == 1) {
+			if (StrLen(final_key) == 1)
 				final_key := StrLower(final_key)
-			}
 
 			final_key := mods . final_key
 
@@ -746,7 +1200,7 @@ class kairos_main {
 				base_key := RegExReplace(final_key, "[\^\+!\#]", "")
 				blacklist := "|LButton|RButton|Enter|Space|Tab|Backspace|Escape|"
 
-				if (InStr(blacklist, "|" base_key "|")) {
+				if InStr(blacklist, "|" base_key "|") {
 					MsgBox("You cannot bind '" base_key "' to this option.", "Invalid Keybind", 48 " T10")
 					final_key := ""
 				}
@@ -773,23 +1227,34 @@ class kairos_main {
 
 		if (final_key == "") {
 			display_ctrl.Value := original_text
+			this.register_hotkeys()
 		} else {
 			display_ctrl.Value := final_key
 			Config.Set(section, key_name, final_key)
 
 			if (key_name ~= "start_hotkey|pause_hotkey|stop_hotkey") {
-				try Hotkey(original_text, "Off")
 				this.register_hotkeys()
+
+				if (key_name == "start_hotkey" && this.HasOwnProp("btn_start_ctrl"))
+					this.btn_start_ctrl.Text := "Start (" final_key ")"
+				else if (key_name == "pause_hotkey" && this.HasOwnProp("btn_pause_ctrl"))
+					this.btn_pause_ctrl.Text := "Pause (" final_key ")"
+				else if (key_name == "stop_hotkey" && this.HasOwnProp("btn_stop_ctrl"))
+					this.btn_stop_ctrl.Text := "Stop (" final_key ")"
 			}
 		}
 	}
 
 	static on_start(*) {
 		this.is_paused := false
+		this.is_running := true
 		process_manager.broadcast_state("running")
 	}
 
 	static on_pause(*) {
+		if (!this.is_running)
+			return
+
 		this.is_paused := !this.is_paused
 		state_str := this.is_paused ? "paused" : "resumed"
 		process_manager.broadcast_state(state_str)
@@ -797,19 +1262,28 @@ class kairos_main {
 
 	static on_stop(*) {
 		this.is_paused := false
+		this.is_running := false
+		this.save_window_position()
 		process_manager.kill_all()
 		Reload()
 	}
 
 	static on_exit(*) {
-		try {
-			this.main_gui.GetPos(&x, &y)
-			Config.Set("main", "gui_x", (x > 0) ? (x > A_ScreenWidth - 400 ? A_ScreenWidth - 400 : x) : 0)
-			Config.Set("main", "gui_y", (y > 0) ? (y > A_ScreenHeight - 220 ? A_ScreenHeight - 220 : y) : 0)
-			Config.WriteIni()
-		}
+		this.save_window_position()
 		process_manager.kill_all()
 		ExitApp()
+	}
+
+	static save_window_position() {
+		try {
+			this.main_gui.GetPos(&x, &y)
+
+			if (x > -10000 && y > -10000) {
+				Config.Set("main", "gui_x", x)
+				Config.Set("main", "gui_y", y)
+				Config.WriteIni()
+			}
+		}
 	}
 
 	static register_hotkeys() {

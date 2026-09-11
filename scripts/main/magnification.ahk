@@ -210,7 +210,7 @@ class magnification {
 				gui_w := Floor(this.width * this.settings["magnifier"]["zoom_factor"])
 				gui_h := Floor(this.height * this.settings["magnifier"]["zoom_factor"])
 				target_x := win.x + (win.w // 2) - (gui_w // 2)
-				target_y := win.y + win.h + win.y_offset - this.settings["magnifier"]["offset_y"]
+				target_y := win.y + win.h + win.y_offset - this.settings["magnifier"]["offset_y"] + (this.settings["main"]["boost_bar_enabled"] ? -25 : 15)
 
 				if (this.current_state == "running" && this.settings["main"]["magnifier_enabled"]) {
 					this.gui_obj.Show("NA x" target_x " y" target_y " w" gui_w " h" gui_h)

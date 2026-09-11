@@ -3,9 +3,9 @@ class process_manager {
 	static crash_logs := Map()
 	static heartbeats := Map()
 	static max_crashes := 5
-	static time_window := 60 ; 1 min
-	static ping_timeout := 5
-	static launch_buffer := 10
+	static time_window := 60
+	static ping_timeout := 20
+	static launch_buffer := 30
 
 	static launch_script(script_path, params := [], use_32_bit := false) {
 		if (this.is_locked_out(script_path))
@@ -24,9 +24,9 @@ class process_manager {
 			vars .= '"' (param = "" ? "" : param) '" '
 
 		main_pid := ProcessExist()
-		Run('"' exe_path '" "' target_script '" "' main_pid '" ' vars,,, &new_pid)
+		Run('"' exe_path '" "' target_script '" "' main_pid '" ' vars, , , &new_pid)
 
-		this.processes[script_path] := {pid: new_pid, params: params}
+		this.processes[script_path] := { pid: new_pid, params: params }
 		this.heartbeats[script_path] := nowUnix() + this.launch_buffer
 		this.update_heartbeat(script_path)
 		return new_pid

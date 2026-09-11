@@ -31,11 +31,11 @@ bitmaps["stat_digits_tiny"][9] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgA
 ; boosts 1x - 10x
 ; 5x1 y30 -> y50 direction 7
 bitmaps["stat_buff"]["boost"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["boost"]), Gdip_GraphicsClear(pGraphics, 0xff90ff8e), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["boost_red"] := Gdip_CreateBitmap(1,2), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["boost_red"]), Gdip_GraphicsClear(pGraphics, 0xffe46156), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["boost_blue"] := Gdip_CreateBitmap(1,2), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["boost_blue"]), Gdip_GraphicsClear(pGraphics, 0xff56a4e4), Gdip_DeleteGraphics(pGraphics)
-buff_params["boost"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 7, instances: 1}
-buff_params["boost_red"] := {x1: 0, x2: 0, y1: 15, y2: 34, var: 20, trans: "", dir: 1, instances: 2}
-buff_params["boost_blue"] := {x1: 0, x2: 0, y1: 15, y2: 34, var: 20, trans: "", dir: 1, instances: 2}
+bitmaps["stat_buff"]["boost_red"] := Gdip_CreateBitmap(1, 2), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["boost_red"]), Gdip_GraphicsClear(pGraphics, 0xffe46156), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["boost_blue"] := Gdip_CreateBitmap(1, 2), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["boost_blue"]), Gdip_GraphicsClear(pGraphics, 0xff56a4e4), Gdip_DeleteGraphics(pGraphics)
+buff_params["boost"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 7, instances: 1 }
+buff_params["boost_red"] := { x1: 0, x2: 0, y1: 15, y2: 34, var: 20, trans: "", dir: 1, instances: 2 }
+buff_params["boost_blue"] := { x1: 0, x2: 0, y1: 15, y2: 34, var: 20, trans: "", dir: 1, instances: 2 }
 ; white boost is ignored.
 
 ; general 1x <---> 999x
@@ -43,12 +43,12 @@ bitmaps["stat_buff"]["focus"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_Grap
 bitmaps["stat_buff"]["bomb"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["bomb"]), Gdip_GraphicsClear(pGraphics, 0xff272727), Gdip_DeleteGraphics(pGraphics)
 bitmaps["stat_buff"]["rage"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["rage"]), Gdip_GraphicsClear(pGraphics, 0xffde680c), Gdip_DeleteGraphics(pGraphics)
 bitmaps["stat_buff"]["inspire"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["inspire"]), Gdip_GraphicsClear(pGraphics, 0xfff4ef14), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["balloon_aura"] := Gdip_CreateBitmap(5,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["balloon_aura"]), Gdip_GraphicsClear(pGraphics, 0xfffafd38), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["clock"] := Gdip_CreateBitmap(5,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["clock"]), Gdip_GraphicsClear(pGraphics, 0xffe2ac35), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["balloon_aura"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["balloon_aura"]), Gdip_GraphicsClear(pGraphics, 0xfffafd38), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["clock"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["clock"]), Gdip_GraphicsClear(pGraphics, 0xffe2ac35), Gdip_DeleteGraphics(pGraphics)
 bitmaps["stat_buff"]["honey_mark"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAkAAAAECAYAAABcDxXOAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAACESURBVBhXY7BIN/svqS/7X0ZN7P+8Ltn/b44r/X9+WPn/3sWa/5vKDP8XZJj8ZzBJMPovri39v6ZA+v+N7YpgRZc2q/6f1qb3vzDLBFVRebbU/2vbFMCKTqxW/99VYwBWAFZkmmgMVCTz39BU/P/66XJgRY8PKP/fOEv7f2W+MVCRyX8AEtJNmln7cRQAAAAASUVORK5CYII=")
 bitmaps["stat_buff"]["pollen_mark"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAFCAYAAAB8ZH1oAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAAC1SURBVBhXY7DMsvgvb6n0X0RJ4n9sgv3/vVuK/t862/j/4eXW/69ud/5/c6fr/7Pr7f8ZbAut/5smm/yXMVX4zy8j9l/TSOV/cLjl/76uyP/3L7WAFT4A0mCFNnlW/9U9NP6LqEr9F5QV/y8iL/HfP9j8/4m95WCFD0EKbQoQivTM1f63NIX8P3+45v/Ta+3/X0OtfgR0BoNZisl/KQPZ/5YOOv+XzE35/+RqG9xtMPz6dtd/ALZxeGS8+kl0AAAAAElFTkSuQmCC")
-bitmaps["stat_buff"]["precise_mark"] := Gdip_CreateBitmap(5,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["precise_mark"]), Gdip_GraphicsClear(pGraphics, 0xffe7e7e7), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["reindeer_guidance"] := Gdip_CreateBitmap(5,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["reindeer_guidance"]), Gdip_GraphicsClear(pGraphics, 0xffcc2c2c), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["precise_mark"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["precise_mark"]), Gdip_GraphicsClear(pGraphics, 0xffe7e7e7), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["reindeer_guidance"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["reindeer_guidance"]), Gdip_GraphicsClear(pGraphics, 0xffcc2c2c), Gdip_DeleteGraphics(pGraphics)
 bitmaps["stat_buff"]["mondo"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAACYAAAARCAMAAACGnC6JAAAAOVBMVEUAAAC+oq30w1L0w1HzxFbzxFXzxFnwx2rvyW/szIHn0Jnl0aTg1rvg1rzc2tHc2tLa29vZ3OHZ3OLV3/OdAAAAAXRSTlMAQObYZgAAAqJJREFUeAEBlwJo/QAAAAAAAAAAAAMCAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUGBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcJCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsMCgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8QDQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABERDgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABISEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAbbRAQaOZh5MAAAAAElFTkSuQmCC")
 bitmaps["stat_buff"]["map_corruption"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABQAAAABCAYAAADeko4lAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAABCSURBVBhXY+AXEvqPCwsICv9X5dP4H8IV9r+evfH/VtZt/68yX/1/m/kOGN9ivv3/EMvh/xPZJv2P44z/r8dr8B8Az9ojyDfaoNcAAAAASUVORK5CYII=")
 bitmaps["stat_buff"]["cool_breeze"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABEAAAABCAYAAAA4u0VhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAAApSURBVBhXY3j79u1/YvGDBw/+r1q16n9oaOh/T0/P/0lJSf/Xr1//HwBUNDkodKfOKgAAAABJRU5ErkJggg==")
@@ -61,50 +61,50 @@ bitmaps["stat_buff"]["coconut_combo"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAAN
 bitmaps["stat_buff"]["festive_nymph"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABcAAAABCAYAAAA1pTUmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAAArSURBVBhXY3BfE/yfFOw42/u/e5bZfzdPjf9ubur/nTJM/ztMdseiNvg/ACAUMgG0PCeqAAAAAElFTkSuQmCC")
 
 ; note, x axis offsets is only for when you find the actual icon. keep that in mind future me :wink:
-buff_params["focus"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["bomb"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["rage"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["inspire"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["balloon_aura"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["clock"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["honey_mark"] := {x1: 0, x2: 0, y1: 20, y2: 50, var: 6, trans: "", dir: 6, instances: 1}
-buff_params["pollen_mark"] := {x1: 0, x2: 0, y1: 20, y2: 50, var: 6, trans: "", dir: 6, instances: 1}
-buff_params["precise_mark"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["reindeer_guidance"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["mondo"] := {x1: 0, x2: 0, y1: 20, y2: 46, var: 21, trans: "", dir: 6, instances: 1}
-buff_params["map_corruption"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 30, trans: "", dir: 6, instances: 1}
-buff_params["cool_breeze"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["precision"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["sticker_stack"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["puffshroom_blessing"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["robo_party"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["dark_heat"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["coconut_combo"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["festive_nymph"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
+buff_params["focus"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["bomb"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["rage"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["inspire"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["balloon_aura"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["clock"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["honey_mark"] := { x1: 0, x2: 0, y1: 20, y2: 50, var: 6, trans: "", dir: 6, instances: 1 }
+buff_params["pollen_mark"] := { x1: 0, x2: 0, y1: 20, y2: 50, var: 6, trans: "", dir: 6, instances: 1 }
+buff_params["precise_mark"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["reindeer_guidance"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["mondo"] := { x1: 0, x2: 0, y1: 20, y2: 46, var: 21, trans: "", dir: 6, instances: 1 }
+buff_params["map_corruption"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 30, trans: "", dir: 6, instances: 1 }
+buff_params["cool_breeze"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["precision"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["sticker_stack"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["puffshroom_blessing"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["robo_party"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["dark_heat"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["coconut_combo"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["festive_nymph"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
 
 ; special 1x <---> 999x and on/off (uses different detection methods)
 bitmaps["stat_buff"]["haste"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["haste"]), Gdip_GraphicsClear(pGraphics, 0xfff0f0f0), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["melody"] := Gdip_CreateBitmap(3,2), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["melody"]), Gdip_GraphicsClear(pGraphics, 0xff242424), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["melody"] := Gdip_CreateBitmap(3, 2), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["melody"]), Gdip_GraphicsClear(pGraphics, 0xff242424), Gdip_DeleteGraphics(pGraphics)
 bitmaps["stat_buff"]["balloon_blessing"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAA4AAAAMAgMAAAAv7mRJAAAACVBMVEUAAADIyjzz8/PLJx4rAAAAAXRSTlMAQObYZgAAAEdJREFUeAEBPADD/wAAgAAAAAAAgAAAACIAAAAACAAAAAAIAAAAACIAAAAAAIAAAACAAAAAAgAgAAAAAAAAAAAAAAAAVVVVUGMZA8YHWu2lAAAAAElFTkSuQmCC")
 bitmaps["stat_buff"]["balloon_blessing_100"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABEAAAAKCAYAAABSfLWiAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuMvu8A7YAAAC2ZVhJZklJKgAIAAAABQAaAQUAAQAAAEoAAAAbAQUAAQAAAFIAAAAoAQMAAQAAAAIAAAAxAQIAEAAAAFoAAABphwQAAQAAAGoAAAAAAAAAYAAAAAEAAABgAAAAAQAAAFBhaW50Lk5FVCA1LjEuMgADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlAAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAADp1fY4ytpsegAAAE5JREFUKFNj+Pz5838GCgETlAYDQgbikkcxBBsgxmCChhAD6GMILy8vI5SJFYDkGUF+QlaIHgbohmCVJxRwdAOMh45aYncJzpBAl2BgAAAooyYu5/yLnAAAAABJRU5ErkJggg==")
 
-buff_params["haste"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["melody"] := {x1: 0, x2: 0, y1: 15, y2: 40, var: 12, trans: "", dir: 1, instances: 1}
-buff_params["balloon_blessing"] := {x1: 0, x2: 0, y1: 20, y2: 50, var: 21, trans: "", dir: 6, instances: 1}
+buff_params["haste"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["melody"] := { x1: 0, x2: 0, y1: 15, y2: 40, var: 12, trans: "", dir: 1, instances: 1 }
+buff_params["balloon_blessing"] := { x1: 0, x2: 0, y1: 20, y2: 50, var: 21, trans: "", dir: 6, instances: 1 }
 ; 100x is the same as general
 
 ; general scaling y30 -> y50 direction 6
-bitmaps["stat_buff"]["flame_heat"] := Gdip_CreateBitmap(5,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["flame_heat"]), Gdip_GraphicsClear(pGraphics, 0xffe81a06), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["bubble_bloat"] := Gdip_CreateBitmap(4,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["bubble_bloat"]), Gdip_GraphicsClear(pGraphics, 0xff4880cc), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["comforting"] := Gdip_CreateBitmap(3,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["comforting"]), Gdip_GraphicsClear(pGraphics, 0xff7e9eb3), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["motivating"] := Gdip_CreateBitmap(3,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["motivating"]), Gdip_GraphicsClear(pGraphics, 0xff937db3), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["satisfying"] := Gdip_CreateBitmap(3,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["satisfying"]), Gdip_GraphicsClear(pGraphics, 0xffb398a7), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["refreshing"] := Gdip_CreateBitmap(3,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["refreshing"]), Gdip_GraphicsClear(pGraphics, 0xff78b375), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["invigorating"] := Gdip_CreateBitmap(3,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["invigorating"]), Gdip_GraphicsClear(pGraphics, 0xffb35951), Gdip_DeleteGraphics(pGraphics)
-buff_params["scaling"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
+bitmaps["stat_buff"]["flame_heat"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["flame_heat"]), Gdip_GraphicsClear(pGraphics, 0xffe81a06), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["bubble_bloat"] := Gdip_CreateBitmap(4, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["bubble_bloat"]), Gdip_GraphicsClear(pGraphics, 0xff4880cc), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["comforting"] := Gdip_CreateBitmap(3, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["comforting"]), Gdip_GraphicsClear(pGraphics, 0xff7e9eb3), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["motivating"] := Gdip_CreateBitmap(3, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["motivating"]), Gdip_GraphicsClear(pGraphics, 0xff937db3), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["satisfying"] := Gdip_CreateBitmap(3, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["satisfying"]), Gdip_GraphicsClear(pGraphics, 0xffb398a7), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["refreshing"] := Gdip_CreateBitmap(3, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["refreshing"]), Gdip_GraphicsClear(pGraphics, 0xff78b375), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["invigorating"] := Gdip_CreateBitmap(3, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["invigorating"]), Gdip_GraphicsClear(pGraphics, 0xffb35951), Gdip_DeleteGraphics(pGraphics)
+buff_params["scaling"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
 
 bitmaps["stat_buff"]["tide_blessing"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABAAAAALAgMAAAALjOWqAAAACVBMVEUAAACRwv3z8/MeJ4W2AAAAAXRSTlMAQObYZgAAAEJJREFUeAEBNwDI/wAAAACAAAAAAIAAAAAAgAAAAACAAAAgAIAAAAgAgAAAAACAAAAAAIAAAAAAgAAAAAAAAFVVVVWUCQX9+4UpmQAAAABJRU5ErkJggg==")
-buff_params["tide_blessing"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
+buff_params["tide_blessing"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
 
 ; morph on/off, y43 -> y45, variation 8, direction 2
 bitmaps["stat_buff"]["brown"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAwAAAABBAMAAAAYxVIKAAAAD1BMVEUwLi1STEihfVWzpZbQvKTt7OCuAAAAEklEQVR4AQEHAPj/ACJDEAE0IgLvAM1oKEJeAAAAAElFTkSuQmCC")
@@ -114,7 +114,7 @@ bitmaps["stat_buff"]["polar"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAA
 bitmaps["stat_buff"]["gummy"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAA4AAAABBAMAAAAcMII3AAAAFVBMVEWYprGDrKWisd+hst+ctNtFyJ4xz5uqDngAAAAAE0lEQVR4AQEIAPf/ACNAFWZRBDIFqwFmOuySwwAAAABJRU5ErkJggg==")
 bitmaps["stat_buff"]["science"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAA4AAAABBAMAAAAcMII3AAAAFVBMVEUwLi1TTD+zjUy0jky8l1W5oXHevny+g95vAAAAE0lEQVR4AQEIAPf/ACNGUQAVZDIFbwFmjB55HwAAAABJRU5ErkJggg==")
 bitmaps["stat_buff"]["mother"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABAAAAABBAMAAAAlVzNsAAAAJFBMVEVBNRlDNxtTRid8b0avoG69r22+sG7Qw4PRw4Te0Jbk153m2Z5VNHxxAAAAFElEQVR4AQEJAPb/AFVouTECSnZVDPsCv+2QpmwAAAAASUVORK5CYII=")
-buff_params["morph"] := {x1: 0, x2: 0, y1: 43, y2: 45, var: 8, trans: "", dir: 2, instances: 1}
+buff_params["morph"] := { x1: 0, x2: 0, y1: 43, y2: 45, var: 8, trans: "", dir: 2, instances: 1 }
 
 ; general on/off
 bitmaps["stat_buff"]["oil"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABQAAAABBAMAAAAsvJMWAAAALVBMVEVKRDlNRjlXTTpgVDtwXjhzXzV5ZDaDaziefjutiT3Gm0LWp0XsuEv8xE/+xlCsCySdAAAAFklEQVR4AQELAPT/AO7bl1MQACRorO4cdQTqnFFEXAAAAABJRU5ErkJggg==")
@@ -123,11 +123,11 @@ bitmaps["stat_buff"]["bomb_sync_red"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAAN
 bitmaps["stat_buff"]["bomb_sync_blue"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAwAAAAFCAYAAABxeg0vAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAAAiSURBVBhXYyAIzJ79B2Emi2f/+R2B7EEIWFlZ/xOPWf8DAPA9FTPEz2qrAAAAAElFTkSuQmCC")
 bitmaps["stat_buff"]["festive_blessing"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABcAAAABCAYAAAA1pTUmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAAAySURBVBhXYxDfqvufLLxF97/kJM3/jq1e/z16Av/rdVv9l5+o/198ntZ/sXXaQDW6/wEf3C0iht/kSgAAAABJRU5ErkJggg==")
 bitmaps["stat_buff"]["beesmas_cheer"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABcAAAABCAYAAAA1pTUmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAABYSURBVBhXYxDfqvsfA2/U+S+2Quu/yDz1/8J9Kv+FixX+C0RJ/ed2Ef4vZCL2n09D8D+vvMB/bhm+/9zq/P+FzMT/CzpJ/BcMkfovXKDwX3SBxn+xDTr/ASTeJd3vY6LEAAAAAElFTkSuQmCC")
-bitmaps["stat_buff"]["tabby_blessing"] := Gdip_CreateBitmap(5,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["tabby_blessing"]), Gdip_GraphicsClear(pGraphics, 0xfff99d27), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["tabby_blessing"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["tabby_blessing"]), Gdip_GraphicsClear(pGraphics, 0xfff99d27), Gdip_DeleteGraphics(pGraphics)
 bitmaps["stat_buff"]["clouds"] := Gdip_CreateBitmap(28, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["clouds"]), Gdip_GraphicsClear(pGraphics, 0xff9fb1c5), Gdip_DeleteGraphics(pGraphics)
-bitmaps["stat_buff"]["baby_love"] := Gdip_CreateBitmap(5,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["baby_love"]), Gdip_GraphicsClear(pGraphics, 0xff8de4f3), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["baby_love"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["baby_love"]), Gdip_GraphicsClear(pGraphics, 0xff8de4f3), Gdip_DeleteGraphics(pGraphics)
 bitmaps["stat_buff"]["festive_mark"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAsAAAABBAMAAAD6GUlzAAAAIVBMVEU7QDNvQzmtSDmySTizSTm2STi4STi5STi5TDsyWDA9cTvalFRvAAAAEklEQVR4AQEHAPj/AKkBh0I2UAegAfr1a/UAAAAAAElFTkSuQmCC")
-bitmaps["stat_buff"]["flame_fuel"] := Gdip_CreateBitmap(5,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["flame_fuel"]), Gdip_GraphicsClear(pGraphics, 0xffb72a18), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["flame_fuel"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["flame_fuel"]), Gdip_GraphicsClear(pGraphics, 0xffb72a18), Gdip_DeleteGraphics(pGraphics)
 bitmaps["stat_buff"]["guiding_star"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAwAAAACCAMAAABboc2lAAAAOVBMVEWPf02QgE6RgE+SgU/SuHDTunHUunHhxnjhx3niyHrjyXvky3zn0oPp1ITq1obq2Yju4o7u44/v5JDO0m0EAAAAJUlEQVR4AQEaAOX/ABIQDAgEAwEECQ0REgASDgoHBQACBgcLDxIMQwDt+rZJwwAAAABJRU5ErkJggg==")
 bitmaps["stat_buff"]["stinger"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABcAAAABCAYAAAA1pTUmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAAA6SURBVBhXY3ilpPwfG94tL/8/R1v7v4eJCRx7AnGogcH/XHWN/zmqav+LVVX/T1dU/H9cXgGLGcr/ATArLS9VicMoAAAAAElFTkSuQmCC")
 bitmaps["stat_buff"]["enzyme"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAA8AAAASCAYAAACEnoQPAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAABaSURBVDhPYyAXfH7X9B/KJB08f5RGvuZrF4PI13zqiBv5mo8fpEDz5bPe5Gt+/SybfM0/P88hX/OntyvJ13zmeAX5mrdtCCZf8/qVnuRrHrHg37GA/+ThgP8ASkZS23M9E7cAAAAASUVORK5CYII=")
@@ -137,38 +137,38 @@ bitmaps["stat_buff"]["glue"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAA
 bitmaps["stat_buff"]["tropical_drink"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAA8AAAANCAYAAAB2HjRBAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAABUSURBVDhPYyAX1Maa/4cySQdDVHNZhDH5motCDcjXXBCsT77mEQv+HQv4jw3/PuL//8Nun/9317r9PzXP6f/iRpv/delm/+szzP5Xp5r9j/S3+g8A3Og2oHoNJ1QAAAAASUVORK5CYII=")
 bitmaps["stat_buff"]["purple_potion"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABgAAAABCAYAAADErm6rAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAABTSURBVBhXY/h3LOA/Nvxqm9f/cwud/x+b7fh/x0S7/3NrLf/XpZv/L4wz+58Rafk/2Nvqv5eLJRx7u1r+z4yy+p8fa/a/JMHs/7QKq//XV7j+BwDeXTmfFjeFBgAAAABJRU5ErkJggg==")
 bitmaps["stat_buff"]["marshmallow_bee"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAYAAADESFVDAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAABHSURBVChTYyAELh2r/w9l4gY7V6QTVnRoNRGKzu7II6zow2Mi3PTtVRNhRZ+eNBJW9PJSDWFFl/cUElY0tMG/YwH/8eOA/wBC4TeLcKowPAAAAABJRU5ErkJggg==")
-bitmaps["stat_buff"]["jellybean_sharing"] := Gdip_CreateBitmap(5,1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["jellybean_sharing"]), Gdip_GraphicsClear(pGraphics, 0xfff9ccff), Gdip_DeleteGraphics(pGraphics)
+bitmaps["stat_buff"]["jellybean_sharing"] := Gdip_CreateBitmap(5, 1), pGraphics := Gdip_GraphicsFromImage(bitmaps["stat_buff"]["jellybean_sharing"]), Gdip_GraphicsClear(pGraphics, 0xfff9ccff), Gdip_DeleteGraphics(pGraphics)
 
-buff_params["oil"] := {x1: 0, x2: 0, y1: 43, y2: 45, var: 4, trans: "", dir: 2, instances: 1}
-buff_params["super_smoothie"] := {x1: 0, x2: 0, y1: 43, y2: 45, var: 4, trans: "", dir: 2, instances: 1}
-buff_params["bomb_sync_red"] := {x1: 0, x2: 0, y1: 37, y2: 47, var: 20, trans: "", dir: 6, instances: 1}
-buff_params["bomb_sync_blue"] := {x1: 0, x2: 0, y1: 37, y2: 47, var: 20, trans: "", dir: 6, instances: 1}
-buff_params["festive_blessing"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["beesmas_cheer"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["tabby_blessing"] := {x1: 114, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["clouds"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["baby_love"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["festive_mark"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 6, trans: "", dir: 6, instances: 1}
-buff_params["flame_fuel"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["guiding_star"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 10, trans: "", dir: 6, instances: 1}
-buff_params["stinger"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["enzyme"] := {x1: 0, x2: 0, y1: 25, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["extract_red"] := {x1: 0, x2: 0, y1: 31, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["extract_blue"] := {x1: 0, x2: 0, y1: 31, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["glue"] := {x1: 0, x2: 0, y1: 31, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["tropical_drink"] := {x1: 0, x2: 0, y1: 31, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["purple_potion"] := {x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["marshmallow_bee"] := {x1: 0, x2: 0, y1: 28, y2: 47, var: 0, trans: "", dir: 6, instances: 1}
-buff_params["jellybean_sharing"] := {x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 7, instances: 1}
+buff_params["oil"] := { x1: 0, x2: 0, y1: 43, y2: 45, var: 4, trans: "", dir: 2, instances: 1 }
+buff_params["super_smoothie"] := { x1: 0, x2: 0, y1: 43, y2: 45, var: 4, trans: "", dir: 2, instances: 1 }
+buff_params["bomb_sync_red"] := { x1: 0, x2: 0, y1: 37, y2: 47, var: 20, trans: "", dir: 6, instances: 1 }
+buff_params["bomb_sync_blue"] := { x1: 0, x2: 0, y1: 37, y2: 47, var: 20, trans: "", dir: 6, instances: 1 }
+buff_params["festive_blessing"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["beesmas_cheer"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["tabby_blessing"] := { x1: 114, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["clouds"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["baby_love"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["festive_mark"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 6, trans: "", dir: 6, instances: 1 }
+buff_params["flame_fuel"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["guiding_star"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 10, trans: "", dir: 6, instances: 1 }
+buff_params["stinger"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["enzyme"] := { x1: 0, x2: 0, y1: 25, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["extract_red"] := { x1: 0, x2: 0, y1: 31, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["extract_blue"] := { x1: 0, x2: 0, y1: 31, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["glue"] := { x1: 0, x2: 0, y1: 31, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["tropical_drink"] := { x1: 0, x2: 0, y1: 31, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["purple_potion"] := { x1: 0, x2: 0, y1: 40, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["marshmallow_bee"] := { x1: 0, x2: 0, y1: 28, y2: 47, var: 0, trans: "", dir: 6, instances: 1 }
+buff_params["jellybean_sharing"] := { x1: 0, x2: 0, y1: 30, y2: 50, var: 0, trans: "", dir: 7, instances: 1 }
 
 ; bottom of the screen   win.x + (win.w // 2) - 257 "|" win.y + win.h - 142 "|517|36"
 bitmaps["stat_buff"]["pop_star"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABYAAAAMCAIAAADpm9qRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAALHSURBVDhPHZJJa1NRGIbPdIekNyY3N6mmiY0dEmkdsEUFKUp1IeII4tIf4EIXiv/AhQsXbvwBgisRl+6ycEIrIsaqxVJKtUlMcpvhpk1ypzN47MfLWZ334f1ePvhj8xrCrFpr/VzZsO2uH1DBuRAAAqBoyb2Zqxxodv0lEH52/2msxFr2N+pXU9bIoUMTuWyac4Rv3y80befN22Xb7gUBZUwIDiRCSo+MF2buqbGZztaHZGLqwoUn+ekrIdeqv993nW6z0U2PJmKGhiqVVqlU7jnDMOCMAs4Ak6L/37i1EE3k1diYkVxUVVPXTU034+YUhJr87PSG0ijt+MgJ2mg4lHIEdUxGEIpwGYHLLbKTh29psXGPQ4H1Vu090dM7g/av789bjTKloVzX96nnBqRW7YQBUJQR05zJHzhDhahsvut1fyf2nlGM8RAgCiU2I7QDpVd3GB1yFnAeCrA7gtdqXZlCYKRNTJ6/fPHh/NyN/PRiOrew3fcTubPRZIEj4sl2sCog7lZeh57DOBOybtnXbmUyPp5f2KPpqaPHbhYPLkYiCYE1rBlItfoMEyMjI3icc4iJnqBhgIlFtLiimUSziBJHWOeCkNH9l2LmOCBGCIjHgYwoICFKhIGh9HMAKYQCIhy1cifvKggQKHfzuNcP3W6//bVnryLXdYzU3J/KeqPTcAUIBOh0qstfXnDVoAhLCpNCUlgQVRAdqlHVsGLpfDI7a2ZOuQMHTxVbztY61Ec315eoUOv1tc9Lz3i8aIzNcYjknUmogFDmgPj/EEykWOg69lq59KBd/4wLs543sBkL8Z7pZqfSdJpG/lw8f3LoVMNB2922AxogJYIURSIQkiQImG9vfFp586hdWQq8HVw8LLvl/mDL7duxfcez89dJ1HIqyxZ2J/MFCMK1j0+V5IRqpKSdYCTkeX99tfr2sfO3zKgvBPgHt+GB4hzf1HcAAAAASUVORK5CYII=")
 bitmaps["stat_buff"]["scorching_star"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAABAAAAAFCAYAAABM6GxJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAAE4SURBVChTPc/PK8NxHMfx7+27X9/IrzVpv1c2WzPbvt/v0hzkJEk5kIOD8psxDg7aSbk4ScpZQsu0OEo5OCgXuVDTSkuY2MYf8PTJweF5fD96vaWVlIHptMzCsszlZAPFTJiHoQhfyQi1RAvP8Vau1QC5AQcbsybSSzK7cxZe1tp5XQ8g7c0oTC/KTKVkMvNGchNWCr1Rygkf37qRimbmNuoh2+NjdVJhUyB3szYqWxqljAAuxpzsj9o5HHFyNuzhut/Pox7mQ2sSgExNkynErOQjfrb77Oz02zgYbCM77hU5kMrJmJgbpZLs4r27k6LWwZPq5FNT/oAf0auqcBV2cB50kQ+5OA25OQl6OAp6kW4ibsp6s/i3nppeR1W3iEzi2PAPVDWDAE18qGbeVAuluIX7aCPHATu/RousLJ/wLY4AAAAASUVORK5CYII=")
 bitmaps["stat_buff"]["gummy_star"] := Gdip_BitmapFromBase64("iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHCAYAAAA4R3wZAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABmZVhJZklJKgAIAAAAAQBphwQAAQAAABoAAAAAAAAAAwAAkAcABAAAADAyMzABoAMAAQAAAAEAAAAFoAQAAQAAAEQAAAAAAAAAAgABAAIABAAAAFI5OAACAAcABAAAADAxMDAAAAAAIvvHMbnUA7gAAAF6SURBVChTJZDZShsBAEXnQ/oFffAPKtQUShHEBx/SVkqkImIe6lsUI1VRY0ZjJG5YNbiWFCsuVUKKpW3iRrCVuIwxiVkms2RckvmD44Dv91wOR6jX97FpUWrj07S5nzE32U46coURNlECJglvgsDnZn55t8mNGxTHyuREA8GW2sJ2vUFtdIRP3VXEQjtoP+8obT6B1z6NdTHE7/4wV0MZUkN5JE8awe6vwe57wYee53R1VyOtXaBvV9C/mda7yb8pneX5vwy6HYy5HIx3fGTU1Ygw6+5krWeGrd5FosNhCl919JCJumSSnHggvFLEH0ng3AvSFBFx/OjDsdqKkLd8C+I9slim6KugzlhQ0CQ3V+YgqDO/m8F1dkaTcsI7I87b0jF2/RBB8hQsb5Ws9xZ5uIxiwXKgwvmXO76v5+k7uaRF/s/7UpwG45i60gFvtBhCYiDD+cANF4NZLj15kh4FyaeytyDj/5PEKZ1Srxzx2hq/surb1BgvtSiP0SkqLT7O9foAAAAASUVORK5CYII=")
 
-buff_params["pop_star"] := {x1: 0, x2: 0, y1: 7, y2: 19, var: 30, trans: "", dir: 1, instances: 1}
-buff_params["scorching_star"] := {x1: 0, x2: 0, y1: 11, y2: 16, var: 30, trans: "", dir: 1, instances: 1}
-buff_params["gummy_star"] := {x1: 0, x2: 0, y1: 10, y2: 17, var: 30, trans: "", dir: 1, instances: 1}
+buff_params["pop_star"] := { x1: 0, x2: 0, y1: 7, y2: 19, var: 30, trans: "", dir: 1, instances: 1 }
+buff_params["scorching_star"] := { x1: 0, x2: 0, y1: 11, y2: 16, var: 30, trans: "", dir: 1, instances: 1 }
+buff_params["gummy_star"] := { x1: 0, x2: 0, y1: 10, y2: 17, var: 30, trans: "", dir: 1, instances: 1 }
 
 ;bitmaps["stat_buff"]["galentine"] := Gdip_BitmapFromBase64("")
 ;bitmaps["stat_buff"]["honeyday"] := Gdip_BitmapFromBase64("")

@@ -18,7 +18,7 @@ SendMode "Event"
 #Include "..\..\lib\core\detector.ahk"
 #Include "..\..\lib\utils\JSON.ahk"
 #Include "..\..\lib\utils\utility.ahk"
-#Include "..\..\lib\utils\config.ahk" ; Added config so glitter can look up default_field
+#Include "..\..\lib\utils\config.ahk"
 
 if !(pToken := Gdip_Startup())
 	throw Error("GDI+ failed to start, exiting script.")
@@ -28,6 +28,7 @@ if !(pToken := Gdip_Startup())
 #Include "..\..\assets\bitmaps\Buffs.ahk"
 #Include "..\..\assets\bitmaps\Boosts.ahk"
 #Include "..\..\assets\bitmaps\Icons.ahk"
+#Include "..\..\assets\bitmaps\StatMonitor_Buffs.ahk"
 
 TraySetIcon "Assets\Images\Kairos.ico"
 
@@ -42,7 +43,9 @@ class buff_scanner {
 	static broadcast_func := ObjBindMethod(this, "broadcast_data")
 
 	static init() {
-		config.Load() ; Initialize config for standalone scanning
+		config.Load()
+		this.scanner := ScannerEngine()
+		this.update_subscriptions()
 
 		if (!this.is_standalone) {
 			this.master_pid := A_Args[1]
@@ -56,12 +59,65 @@ class buff_scanner {
 			Hotkey("F2", (*) => this.stop(), "On")
 			Hotkey("F3", (*) => this.restart(), "On")
 		}
+	}
 
-		this.scanner := ScannerEngine()
+	static update_subscriptions() {
+		if (this.is_standalone) {
+			this.scanner.subscribed_profiles := this.scanner.profiles.Clone()
+			return
+		}
+
+		subs := Map()
+
+		if (Config.Get("main", "tracker_enabled", 0)) {
+			passives := StrSplit(Config.Get("tracker", "passives", ""), "|")
+			for _, p in passives {
+				if (p != "" && this.scanner.profiles.Has(p))
+					subs[p] := this.scanner.profiles[p]
+			}
+		}
+
+		if (Config.Get("main", "warns_enabled", 0)) {
+			warn_key_map := Map("precise", "precise", "smoothie", "supersmoothie", "gummy", "gummystar", "pop", "popstar", "scorch", "scorch", "shower", "shower", "morph", "gummymorph", "baller", "gummyballer", "combo", "combo", "combo_buff", "combo_buff", "x_flame", "x-flame")
+			for prefix, s_key in warn_key_map {
+				if (Config.Get("warns", prefix "_enabled", 0) && this.scanner.profiles.Has(s_key)) {
+					subs[s_key] := this.scanner.profiles[s_key]
+				}
+			}
+		}
+
+		if (Config.Get("main", "boost_bar_enabled", 0)) {
+			mode_to_key := Map("Re-Glitter", "glitter", "On Scorch Star", "scorch", "Re-Smoothie", "supersmoothie", "On Pop Star", "popstar", "On Gummyballer", "gummyballer", "On Star Shower", "shower", "On Gummy Star", "gummystar", "On Gummy Morph", "gummymorph", "On Coconut Combo", "combo", "On X-Flame", "x-flame")
+			loop 7 {
+				if (Config.Get("boost_bar", "slot_active_" A_Index, 0)) {
+					modes := StrSplit(Config.Get("boost_bar", "slot_mode_" A_Index, "Timer"), "|")
+					for _, mode in modes {
+						if (mode_to_key.Has(mode) && this.scanner.profiles.Has(mode_to_key[mode])) {
+							subs[mode_to_key[mode]] := this.scanner.profiles[mode_to_key[mode]]
+						}
+					}
+				}
+			}
+		}
+
+		if (Config.Get("main", "stat_monitor_enabled", 0)) {
+			subs := this.scanner.profiles.Clone()
+		}
+
+		if (this.scanner.profiles.Has("boosts_handler"))
+			subs["boosts_handler"] := this.scanner.profiles["boosts_handler"]
+
+		this.scanner.subscribed_profiles := subs
 	}
 
 	static handle_command(data) {
 		action := data["action"]
+
+		if (action == "update_setting") {
+			Config.Set(data["section"], data["key"], data["value"])
+			this.update_subscriptions()
+			return
+		}
 
 		if (action == "set_state") {
 			if (!data.Has("state"))
@@ -92,8 +148,6 @@ class buff_scanner {
 	}
 
 	static stop() {
-		if (this.current_state == "stopped")
-			return
 		this.current_state := "stopped"
 
 		this.scanner.toggle(0)
@@ -102,7 +156,7 @@ class buff_scanner {
 
 		if (this.is_standalone)
 			ToolTip("Scanner Stopped.", 10, 10)
-		ExitApp
+		ExitApp()
 	}
 
 	static restart() {
@@ -131,7 +185,6 @@ class buff_scanner {
 			"custom", Map()
 		)
 
-		; --- PASSIVES (Stacks / Digits) ---
 		passives_list := ["scorch", "x-flame", "popstar", "gummymorph", "shower", "combo", "gummyballer"]
 		for _, key in passives_list {
 			val := raw_data.Has(key) ? raw_data[key] : -1
@@ -141,11 +194,10 @@ class buff_scanner {
 			)
 		}
 
-		; --- BUFFS (Timers / Fills) ---
 		buffs_config := Map(
-			"supersmoothie", 1200, ; 20 minutes
-			"precise", 60,         ; 60 seconds
-			"combo_buff", 30       ; 30 seconds
+			"supersmoothie", 1200,
+			"precise", 60,
+			"combo_buff", 30
 		)
 		for key, max_time in buffs_config {
 			val := raw_data.Has(key) ? raw_data[key] : -1
@@ -163,14 +215,12 @@ class buff_scanner {
 			}
 		}
 
-		; --- FIELD BOOSTS ---
-		; measure_boost returns a float 0.00 to 1.00
 		glitter_val := raw_data.Has("glitter") ? raw_data["glitter"] : -1
 		glitter_mult := raw_data.Has("glitter_mult") ? raw_data["glitter_mult"] : "0"
 
 		if (glitter_val > 0) {
 			pct := Round(glitter_val * 100)
-			secs := Round(glitter_val * 900) ; 15 minutes
+			secs := Round(glitter_val * 900)
 			formatted["field_boosts"]["glitter"] := Map(
 				"is_active", true,
 				"percent", pct,
@@ -182,7 +232,6 @@ class buff_scanner {
 			formatted["field_boosts"]["glitter"] := Map("is_active", false, "percent", 0, "multiplier", "0", "time_left", "0s", "raw_secs", 0)
 		}
 
-		; --- CUSTOM LOGIC ---
 		gummy_pity := raw_data.Has("gummystar") ? raw_data["gummystar"] : -1
 		formatted["custom"]["gummy_pity"] := Map(
 			"is_active", gummy_pity != -1,
@@ -200,10 +249,10 @@ class buff_scanner {
 		if (!IsObject(win) || !win.is_ok)
 			return
 
-		if (!this.scanner.HasOwnProp("Data") || !IsObject(this.scanner.Data))
+		if (!this.scanner.HasOwnProp("data") || !IsObject(this.scanner.data))
 			return
 
-		standardized_data := this.format_buff_data(this.scanner.Data)
+		standardized_data := this.format_buff_data(this.scanner.data)
 		current_data_str := JSON.stringify(standardized_data)
 
 		if (current_data_str == this.last_data_str)

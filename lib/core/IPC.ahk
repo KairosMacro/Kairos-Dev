@@ -27,9 +27,13 @@
 		size_in_bytes := (StrLen(json_string) + 1) * 2
 		NumPut("Ptr", size_in_bytes, "Ptr", StrPtr(json_string), copy_data_struct, A_PtrSize)
 
+		if (InStr(target_script, "ahk_pid") && !InStr(target_script, "ahk_class")) {
+			target_script := "ahk_class AutoHotkey " target_script
+		}
+
 		DetectHiddenWindows true
 		try
-			return SendMessage(0x004A, w_param, copy_data_struct,, target_script)
+			return SendMessage(0x004A, w_param, copy_data_struct, , target_script, , , , 1000)
 		catch
 			return -1
 		finally

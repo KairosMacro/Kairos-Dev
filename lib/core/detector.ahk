@@ -6,8 +6,8 @@ class detection {
 
 	}
 
-	SearchIcon(pBitmap, pImg, x1 := 0, y1 := 0, x2 := 0, y2 := 0, var := 6) {
-		if (Gdip_ImageSearch(pBitmap, pImg, &loc, x1, y1, x2, y2, var, , 6) = 1)
+	SearchIcon(pBitmap, pImg, x1 := 0, y1 := 0, x2 := 0, y2 := 0, var := 6, dir := 6) {
+		if (Gdip_ImageSearch(pBitmap, pImg, &loc, x1, y1, x2, y2, var, , dir) = 1)
 			return { found: true, x: Integer(SubStr(loc, 1, InStr(loc, ",") - 1)), y: Integer(SubStr(loc, InStr(loc, ",") + 1)) }
 		return { found: false, x: 0, y: 0 }
 	}
@@ -107,12 +107,15 @@ class detection {
 	}
 
 	_ReadBuff(pBitmap, sizeType, x1, y1, x2, y2) {
-		offsets := (sizeType = "big") ? this.bigOffset : this.tinyOffset
+		offsets := (sizeType == "big") ? this.bigOffset : this.tinyOffset
+		map_name := (sizeType == "big") ? "stat_digits_big" : "stat_digits_tiny"
+
 		found := []
 		priorityOrder := [8, 0, 6, 9, 4, 7, 2, 3, 5, 1]
+
 		for idx in priorityOrder {
 			currentX := x1
-			while (Gdip_ImageSearch(pBitmap, bitmaps["buff"][sizeType][idx], &loc, currentX, y1, x2, y2, , , 6)) {
+			while (Gdip_ImageSearch(pBitmap, bitmaps[map_name][idx], &loc, currentX, y1, x2, y2, , , 6)) {
 				mX := Integer(SubStr(loc, 1, InStr(loc, ",") - 1))
 				isOverlap := false
 				for item in found {
@@ -128,8 +131,9 @@ class detection {
 					break
 			}
 		}
-		if (found.Length = 0)
+		if (found.Length == 0)
 			return 0
+
 		loop found.Length {
 			i := A_Index
 			loop found.Length - i {
@@ -141,6 +145,7 @@ class detection {
 				}
 			}
 		}
+
 		result := ""
 		for item in found
 			result .= item.num

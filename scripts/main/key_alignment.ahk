@@ -50,7 +50,7 @@ class key_alignment {
 
 	static settings := Map(
 		"main", Map(
-			"key_alignment_enabled", 1
+			"key_alignment_enabled", 0
 		)
 		, "key_alignment", Map(
 			"alignment_key", "e"
@@ -68,17 +68,8 @@ class key_alignment {
 		if (A_Args.Length > 0)
 			this.master_pid := A_Args[1]
 
-		win := Roblox.Get()
-
 		this.gui_obj := Gui("-Caption +E0x80000 +E0x20 +AlwaysOnTop +ToolWindow +OwnDialogs", "Key Alignment")
-		if (IsObject(win) && win.is_ok) {
-			x_pos := win.x + win.w - this.width
-			y_pos := win.y
-		} else {
-			x_pos := 0
-			y_pos := 0
-		}
-		this.gui_obj.Show("NA x" x_pos " y" y_pos)
+		this.gui_obj.Show("NA Hide")
 
 		this.hbm := CreateDIBSection(this.width, this.height)
 		this.hdc := CreateCompatibleDC()
@@ -96,7 +87,6 @@ class key_alignment {
 		this.startup_timer := ObjBindMethod(this, "request_startup_settings")
 		SetTimer(this.startup_timer, 250)
 		this.request_startup_settings()
-		SetTimer(this.follow_func, 50)
 	}
 
 	static request_startup_settings() {
@@ -134,6 +124,7 @@ class key_alignment {
 			if (this.HasOwnProp("startup_timer") && this.startup_timer) {
 				SetTimer(this.startup_timer, 0)
 				this.startup_timer := 0
+				SetTimer(this.follow_func, 50)
 			}
 
 			for section_name, section_data in data["settings"] {

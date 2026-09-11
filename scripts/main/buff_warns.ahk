@@ -18,12 +18,9 @@ if (A_Args.Length = 0) {
 #Include "..\..\lib\core\process_manager.ahk"
 #Include "..\..\lib\core\Gdip_All.ahk"
 #Include "..\..\lib\core\Gdip_ImageSearch.ahk"
-#Include "..\..\lib\core\scanner.ahk"
-#Include "..\..\lib\core\detector.ahk"
 #Include "..\..\lib\utils\JSON.ahk"
 #Include "..\..\lib\utils\utility.ahk"
 #Include "..\..\lib\utils\audio.ahk"
-#Include "..\..\lib\utils\custom_tooltip.ahk"
 
 if !(pToken := Gdip_Startup()) {
 	throw Error("GDI+ failed to start, exiting script.")
@@ -48,16 +45,16 @@ class buff_warns {
 	static startup_timer := 0
 
 	static current_state := "stopped"
-	static scanner := unset
-	static tooltip_gui := 0
+	static IGNORE_DO_NOT_REMOVE_IT_BREAKS_THE_MACRO := Gui()
+	static latest_buff_data := Map()
 
 	static cached_audios := Map()
 	static last_played_timestamps := Map()
 	static has_played_states := Map()
 
 	static warn_profiles := Map(
-		"Precision", { conf: "precise", key: "precise", max: 60, mult: 0.6 }
-		, "Super Smoothie", { conf: "smoothie", key: "supersmoothie", max: 1200, mult: 12.0 }
+		"Precision", { conf: "precise", key: "precise", max: 60, reverse: true }
+		, "Super Smoothie", { conf: "smoothie", key: "supersmoothie", max: 1200, reverse: true }
 		, "Gummy Star", { conf: "gummy", key: "gummystar", max: 75 }
 		, "Pop Star", { conf: "pop", key: "popstar", max: 30 }
 		, "Scorching Star", { conf: "scorch", key: "scorch", max: 30 }
@@ -65,7 +62,7 @@ class buff_warns {
 		, "Gummy Morph", { conf: "morph", key: "gummymorph", max: 30 }
 		, "Gummyballer", { conf: "baller", key: "gummyballer", max: 1000 }
 		, "Coconut Combo", { conf: "combo", key: "combo", max: 40 }
-		, "Combo Buff", { conf: "combo_buff", key: "combo_buff", max: 30, mult: 0.3 }
+		, "Combo Buff", { conf: "combo_buff", key: "combo_buff", max: 30, reverse: true }
 		, "X-Flame", { conf: "x_flame", key: "x-flame", max: 25 }
 	)
 
@@ -83,8 +80,6 @@ class buff_warns {
 		if (A_Args.Length > 0) {
 			this.master_pid := A_Args[1]
 		}
-		this.scanner := ScannerEngine()
-		this.tooltip_gui := GdipTooltip()
 
 		if (this.master_pid) {
 			SetTimer(this.heartbeat_func, 2000)
@@ -107,6 +102,11 @@ class buff_warns {
 
 	static handle_command(data) {
 		action := data["action"]
+
+		if (action == "sync_buff_data") {
+			this.latest_buff_data := data["data"]
+			return
+		}
 
 		if (action == "set_state") {
 			if (!data.Has("state"))
@@ -168,45 +168,43 @@ class buff_warns {
 		if (this.current_state == "running")
 			return
 		this.current_state := "running"
-		this.scanner.Toggle(1)
-		Roblox.start_tracker()
 		SetTimer(this.check_func, this.loop_interval)
-
-		if (this.settings["main"].Has("warns_enabled") && this.settings["main"]["warns_enabled"]) {
-			if (this.tooltip_gui && HasMethod(this.tooltip_gui, "Show")) {
-				this.tooltip_gui.Show("Warns: ON")
-				SetTimer(() => this.tooltip_gui.Hide(), -500)
-			}
-		}
 	}
 
 	static stop() {
 		if (this.current_state == "stopped")
 			return
 		this.current_state := "stopped"
-		this.scanner.Toggle(0)
-		Roblox.stop_tracker()
 		SetTimer(this.check_func, 0)
-		if (this.tooltip_gui && HasMethod(this.tooltip_gui, "Show")) {
-			this.tooltip_gui.Show("Warns: OFF")
-			SetTimer(() => this.tooltip_gui.Hide(), -500)
-		}
 	}
 
 	static pause() {
 		if (this.current_state == "paused")
 			return
 		this.current_state := "paused"
-		this.scanner.Toggle(0)
 		SetTimer(this.check_func, 0)
-		if (this.tooltip_gui && HasMethod(this.tooltip_gui, "Show")) {
-			this.tooltip_gui.Show("Warns: PAUSED")
-			SetTimer(() => this.tooltip_gui.Hide(), -500)
-		}
 	}
 
 	static cleanup() {
 		this.stop()
+	}
+
+	static get_standard_data(buff_name, std_data) {
+		if (!std_data.Has("passives"))
+			return Map("is_active", false, "stacks", 0)
+
+		if (std_data["passives"].Has(buff_name))
+			return std_data["passives"][buff_name]
+		if (std_data["buffs"].Has(buff_name))
+			return std_data["buffs"][buff_name]
+		if (buff_name == "gummystar" && std_data["custom"].Has("gummy_pity")) {
+			val := std_data["custom"]["gummy_pity"]
+			return Map("is_active", val["is_active"], "stacks", val["pity_count"])
+		}
+		if (buff_name == "glitter" && std_data["field_boosts"].Has("glitter"))
+			return std_data["field_boosts"]["glitter"]
+
+		return Map("is_active", false, "stacks", 0)
 	}
 
 	static check_loop(*) {
@@ -214,7 +212,9 @@ class buff_warns {
 			return
 		}
 
-		debug_str := "=== WARNS DEBUG ===`n"
+		if (!this.latest_buff_data.Has("passives")) {
+			return
+		}
 
 		for warn_name, profile in this.warn_profiles {
 			prefix := profile.conf
@@ -232,15 +232,14 @@ class buff_warns {
 				this.last_played_timestamps[warn_name] := 0
 			}
 
+			buff_info := this.get_standard_data(profile.key, this.latest_buff_data)
 			current_val := 0
-			if (this.scanner.Data.Has(profile.key)) {
-				current_val := this.scanner.Data[profile.key]
+			if (buff_info["is_active"]) {
+				current_val := buff_info.Has("raw_secs") ? buff_info["raw_secs"] : (buff_info.Has("stacks") ? buff_info["stacks"] : 0)
 			}
 
 			threshold_key := prefix "_threshold"
 			threshold := this.settings["warns"].Has(threshold_key) ? this.settings["warns"][threshold_key] : this.default_warn_threshold
-
-			debug_str .= warn_name " -> Raw: " current_val " | Thresh: " threshold "`n"
 
 			if (current_val <= 0) {
 				this.has_played_states[warn_name] := false
@@ -250,16 +249,12 @@ class buff_warns {
 			is_triggered := false
 			ratio := 1.0
 
-			if (profile.HasProp("mult")) {
-				scaled_val := Round(profile.mult * current_val)
-				debug_str .= "   Scaled: " scaled_val "`n"
-				if (scaled_val <= threshold) {
+			if (profile.HasProp("reverse") && profile.reverse) {
+				if (current_val <= threshold) {
 					is_triggered := true
-					ratio := scaled_val / threshold
+					ratio := current_val / Max(1, threshold)
 				}
-			}
-
-			if (!profile.HasProp("mult")) {
+			} else {
 				if (current_val >= threshold) {
 					is_triggered := true
 					denominator := Max(1, profile.max - threshold)
@@ -268,14 +263,11 @@ class buff_warns {
 			}
 
 			if (is_triggered) {
-				debug_str .= "   >>> TRIGGERED! Ratio: " Round(ratio, 2) "`n"
 				this.handle_alert(warn_name, ratio)
 			} else {
 				this.has_played_states[warn_name] := false
 			}
 		}
-
-		ToolTip(debug_str, 10, 250, 19)
 	}
 
 	static handle_alert(warn_name, ratio) {
@@ -309,7 +301,6 @@ class buff_warns {
 			if (FileExist(this.default_sound_file)) {
 				path := this.default_sound_file
 			} else {
-				tooltip "Warning: Default sound file not found."
 				return
 			}
 		}

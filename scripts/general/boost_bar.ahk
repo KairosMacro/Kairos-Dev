@@ -18,8 +18,6 @@ if (A_Args.Length = 0) {
 #Include "..\..\lib\core\process_manager.ahk"
 #Include "..\..\lib\core\Gdip_All.ahk"
 #Include "..\..\lib\core\Gdip_ImageSearch.ahk"
-#Include "..\..\lib\core\detector.ahk"
-#Include "..\..\lib\core\scanner.ahk"
 #Include "..\..\lib\utils\JSON.ahk"
 #Include "..\..\lib\utils\utility.ahk"
 
@@ -38,14 +36,15 @@ class boost_bar {
 	static master_pid := ""
 	static my_path := "scripts\general\boost_bar.ahk"
 	static current_state := "stopped"
-	static scanner := unset
 	static startup_timer := 0
+	static latest_buff_data := Map()
 
 	static slot_w := 68
 	static slot_h := 36
 	static gap := 7
 	static width := 537
 	static height := 36
+	static useless := 0
 
 	static color_bg := 0xB31E1E1E
 	static color_active := 0xFF4CAF50
@@ -115,7 +114,6 @@ class boost_bar {
 		this.init_brushes()
 		this.draw()
 
-		this.scanner := ScannerEngine()
 		roblox.start_tracker()
 
 		OnMessage(0x201, ObjBindMethod(this, "on_click"))
@@ -142,6 +140,11 @@ class boost_bar {
 
 	static handle_command(data) {
 		action := data["action"]
+
+		if (action == "sync_buff_data") {
+			this.latest_buff_data := data["data"]
+			return
+		}
 
 		if (action == "set_state") {
 			if (!data.Has("state"))
@@ -216,7 +219,6 @@ class boost_bar {
 
 		this.current_state := "running"
 		if (this.settings["main"]["boost_bar_enabled"]) {
-			this.scanner.Toggle(1)
 			SetTimer(this.spam_func, 5)
 		}
 		this.draw()
@@ -228,7 +230,6 @@ class boost_bar {
 			return
 
 		this.current_state := "stopped"
-		this.scanner.Toggle(0)
 		SetTimer(this.spam_func, 0)
 		this.draw()
 		this.follow_window()
@@ -239,7 +240,6 @@ class boost_bar {
 			return
 
 		this.current_state := "paused"
-		this.scanner.Toggle(0)
 		SetTimer(this.spam_func, 0)
 		this.draw()
 		this.follow_window()
@@ -253,6 +253,24 @@ class boost_bar {
 		DeleteDC(this.hdc)
 		Gdip_DeleteGraphics(this.G)
 		this.gui_obj.Destroy()
+	}
+
+	static get_standard_data(buff_name, std_data) {
+		if (!std_data.Has("passives"))
+			return Map("is_active", false, "stacks", 0)
+
+		if (std_data["passives"].Has(buff_name))
+			return std_data["passives"][buff_name]
+		if (std_data["buffs"].Has(buff_name))
+			return std_data["buffs"][buff_name]
+		if (buff_name == "gummystar" && std_data["custom"].Has("gummy_pity")) {
+			val := std_data["custom"]["gummy_pity"]
+			return Map("is_active", val["is_active"], "stacks", val["pity_count"])
+		}
+		if (buff_name == "glitter" && std_data["field_boosts"].Has("glitter"))
+			return std_data["field_boosts"]["glitter"]
+
+		return Map("is_active", false, "stacks", 0)
 	}
 
 	static follow_window() {
@@ -517,19 +535,16 @@ class boost_bar {
 			return
 		}
 
-		win := Roblox.Get()
-		if (!IsObject(win) || !win.is_ok) {
+		if (!this.latest_buff_data.Has("passives")) {
 			return
 		}
 
 		static last_fire := Map()
 		now := A_TickCount
-		debug_str := "=== BOOST BAR DIAGNOSTICS ===`n"
 
 		loop 7 {
 			idx := A_Index
 			if (!this.settings["boost_bar"]["slot_active_" idx]) {
-				debug_str .= "Slot " idx " | INACTIVE`n"
 				if (last_fire.Has(idx)) {
 					last_fire.Delete(idx)
 				}
@@ -538,7 +553,6 @@ class boost_bar {
 
 			delay := this.settings["boost_bar"]["slot_timer_" idx]
 			time_left := last_fire.Has(idx) ? delay - (now - last_fire[idx]) : 0
-			debug_str .= "Slot " idx " | " (time_left > 0 ? "CD: " time_left "ms" : "READY") "`n"
 
 			if (time_left > 0) {
 				continue
@@ -551,38 +565,31 @@ class boost_bar {
 			for _, ui_mode_name in active_modes {
 				if (ui_mode_name == "Timer" || ui_mode_name == "") {
 					has_valid_condition := true
-					debug_str .= "  -> Mode: " ui_mode_name " (Auto-Trigger)`n"
 					break
 				}
 
 				scanner_key := this.available_modes.Has(ui_mode_name) ? this.available_modes[ui_mode_name] : ""
 
 				try {
-					if (scanner_key != "" && this.scanner.Data.Has(scanner_key)) {
-						val := this.scanner.Data[scanner_key]
+					if (scanner_key != "") {
+						buff_info := this.get_standard_data(scanner_key, this.latest_buff_data)
+						icon_on_screen := buff_info["is_active"]
+
 						is_passive := InStr("|gummystar|popstar|scorch|shower|x-flame|", "|" scanner_key "|")
+						is_trigger_active := false
 
 						if (is_passive) {
-							equipped_passives := this.settings.Has("tracker") ? this.settings["tracker"]["passives"] : ""
-
-							if (!InStr("|" equipped_passives "|", "|" scanner_key "|")) {
-								debug_str .= "  -> Mode: " ui_mode_name " | Key: " scanner_key " | ERROR: NOT EQUIPPED`n"
-								continue
-							}
-
-							is_active := false
-
-							if (val == -1) {
+							if (!icon_on_screen) {
 								if (this.cooldowns.Has(scanner_key)) {
 									cooldown_data := this.cooldowns[scanner_key]
 									if (cooldown_data.last_not_found != 0) {
 										elapsed := QPC() - cooldown_data.last_not_found
 										if (elapsed <= cooldown_data.duration) {
-											is_active := true
+											is_trigger_active := true
 										}
 									}
 								} else {
-									is_active := true
+									is_trigger_active := true
 								}
 							} else {
 								if (this.cooldowns.Has(scanner_key)) {
@@ -590,20 +597,16 @@ class boost_bar {
 								}
 							}
 						} else {
-							is_active := (val > 0)
+							is_trigger_active := icon_on_screen
 						}
 
-						debug_str .= "  -> Mode: " ui_mode_name " | Key: " scanner_key " | Active: " is_active " (Raw: " val ")`n"
-
-						if (InStr(ui_mode_name, "Re-") && !is_active) {
+						if (InStr(ui_mode_name, "Re-") && !is_trigger_active) {
 							has_valid_condition := true
 							break
-						} else if (InStr(ui_mode_name, "On ") && is_active) {
+						} else if (InStr(ui_mode_name, "On ") && is_trigger_active) {
 							has_valid_condition := true
 							break
 						}
-					} else {
-						debug_str .= "  -> Mode: " ui_mode_name " | Key: " scanner_key " | ERROR: NOT FOUND`n"
 					}
 				}
 			}
@@ -613,10 +616,8 @@ class boost_bar {
 			}
 
 			Send(idx)
-			debug_str .= "  *** FIRED KEY " idx " ***`n"
 			last_fire[idx] := now
 		}
-		ToolTip(debug_str, 10, 300, 20)
 	}
 
 	static save_settings_to_master(section, key, val) {

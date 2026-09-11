@@ -99,16 +99,16 @@ class config {
 			"combo_volume", 25,
 			"combo_play_once", 0,
 			"combo_sound_file", A_WorkingDir "\Assets\Audio\CocoCombo.mp3",
-			"x_flame_enabled", 0,
-			"x_flame_threshold", 15,
-			"x_flame_volume", 25,
-			"x_flame_play_once", 0,
-			"x_flame_sound_file", A_WorkingDir "\Assets\Audio\Xflames.mp3",
 			"combo_buff_enabled", 0,
 			"combo_buff_threshold", 15,
 			"combo_buff_volume", 25,
 			"combo_buff_play_once", 1,
-			"combo_buff_sound_file", A_WorkingDir "\Assets\Audio\ComboBuff.mp3"
+			"combo_buff_sound_file", A_WorkingDir "\Assets\Audio\fred.mp3",
+			"x_flame_enabled", 0,
+			"x_flame_threshold", 15,
+			"x_flame_volume", 25,
+			"x_flame_play_once", 0,
+			"x_flame_sound_file", A_WorkingDir "\Assets\Audio\Xflames.mp3"
 		),
 		"tracker", Map(
 			"passives", "scorch",
