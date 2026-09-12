@@ -2,6 +2,7 @@
 #SingleInstance Force
 #MaxThreads 255
 #Warn VarUnset, Off
+#NoTrayIcon
 
 SetWorkingDir A_ScriptDir "\..\.."
 CoordMode "Mouse", "Screen"
