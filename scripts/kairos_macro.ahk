@@ -37,25 +37,20 @@ config.Load()
 
 class kairos_main {
 	static MACRO_VERSION := "1.0.0"
+	static GUI_W := 500
+	static GUI_H := 300
 	static BTN_W := 70
 	static BTN_H := 20
 	static BTN_Y := 280
 	static WM_VSCROLL := 0x0115
 	static SB_BOTTOM := 7
 
-	static expected_modules := [
-		"scripts\general\buff_scanner.ahk",
-		"scripts\main\magnification.ahk",
-		"scripts\main\key_alignment.ahk",
-		"scripts\general\boost_bar.ahk",
-		"scripts\main\buff_warns.ahk",
-		"scripts\main\buff_tracker.ahk"
-	]
+	static expected_modules := []
 	static ready_modules := Map()
 	static loading_gui := unset
 	static log_edit := unset
 	static is_paused := false
-	static is_running := false ; used just for pausing...
+	static is_running := false
 	static ui_controls := Map()
 
 	static selected_warn_prefix := "scorch"
@@ -99,6 +94,25 @@ class kairos_main {
 		OnExit((*) => process_manager.kill_all())
 		IPC.init(ObjBindMethod(this, "handle_command"))
 		this.show_loading_screen()
+
+		account_type := Config.Get("main", "account_type", "Main")
+
+		if (account_type == "Main") {
+			this.expected_modules := [
+				"scripts\general\buff_scanner.ahk",
+				"scripts\main\magnification.ahk",
+				"scripts\main\key_alignment.ahk",
+				"scripts\general\boost_bar.ahk",
+				"scripts\main\buff_warns.ahk",
+				"scripts\main\buff_tracker.ahk"
+			]
+		} else {
+			this.expected_modules := [
+				"scripts\general\buff_scanner.ahk",
+				"scripts\general\boost_bar.ahk",
+				"scripts\alt\alt_macro.ahk"
+			]
+		}
 
 		for index, script_path in this.expected_modules {
 			this.ready_modules[script_path] := false
@@ -298,6 +312,35 @@ class kairos_main {
 				)
 			}
 
+			if (InStr(script, "alt_macro.ahk")) {
+				payload["settings"] := Map(
+					"main", Map(
+						"alt_macro_enabled", Config.Get("main", "alt_macro_enabled", 0)
+					),
+					"alt", Map(
+						"default_field", Config.Get("alt", "default_field", "pepper"),
+						"pattern", Config.Get("alt", "pattern", "GeneralBooster"),
+						"move_speed", Config.Get("alt", "move_speed", 29),
+						"hive_slot", Config.Get("alt", "hive_slot", 1),
+						"claim_hive", Config.Get("alt", "claim_hive", 1),
+						"coco_catch", Config.Get("alt", "coco_catch", 0),
+						"field_drift_comp", Config.Get("alt", "field_drift_comp", 1),
+						"sprinkler_location", Config.Get("alt", "sprinkler_location", "Center"),
+						"sprinkler_distance", Config.Get("alt", "sprinkler_distance", 1),
+						"shift_lock", Config.Get("alt", "shift_lock", 0),
+						"camera_pitch", Config.Get("alt", "camera_pitch", 4),
+						"alt_number", Config.Get("alt", "alt_number", 1),
+						"pattern_size", Config.Get("alt", "pattern_size", 1),
+						"pattern_width", Config.Get("alt", "pattern_width", 1),
+						"rot_lr_amount", Config.Get("alt", "rot_lr_amount", 0),
+						"rot_lr_dir", Config.Get("alt", "rot_lr_dir", "Right"),
+						"use_tool", Config.Get("alt", "use_tool", 1),
+						"ignore_inactive_honey", Config.Get("alt", "ignore_inactive_honey", 0),
+						"priv_server", Config.Get("alt", "priv_server", "")
+					)
+				)
+			}
+
 			if (payload["settings"].Count > 0 && data.Has("pid")) {
 				target_pid := data["pid"]
 				SetTimer(() => IPC.send_message("ahk_pid " target_pid, 1, payload), -1)
@@ -346,7 +389,7 @@ class kairos_main {
 			? ["Home", "Tracker", "Warnings", "Boost Bar", "Comms", "Settings"]
 			: ["Home", "Alt", "Boost Bar", "Comms", "Settings"]
 
-		this.tabs := this.main_gui.Add("Tab3", "w450 h270", tab_list)
+		this.tabs := this.main_gui.Add("Tab3", "x-1 y-1 w" this.GUI_W + 2 " h" this.GUI_H - 23 " -Wrap", tab_list)
 
 		this.tabs.UseTab("Home")
 		this.build_home_tab(account_type)
@@ -357,6 +400,9 @@ class kairos_main {
 
 			this.tabs.UseTab("Warnings")
 			this.build_warnings_tab()
+		} else {
+			this.tabs.UseTab("Alt")
+			this.build_alt_tab()
 		}
 
 		this.tabs.UseTab("Boost Bar")
@@ -387,11 +433,11 @@ class kairos_main {
 		this.main_gui.SetFont("cDefault")
 
 		pos_str := (gui_x != "" && gui_y != "") ? "x" gui_x " y" gui_y : "Center"
-		this.main_gui.Show("NA " pos_str " NoActivate")
+		this.main_gui.Show("w" this.GUI_W " h" this.GUI_H " NA " pos_str " NoActivate")
 	}
 
 	static build_home_tab(account_type) {
-		this.main_gui.Add("GroupBox", "Section w200 h120", "Profile Manager")
+		this.main_gui.Add("GroupBox", "Section w200 h150", "Profile Manager")
 		this.main_gui.Add("Text", "xs+10 ys+25 w50", "Presets:")
 
 		presets := Config.GetPresets()
@@ -410,7 +456,13 @@ class kairos_main {
 		btn_del := this.main_gui.Add("Button", "xs+10 y+5 w175", "Delete Profile")
 		btn_del.OnEvent("Click", ObjBindMethod(this, "delete_preset"))
 
-		this.main_gui.Add("Text", "xs+10 y+20 w80", "Account Type:")
+		btn_export := this.main_gui.Add("Button", "xs+10 y+5 w85", "Export (.krs)")
+		btn_export.OnEvent("Click", ObjBindMethod(this, "export_config"))
+
+		btn_import := this.main_gui.Add("Button", "x+5 yp w85", "Import (.krs)")
+		btn_import.OnEvent("Click", ObjBindMethod(this, "import_config"))
+
+		this.main_gui.Add("Text", "xs+10 y+15 w80", "Account Type:")
 		type_ddl := this.main_gui.Add("DropDownList", "x+5 yp-3 w100 Choose" (account_type == "Main" ? 1 : 2), ["Main", "Alt"])
 		type_ddl.OnEvent("Change", (*) => (Config.Set("main", "account_type", type_ddl.Text), Reload()))
 
@@ -425,6 +477,115 @@ class kairos_main {
 			this.add_toggle("xs+220 ys+25", "Enable Alt Macro", "main", "alt_macro_enabled")
 		}
 		this.add_toggle("xp y+10", "Enable Boost Bar", "main", "boost_bar_enabled")
+	}
+
+	/*
+	* `this.settings["alt"]["default_field"]`
+	* `this.settings["alt"]["hive_slot"]`
+	* `this.settings["alt"]["move_speed"]`
+	* `this.settings["alt"]["shift_lock"]`
+	* `this.settings["alt"]["use_tool"]`
+	* `this.settings["alt"]["pattern"]`
+	* `this.settings["alt"]["field_drift_comp"]`
+	* `this.settings["alt"]["coco_catch"]`
+	* `this.settings["alt"]["sprinkler_location"]`
+	* `this.settings["alt"]["sprinkler_distance"]`
+	* `this.settings["alt"]["rot_lr_amount"]`
+	* `this.settings["alt"]["rot_lr_dir"]`
+	* `this.settings["alt"]["camera_pitch"]`
+	* `this.settings["alt"]["claim_hive"]`
+	* `this.settings["alt"]["ignore_inactive_honey"]`
+	* `this.settings["alt"]["priv_server"]`
+	*/
+	static build_alt_tab() {
+		this.main_gui.SetFont("s8", "Segoe UI")
+		GroupWidth := 205
+		this.main_gui.Add("GroupBox", "Section x10 y25 w" GroupWidth " h190", "Alt Settings")
+
+		this.main_gui.Add("Text", "xs+10 ys+23", "MoveSpeed:")
+		editCtrl := this.main_gui.Add("Edit", "x105 ys+17 w60 h20 valt_move_speed", Config.Get("alt", "move_speed", 29))
+		editCtrl.OnEvent("Change", (ctrl, *) => (this.enforce_float(ctrl), this.update_and_broadcast("alt", "move_speed", ctrl.Value)))
+
+		this.main_gui.Add("Text", "xs+10 ys+45", "Hive Slot:")
+		hiveCtrl := this.main_gui.Add("Edit", "x105 ys+43 w60 h20 Number valt_hive_slot", Config.Get("alt", "hive_slot", 1))
+		hiveCtrl.OnEvent("Change", (*) => this.update_and_broadcast("alt", "hive_slot", hiveCtrl.Value))
+
+		this.main_gui.Add("Text", "xs+10 ys+70", "Alt Number:")
+		altNumCtrl := this.main_gui.Add("Edit", "x105 ys+67 w40 h20 Number valt_alt_number", Config.Get("alt", "alt_number", 1))
+		altNumCtrl.OnEvent("Change", (*) => this.update_and_broadcast("alt", "alt_number", altNumCtrl.Value))
+
+		this.main_gui.Add("Text", "xs+30 ys+95", "Shift Lock")
+		chk_shift := this.main_gui.Add("CheckBox", "xs+10 ys+92 w20 h20 Checked" Config.Get("alt", "shift_lock", 0) " valt_shift_lock")
+		chk_shift.OnEvent("Click", (*) => this.update_and_broadcast("alt", "shift_lock", chk_shift.Value))
+
+		this.main_gui.Add("Text", "x130 ys+95", "Drift Comp")
+		chk_drift := this.main_gui.Add("CheckBox", "x110 ys+92 w20 h20 Checked" Config.Get("alt", "field_drift_comp", 1) " valt_field_drift_comp")
+		chk_drift.OnEvent("Click", (*) => this.update_and_broadcast("alt", "field_drift_comp", chk_drift.Value))
+
+		this.main_gui.Add("Text", "xs+30 ys+118", "Claim Hive")
+		chk_claim := this.main_gui.Add("CheckBox", "xs+10 ys+115 w20 h20 Checked" Config.Get("alt", "claim_hive", 1) " valt_claim_hive")
+		chk_claim.OnEvent("Click", (*) => this.update_and_broadcast("alt", "claim_hive", chk_claim.Value))
+
+		this.main_gui.Add("Text", "x130 ys+118", "Ignore Inactive")
+		chk_ignore := this.main_gui.Add("CheckBox", "x110 ys+115 w20 h20 Checked" Config.Get("alt", "ignore_inactive_honey", 0) " valt_ignore_inactive_honey")
+		chk_ignore.OnEvent("Click", (*) => this.update_and_broadcast("alt", "ignore_inactive_honey", chk_ignore.Value))
+
+		this.main_gui.Add("Text", "xs+30 ys+140", "Use Tool")
+		chk_tool := this.main_gui.Add("CheckBox", "xs+10 ys+137 w20 h20 Checked" Config.Get("alt", "use_tool", 0) " valt_use_tool")
+		chk_tool.OnEvent("Click", (*) => this.update_and_broadcast("alt", "use_tool", chk_tool.Value))
+
+		this.main_gui.Add("Text", "xs+10 ys+163", "Priv Server:")
+		privCtrl := this.main_gui.Add("Edit", "x85 ys+161 w110 h20 valt_priv_server", Config.Get("alt", "priv_server", ""))
+		privCtrl.OnEvent("Change", (*) => this.update_and_broadcast("alt", "priv_server", privCtrl.Value))
+
+		Group2 := GroupWidth + 15
+		this.main_gui.Add("GroupBox", "x" Group2 " ys w" GroupWidth " h190", "Field Settings")
+
+		btn_copy := this.main_gui.Add("Button", "x" Group2 + 100 " ys+2 w45 h18", "Copy")
+		btn_copy.OnEvent("Click", ObjBindMethod(this, "copy_field_settings"))
+
+		btn_paste := this.main_gui.Add("Button", "x" Group2 + 150 " ys+2 w45 h18", "Paste")
+		btn_paste.OnEvent("Click", ObjBindMethod(this, "paste_field_settings"))
+
+		this.main_gui.Add("Text", "x" Group2 + 5 " ys+25", "Field:")
+		fieldArr := ["sunflower", "dandelion", "mushroom", "blueflower", "clover", "strawberry", "spider", "bamboo", "pineapple", "stump", "cactus", "pumpkin", "pinetree", "rose", "mountaintop", "pepper", "coconut"]
+		field_ddl := this.main_gui.Add("DropDownList", "x" Group2 + 45 " ys+23 w100 Choose" this.get_array_index(fieldArr, Config.Get("alt", "default_field", "pepper")) " valt_default_field", fieldArr)
+		field_ddl.OnEvent("Change", (*) => this.update_and_broadcast("alt", "default_field", field_ddl.Text))
+
+		this.main_gui.Add("Text", "x" Group2 + 5 " ys+50", "Pattern:")
+		global patternlist
+		pList := IsSet(patternlist) ? patternlist : ["GeneralBooster"]
+		pattern_ddl := this.main_gui.Add("DropDownList", "x" Group2 + 60 " ys+50 w110 Choose" this.get_array_index(pList, Config.Get("alt", "pattern", "GeneralBooster")) " valt_pattern", pList)
+		pattern_ddl.OnEvent("Change", (*) => this.update_and_broadcast("alt", "pattern", pattern_ddl.Text))
+
+		this.main_gui.Add("Text", "x" Group2 + 5 " ys+80", "Size:")
+		edit_size := this.main_gui.Add("Edit", "x" Group2 + 40 " ys+78 w40 h20 Number valt_pattern_size", Config.Get("alt", "pattern_size", 1))
+		this.main_gui.Add("UpDown", "Range1-10", Config.Get("alt", "pattern_size", 1))
+		edit_size.OnEvent("Change", (*) => this.update_and_broadcast("alt", "pattern_size", edit_size.Value))
+
+		this.main_gui.Add("Text", "x" Group2 + 90 " ys+80", "Width:")
+		edit_width := this.main_gui.Add("Edit", "x" Group2 + 130 " ys+78 w40 h20 Number valt_pattern_width", Config.Get("alt", "pattern_width", 1))
+		this.main_gui.Add("UpDown", "Range1-10", Config.Get("alt", "pattern_width", 1))
+		edit_width.OnEvent("Change", (*) => this.update_and_broadcast("alt", "pattern_width", edit_width.Value))
+
+		this.main_gui.Add("Text", "x" Group2 + 5 " ys+105", "Sprinkler:")
+		sprinklerArr := ["Center", "Upper Left", "Left", "Lower Left", "Lower", "Lower Right", "Right", "Upper Right", "Upper"]
+		sprink_ddl := this.main_gui.Add("DropDownList", "x" Group2 + 65 " ys+100 w80 Choose" this.get_array_index(sprinklerArr, Config.Get("alt", "sprinkler_location", "Center")) " valt_sprinkler_location", sprinklerArr)
+		sprink_ddl.OnEvent("Change", (*) => this.update_and_broadcast("alt", "sprinkler_location", sprink_ddl.Text))
+
+		edit_sprink_dist := this.main_gui.Add("Edit", "x" Group2 + 147 " ys+100 w40 h24 Number valt_sprinkler_distance", Config.Get("alt", "sprinkler_distance", 1))
+		this.main_gui.Add("UpDown", "Range0-10", Config.Get("alt", "sprinkler_distance", 1))
+		edit_sprink_dist.OnEvent("Change", (*) => this.update_and_broadcast("alt", "sprinkler_distance", edit_sprink_dist.Value))
+
+		this.main_gui.Add("Text", "x" Group2 + 5 " ys+130", "Rotation:")
+		edit_rot := this.main_gui.Add("Edit", "x" Group2 + 60 " ys+128 w40 Number valt_rot_lr_amount", Config.Get("alt", "rot_lr_amount", 0))
+		this.main_gui.Add("UpDown", "Range0-8", Config.Get("alt", "rot_lr_amount", 0))
+		edit_rot.OnEvent("Change", (*) => this.update_and_broadcast("alt", "rot_lr_amount", edit_rot.Value))
+
+		rot_dir_ddl := this.main_gui.Add("DropDownList", "x" Group2 + 102 " ys+128 w60 Choose" this.get_array_index(["Right", "Left"], Config.Get("alt", "rot_lr_dir", "Right")) " valt_rot_lr_dir", ["Right", "Left"])
+		rot_dir_ddl.OnEvent("Change", (*) => this.update_and_broadcast("alt", "rot_lr_dir", rot_dir_ddl.Text))
+
+		this.main_gui.SetFont("s9", "Segoe UI")
 	}
 
 	static build_tracker_tab() {
@@ -550,6 +711,62 @@ class kairos_main {
 			save_str .= (A_Index > 1 ? "|" : "") item
 
 		this.update_and_broadcast("tracker", "passives", save_str)
+	}
+
+	static enforce_float(GuiCtrl, *) {
+		clean := RegExReplace(GuiCtrl.Value, "[^\d.]")
+		clean := RegExReplace(clean, "^([^.]*\.)|\.", "$1")
+
+		if (GuiCtrl.Value != clean) {
+			pos := SendMessage(0x00B0, 0, 0, GuiCtrl)
+			start := pos & 0xFFFF
+			GuiCtrl.Value := clean
+			SendMessage(0x00B1, start - 1, start - 1, GuiCtrl)
+		}
+	}
+
+	static copy_field_settings(*) {
+		settings := Config.Get("alt", "default_field") "|" Config.Get("alt", "pattern") "|" Config.Get("alt", "pattern_size") "|" Config.Get("alt", "pattern_width") "|" Config.Get("alt", "sprinkler_location") "|" Config.Get("alt", "sprinkler_distance") "|" Config.Get("alt", "rot_lr_amount") "|" Config.Get("alt", "rot_lr_dir")
+		A_Clipboard := settings
+		ToolTip("Settings copied to clipboard")
+		SetTimer(() => ToolTip(), -500)
+	}
+
+	static paste_field_settings(*) {
+		try {
+			data := StrSplit(A_Clipboard, "|")
+			if (data.Length != 8) {
+				ToolTip("Invalid settings.")
+				SetTimer(() => ToolTip(), -500)
+				return
+			}
+
+			Config.Set("alt", "default_field", data[1])
+			Config.Set("alt", "pattern", data[2])
+			Config.Set("alt", "pattern_size", data[3])
+			Config.Set("alt", "pattern_width", data[4])
+			Config.Set("alt", "sprinkler_location", data[5])
+			Config.Set("alt", "sprinkler_distance", data[6])
+			Config.Set("alt", "rot_lr_amount", data[7])
+			Config.Set("alt", "rot_lr_dir", data[8])
+			Config.WriteIni()
+
+			process_manager.broadcast_setting("alt", "default_field", data[1])
+			process_manager.broadcast_setting("alt", "pattern", data[2])
+			process_manager.broadcast_setting("alt", "pattern_size", data[3])
+			process_manager.broadcast_setting("alt", "pattern_width", data[4])
+			process_manager.broadcast_setting("alt", "sprinkler_location", data[5])
+			process_manager.broadcast_setting("alt", "sprinkler_distance", data[6])
+			process_manager.broadcast_setting("alt", "rot_lr_amount", data[7])
+			process_manager.broadcast_setting("alt", "rot_lr_dir", data[8])
+
+			ToolTip("Settings pasted from clipboard")
+			SetTimer(() => ToolTip(), -500)
+			Reload()
+		} catch {
+			ToolTip("Error pasting settings.")
+			SetTimer(() => ToolTip(), -500)
+		}
 	}
 
 	static build_warnings_tab() {
@@ -1293,6 +1510,62 @@ class kairos_main {
 			Hotkey(Config.Get("main", "stop_hotkey", "F3"), ObjBindMethod(this, "on_stop"), "On")
 		} catch as err {
 			MsgBox("Error registering hotkeys: " err.Message, "Kairos", 16)
+		}
+	}
+
+	static export_config(*) {
+		data := Map()
+		for section, keys in Config.Default {
+			sectionMap := Map()
+			for key, val in keys
+				sectionMap[key] := Config.Get(section, key, val)
+			data[section] := sectionMap
+		}
+
+		for section, keys in Config.Data {
+			if !data.Has(section)
+				data[section] := Map()
+			for key, val in keys {
+				if !data[section].Has(key)
+					data[section][key] := val
+			}
+		}
+
+		jsonStr := JSON.stringify(data)
+
+		savePath := FileSelect("S16", A_WorkingDir "\settings\" Config.currentPreset ".kairos", "Export Config", "Kairos Config (*.kairos)")
+		if (savePath == "")
+			return
+
+		if !InStr(savePath, ".kairos")
+			savePath .= ".kairos"
+
+		f := FileOpen(savePath, "w", "UTF-8")
+		f.Write(jsonStr)
+		f.Close()
+
+		MsgBox("Config exported successfully.", "Kairos", 64)
+	}
+
+	static import_config(*) {
+		filePath := FileSelect(1, A_WorkingDir "\settings\", "Import Config", "Kairos Config (*.kairos)")
+		if (filePath == "")
+			return
+
+		try {
+			jsonStr := FileRead(filePath, "UTF-8")
+			data := JSON.parse(jsonStr)
+
+			for section, keys in data {
+				for key, val in keys
+					Config.Set(section, key, val)
+			}
+
+			Config.WriteIni()
+			MsgBox("Config imported successfully.", "Kairos", 64)
+			Reload()
+		} catch {
+			MsgBox("Import failed: invalid or corrupted file.", "Kairos", 16)
 		}
 	}
 }

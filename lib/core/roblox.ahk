@@ -154,7 +154,20 @@ class roblox {
 			ProcessClose p.ProcessID
 	}
 
-	static join(placeID, jobID := "") {
-		; (+) Might wanna work on this !!!!
+	static join(link := "") {
+		link := Trim(link)
+		linkCode := ""
+
+		if RegExMatch(link, "i)(?:privateServerLinkCode|linkCode|joinCode)=([^&]+)", &m) {
+			linkCode := m[1]
+		}
+
+		if (linkCode != "") {
+			try Run('roblox://placeID=1537690962&linkCode=' linkCode)
+		} else if RegExMatch(link, "i)(?<=share\?code=)(.{32})(?=&type=Server)", &m) {
+			try Run('roblox://navigation/share_links?code=' m[1] '&type=Server')
+		} else {
+			try Run('roblox://placeID=1537690962')
+		}
 	}
 }

@@ -1,5 +1,5 @@
 ﻿exe_path32 := A_AhkPath
-exe_path64 := (A_Is64bitOS && FileExist("scripts\EXE\AutoHotkey64.exe")) ? (A_WorkingDir "\scripts\EXE\AutoHotkey64.exe") : A_AhkPath
+exe_path64 := (A_Is64bitOS && FileExist("scripts\bin\AutoHotkey64.exe")) ? (A_WorkingDir "\scripts\bin\AutoHotkey64.exe") : A_AhkPath
 
 CloseScripts(hb := 0) {
 	list := WinGetList("ahk_class AutoHotkey ahk_exe " exe_path32)
@@ -72,7 +72,7 @@ importPatterns()
 	imported := ""
 
 	import := ""
-	Loop Files A_WorkingDir "\Patterns\*.ahk"
+	Loop Files A_WorkingDir "\patterns\*.ahk"
 	{
 		file := FileOpen(A_LoopFilePath, "r"), pattern := file.Read(), file.Close()
 		if RegexMatch(pattern, "im)patterns\[")
@@ -86,32 +86,32 @@ importPatterns()
 		if !InStr(imported, imported_pattern := '("' (pattern_name := StrReplace(A_LoopFileName, "." A_LoopFileExt)) '")`r`n' pattern '`r`n`r`n')
 		{
 			script :=
-				(
-					'
-			#NoTrayIcon
-			#SingleInstance Off
-			#Warn All, StdOut
-
-			' KeyVars() '
-
-			size:=1, reps:=1, facingcorner:=0
-			FieldName:=FieldPattern:=FieldPatternSize:=FieldReturnType:=FieldSprinklerLoc:=FieldRotateDirection:=""
-			FieldUntilPack:=FieldPatternReps:=FieldPatternShift:=FieldSprinklerDist:=FieldRotateTimes:=FieldDriftCheck:=FieldPatternInvertFB:=FieldPatternInvertLR:=FieldUntilMins:=0
-			fieldWidth := 11
-			fieldHeight := 9
-			altNumber := 1
-			index := 0
-			field := ""
-			walk(param1, param2?) => ""
-			move(param1, param2?, param3?) => ""
-			HyperSleep(param1) => ""
-			Gdip_ImageSearch(*) => ""
-			Gdip_BitmapFromBase64(*) => ""
-
-			' pattern '
-
-			'
-				)
+			(
+				'
+							#NoTrayIcon
+							#SingleInstance Off
+							#Warn All, StdOut
+				
+							' alt_macro.KeyVars() '
+				
+							size:=1, reps:=1, facingcorner:=0
+							FieldName:=FieldPattern:=FieldPatternSize:=FieldReturnType:=FieldSprinklerLoc:=FieldRotateDirection:=""
+							FieldUntilPack:=FieldPatternReps:=FieldPatternShift:=FieldSprinklerDist:=FieldRotateTimes:=FieldDriftCheck:=FieldPatternInvertFB:=FieldPatternInvertLR:=FieldUntilMins:=0
+							fieldWidth := 11
+							fieldHeight := 9
+							altNumber := 1
+							index := 0
+							field := ""
+							walk(param1, param2?) => ""
+							move(param1, param2?, param3?) => ""
+							HyperSleep(param1) => ""
+							Gdip_ImageSearch(*) => ""
+							Gdip_BitmapFromBase64(*) => ""
+				
+							' pattern '
+				
+							'
+			)
 
 			exec := ComObject("WScript.Shell").Exec('"' exe_path64 '" /script /Validate /ErrorStdOut *'), exec.StdIn.Write(script), exec.StdIn.Close()
 			if (stdout := exec.StdOut.ReadAll())
@@ -119,10 +119,10 @@ importPatterns()
 				MsgBox
 				(
 					"Unable to import '" pattern_name "' pattern!
-				Click 'OK' to continue loading the macro without this pattern installed, otherwise fix the error and reload the macro.
-
-				The error found on loading is stated below:
-				" stdout
+									Click 'OK' to continue loading the macro without this pattern installed, otherwise fix the error and reload the macro.
+					
+									The error found on loading is stated below:
+									" stdout
 				), "Unable to Import Pattern!", 0x40010 " T60"
 				continue
 			}
