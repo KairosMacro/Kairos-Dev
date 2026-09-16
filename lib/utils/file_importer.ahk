@@ -29,6 +29,7 @@ SC_LShift := "sc02a" ; LShift
 SC_Space := "sc039" ; Space
 SC_1 := "sc002" ; 1
 SC_Slash := "sc035" ; /
+patternList := []
 
 
 /*
@@ -92,7 +93,7 @@ importPatterns()
 							#SingleInstance Off
 							#Warn All, StdOut
 				
-							' alt_macro.KeyVars() '
+							' KeyVars() '
 				
 							size:=1, reps:=1, facingcorner:=0
 							FieldName:=FieldPattern:=FieldPatternSize:=FieldReturnType:=FieldSprinklerLoc:=FieldRotateDirection:=""
@@ -102,6 +103,7 @@ importPatterns()
 							altNumber := 1
 							index := 0
 							field := ""
+							MoveSys := ""
 							walk(param1, param2?) => ""
 							move(param1, param2?, param3?) => ""
 							HyperSleep(param1) => ""
@@ -132,4 +134,34 @@ importPatterns()
 		patternlist.Push(pattern_name)
 		patterns[pattern_name] := pattern
 	}
+}
+
+KeyVars() {
+	return
+	(
+		'
+		FwdKey:="' FwdKey '"
+		LeftKey:="' LeftKey '"
+		BackKey:="' BackKey '"
+		RightKey:="' RightKey '"
+		RotLeft:="' RotLeft '"
+		RotRight:="' RotRight '"
+		RotUp:="' RotUp '"
+		RotDown:="' RotDown '"
+		ZoomIn:="' ZoomIn '"
+		ZoomOut:="' ZoomOut '"
+		SC_E:="' SC_E '"
+		SC_R:="' SC_R '"
+		SC_L:="' SC_L '"
+		SC_Esc:="' SC_Esc '"
+		SC_Enter:="' SC_Enter '"
+		SC_LShift:="' SC_LShift '"
+		SC_Space:="' SC_Space '"
+		SC_1:="' SC_1 '"
+		TCFBKey:="' TCFBKey '"
+		AFCFBKey:="' AFCFBKey '"
+		TCLRKey:="' TCLRKey '"
+		AFCLRKey:="' AFCLRKey '"
+		'
+	)
 }

@@ -131,7 +131,7 @@ class Path {
 			
 			global offsetY := ' roblox.Get().y_offset '
 			global SprinklerImages := ' imgStr '
-			' alt_macro.KeyVars() '
+			' KeyVars() '
 			Roblox.start_tracker()
 			Roblox.Update()
 			

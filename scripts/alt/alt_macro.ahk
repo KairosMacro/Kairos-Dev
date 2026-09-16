@@ -636,8 +636,10 @@ class alt_macro {
 		static HiveDown := false
 		this.EnableShift(0)
 		win := roblox.get()
+		this.Fancy.Show("Reset: Starting sequence...")
 
 		Loop 5 {
+			this.Fancy.Show("Reset: Attempt " A_Index " of 5")
 			roblox.activate()
 			win := roblox.get()
 			PrevKeyDelay := A_KeyDelay
@@ -657,13 +659,21 @@ class alt_macro {
 			SetKeyDelay(PrevKeyDelay)
 
 			if (!this.settings["alt"]["claim_hive"]) {
+				this.Fancy.Show("Reset: Checking spawn...")
 				if (this.DetectSpawn()) {
+					this.Fancy.Show("Reset: Spawn detected!")
+					Sleep(1000)
+					this.Fancy.Hide()
 					return
 				}
 			} else {
 				if (!this.atHive() && this.DetectSpawn()) {
+					this.Fancy.Show("Reset: Claiming hive...")
 					Sleep(500)
 					if (this.ClaimHive(1)) {
+						this.Fancy.Show("Reset: Hive claimed!")
+						Sleep(1000)
+						this.Fancy.Hide()
 						return
 					}
 				}
@@ -672,6 +682,7 @@ class alt_macro {
 				region := win.x "|" win.y + 3 * win.h // 4 "|" win.w "|" win.h // 4
 				sconf := win.w ** 2 // 3200
 
+				this.Fancy.Show("Reset: Scanning for hive...")
 				loop 4 {
 					Sleep(250)
 					pBMScreen := Gdip_BitmapFromScreen(region)
@@ -683,8 +694,11 @@ class alt_macro {
 						s := Max(s, Gdip_ImageSearch(pBMScreen, k, , , , , , 5, , , sconf))
 						if (s >= sconf) {
 							Gdip_DisposeImage(pBMScreen)
+							this.Fancy.Show("Reset: Hive located!")
 							SendInput("{" RotRight " 4}" (HiveDown ? ("{" RotUp "}") : ""))
 							Send("{" ZoomOut " 5}")
+							Sleep(1000)
+							this.Fancy.Hide()
 							return
 						}
 					}
@@ -694,6 +708,9 @@ class alt_macro {
 			}
 		}
 
+		this.Fancy.Show("Reset: Failed, reconnecting...")
+		Sleep(1000)
+		this.Fancy.Hide()
 		roblox.close()
 		if (this.Reconnect())
 			return
@@ -823,36 +840,6 @@ class alt_macro {
 		}
 		Gdip_DisposeImage(pBMScreen)
 		return false
-	}
-
-	static KeyVars() {
-		return
-		(
-			'
-			FwdKey:="' FwdKey '"
-			LeftKey:="' LeftKey '"
-			BackKey:="' BackKey '"
-			RightKey:="' RightKey '"
-			RotLeft:="' RotLeft '"
-			RotRight:="' RotRight '"
-			RotUp:="' RotUp '"
-			RotDown:="' RotDown '"
-			ZoomIn:="' ZoomIn '"
-			ZoomOut:="' ZoomOut '"
-			SC_E:="' SC_E '"
-			SC_R:="' SC_R '"
-			SC_L:="' SC_L '"
-			SC_Esc:="' SC_Esc '"
-			SC_Enter:="' SC_Enter '"
-			SC_LShift:="' SC_LShift '"
-			SC_Space:="' SC_Space '"
-			SC_1:="' SC_1 '"
-			TCFBKey:="' TCFBKey '"
-			AFCFBKey:="' AFCFBKey '"
-			TCLRKey:="' TCLRKey '"
-			AFCLRKey:="' AFCLRKey '"
-			'
-		)
 	}
 }
 

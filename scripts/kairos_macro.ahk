@@ -30,6 +30,7 @@ SendMode "Event"
 #Include "..\lib\utils\config.ahk"
 #Include "..\lib\utils\utility.ahk"
 #Include "..\lib\utils\audio.ahk"
+#Include "..\lib\utils\file_importer.ahk"
 
 OnError(log_error)
 
@@ -112,6 +113,10 @@ class kairos_main {
 				"scripts\general\boost_bar.ahk",
 				"scripts\alt\alt_macro.ahk"
 			]
+		}
+
+		if (account_type != "Main") {
+			importPatterns()
 		}
 
 		for index, script_path in this.expected_modules {
